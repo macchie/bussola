@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
-  "applicationId": "it.anelli.app",
+  "applicationId": "it.stiva.app",
   "version": "2.1.0",
   "defaultMode": "window",
   "port": 0,
@@ -33,7 +33,7 @@
   ],
   "modes": {
     "window": {
-      "title": "Anelli",
+      "title": "Stiva",
       "width": 1280,
       "height": 820,
       "minWidth": 720,
@@ -48,7 +48,7 @@
     }
   },
   "cli": {
-    "binaryName": "anelli",
+    "binaryName": "stiva",
     "resourcesPath": "/resources/",
     "extensionsPath": "/extensions/",
     "clientLibrary": "/resources/js/neutralino.js",

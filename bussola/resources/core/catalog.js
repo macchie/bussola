@@ -4,7 +4,7 @@ export const CATALOG_URL = `https://github.com/${REPO}/releases/latest/download/
 export const TRUSTED_PREFIX = `https://github.com/${REPO}/releases/download/`;
 
 export const APPS = [
-  { id: 'anelli', name: 'Anelli', tagline: 'Where your disk space goes', color: '#6a6ee0', keepData: 'It holds the Trash: files moved there aren\'t lost' },
+  { id: 'stiva', name: 'Stiva', tagline: 'Where your disk space goes', color: '#6a6ee0', keepData: 'It holds the Trash: files moved there aren\'t lost' },
   { id: 'correnti', name: 'Correnti', tagline: 'Which apps use the network, and where to', color: '#14a8b6' },
   { id: 'battiti', name: 'Battiti', tagline: 'What weighs on CPU and memory', color: '#e0559a' },
   { id: 'scorte', name: 'Scorte', tagline: 'Battery and energy by app', color: '#3fa865' },

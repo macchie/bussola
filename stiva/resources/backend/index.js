@@ -19,7 +19,7 @@ let trash;
 export async function init() {
   const home = stripTrailing(await N().os.getPath('home'), sep);
   const base = stripTrailing(await N().os.getPath('data'), sep);
-  const dataDir = join(base, 'Anelli', sep);
+  const dataDir = join(base, 'Stiva', sep);
   let label = 'utente';
   if (!windows) {
     const res = await run('id -u\n');

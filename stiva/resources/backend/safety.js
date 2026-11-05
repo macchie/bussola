@@ -27,9 +27,9 @@ export function refuse(rawTarget, { os, allowSystem, home, mounts, protectedDirs
   if (inside(home, target, sep, fold)) return 'It contains your home folder';
   if (mounts.some((m) => (fold ? m.toLowerCase() === target.toLowerCase() : m === target || m === rawTarget))) return 'It\'s a volume\'s mount point';
   for (const dir of protectedDirs) {
-    if (inside(target, dir, sep, fold) || inside(dir, target, sep, fold)) return 'It contains Anelli or its data';
+    if (inside(target, dir, sep, fold) || inside(dir, target, sep, fold)) return 'It contains Stiva or its data';
   }
-  if (basename(target, sep).startsWith('.anelli-trash-')) return 'It\'s a Trash folder';
+  if (basename(target, sep).startsWith('.stiva-trash-')) return 'It\'s a Trash folder';
   if (allowSystem) return null;
   const message = 'System file: it can\'t be moved';
   if (win) {

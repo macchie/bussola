@@ -7,7 +7,7 @@ const FILE_CAP = 200;
 const LARGEST_KEEP = 300;
 const VIEW_LIST_CAP = 1000;
 const VIEW_DEEP_CAP = 80;
-const TRASH_MARK = '.anelli-trash-';
+const TRASH_MARK = '.stiva-trash-';
 
 let cfg = null;      // { root, sep, windows, trashHome }
 let root = null;

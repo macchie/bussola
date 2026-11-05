@@ -39,7 +39,7 @@ test('POSIX: a UTF-8 character split across two chunks stays intact', () => {
 });
 
 test('the trash next to the files doesn\'t appear and doesn\'t weigh in the totals', () => {
-  const { ask } = build(posix, '50\t/d/.anelli-trash-0/id/f\n54\t/d/.anelli-trash-0/id\n58\t/d/.anelli-trash-0\n4\t/d/s/.anelli-trash-0/z\n8\t/d/s/.anelli-trash-0\n2\t/d/s/k\n14\t/d/s\n10\t/d/z\n90\t/d\n');
+  const { ask } = build(posix, '50\t/d/.stiva-trash-0/id/f\n54\t/d/.stiva-trash-0/id\n58\t/d/.stiva-trash-0\n4\t/d/s/.stiva-trash-0/z\n8\t/d/s/.stiva-trash-0\n2\t/d/s/k\n14\t/d/s\n10\t/d/z\n90\t/d\n');
   const t = ask('tree', { target: '/d', depth: 3 });
   assert.deepEqual(t.c.map((c) => c.n).sort(), ['s', 'z']);
   assert.equal(t.s, (90 - 58 - 8) * 1024);
@@ -47,7 +47,7 @@ test('the trash next to the files doesn\'t appear and doesn\'t weigh in the tota
 });
 
 test('Windows: explicit types, empty folders, drive root', () => {
-  const cfg = { root: 'C:\\', sep: '\\', windows: true, trashHome: 'C:\\Users\\a\\AppData\\Roaming\\Anelli\\trash' };
+  const cfg = { root: 'C:\\', sep: '\\', windows: true, trashHome: 'C:\\Users\\a\\AppData\\Roaming\\Stiva\\trash' };
   const { ask } = build(cfg, '10\tF\tC:\\Dati\\a.bin\r\n0\tD\tC:\\Vuota\n10\tD\tC:\\Dati\n10\tD\tC:\\\n');
   const t = ask('tree', { target: 'C:\\', depth: 3 });
   assert.equal(t.s, 10);
@@ -80,7 +80,7 @@ test('protezioni Linux e macOS', () => {
   assert.equal(refuse('/home/a/video.mov', ctx('Linux')), null);
   assert.equal(refuse('/var/log/old', ctx('Linux')), null);
   assert.ok(refuse('/mnt/d', ctx('Linux', { mounts: ['/mnt/d'] })));
-  assert.ok(refuse('/x/.anelli-trash-0', ctx('Linux')));
+  assert.ok(refuse('/x/.stiva-trash-0', ctx('Linux')));
   const mac = ctx('Darwin', { home: '/Users/a' });
   for (const p of ['/System/Library', '/Users', '/Applications', '/System/Volumes/Data']) assert.ok(refuse(p, mac), p);
   assert.equal(refuse('/Users/a/Movies/x', mac), null);
@@ -88,7 +88,7 @@ test('protezioni Linux e macOS', () => {
   for (const p of ['/System/Volumes/Data', '/System/Volumes/Data/Users', '/System/Volumes/Data/Users/a', '/System/Volumes/Data/usr/local/x', '/System/Volumes/Data/Applications']) {
     assert.ok(refuse(p, mac), p);
   }
-  assert.ok(refuse('/System/Volumes/Data/Users/a/Library/Application Support/Anelli/trash', { ...mac, protectedDirs: ['/Users/a/Library/Application Support/Anelli'] }));
+  assert.ok(refuse('/System/Volumes/Data/Users/a/Library/Application Support/Stiva/trash', { ...mac, protectedDirs: ['/Users/a/Library/Application Support/Stiva'] }));
 });
 
 test('Windows protections, case-insensitive', () => {

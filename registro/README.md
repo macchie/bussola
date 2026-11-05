@@ -1,7 +1,7 @@
 # Registro
 
 Collects errors, shutdowns and restarts from the system logs and sorts them by app, merging messages that repeat.
-Part of the suite with Anelli, Correnti, Battiti, Scorte, Sentinelle and Radici. A desktop app for macOS, Windows
+Part of the suite with Stiva, Correnti, Battiti, Scorte, Sentinelle and Radici. A desktop app for macOS, Windows
 and Linux built with Neutralinojs.
 
 ## Install

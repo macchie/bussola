@@ -1,7 +1,7 @@
 # Scorte
 
 Shows how much battery is left, what state it's in and which apps drain it most, with the suite's ring map
-(Anelli, Correnti, Battiti). A desktop app for macOS, Windows and Linux built with Neutralinojs.
+(Stiva, Correnti, Battiti). A desktop app for macOS, Windows and Linux built with Neutralinojs.
 
 ## Install
 

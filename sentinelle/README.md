@@ -1,7 +1,7 @@
 # Sentinelle
 
 Shows what's listening on your computer and who it's talking to, with the suite's ring map
-(Anelli, Correnti, Battiti, Scorte). A desktop app for macOS, Windows and Linux built with Neutralinojs.
+(Stiva, Correnti, Battiti, Scorte). A desktop app for macOS, Windows and Linux built with Neutralinojs.
 
 Sentinelle watches only this computer: it doesn't scan other devices and doesn't modify the firewall.
 

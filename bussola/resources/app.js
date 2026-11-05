@@ -68,7 +68,7 @@ const doInstall = guard(async (app) => {
   const wasThere = manager.installed[app.id] !== undefined;
   await manager.install(app);
   toast(wasThere ? tt('{0} updated', app.name) : tt('{0} installed', app.name));
-  if (app.id === 'anelli' && OS === 'Darwin') askPrivacy();
+  if (app.id === 'stiva' && OS === 'Darwin') askPrivacy();
 });
 const doAll = guard(async (list) => {
   for (const app of list) await manager.install(app);
@@ -76,7 +76,7 @@ const doAll = guard(async (list) => {
 });
 
 function askPrivacy() {
-  openDialog(tt('Turn Full Disk Access back on'), tt('Anelli has a new local signature, so macOS asks you to grant the permission again. If you find an old Anelli entry in the list, remove it with the minus button and add the app again.'), null, [
+  openDialog(tt('Turn Full Disk Access back on'), tt('Stiva has a new local signature, so macOS asks you to grant the permission again. If you find an old Stiva entry in the list, remove it with the minus button and add the app again.'), null, [
     h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Later')),
     h('button', { class: 'primary', onclick: () => { manager.openPrivacy(); dialog.close(); } }, tt('Open Settings')),
   ]);

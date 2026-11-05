@@ -1,5 +1,5 @@
 # Bussola suite. Requires node, npm, zip and, to publish, git and gh. Use on Linux or macOS.
-APPS  := anelli correnti battiti scorte sentinelle radici registro bussola
+APPS  := stiva correnti battiti scorte sentinelle radici registro bussola
 REPO  := macchie/bussola
 TAG   ?= suite-$(shell date +%Y.%-m.%-d)
 
@@ -8,7 +8,7 @@ TAG   ?= suite-$(shell date +%Y.%-m.%-d)
 
 help: ## Show the available commands
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-17s %s\n", $$1, $$2}'
-	@echo "  make <setup|dev|test|build>-<app>   one app only, e.g. make dev-anelli"
+	@echo "  make <setup|dev|test|build>-<app>   one app only, e.g. make dev-stiva"
 
 node_modules: package-lock.json
 	npm ci
@@ -21,7 +21,7 @@ setup: node_modules $(APPS:%=setup-%) ## Download the Neutralino runtime for eve
 setup-%: node_modules
 	@echo "== $*"; $(MAKE) -C $* setup
 
-dev-%: node_modules ## Run one app in development (e.g. make dev-anelli)
+dev-%: node_modules ## Run one app in development (e.g. make dev-stiva)
 	@$(MAKE) -C $* dev
 
 sync: ## Copy shared translations and settings into every app

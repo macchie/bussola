@@ -1,4 +1,4 @@
-# Anelli
+# Stiva
 
 Visual disk space analyzer in the style of DaisyDisk: a desktop app for macOS, Linux and Windows.
 Built with [Neutralinojs](https://neutralino.js.org): no Node and no server to start at runtime, just a
@@ -10,9 +10,9 @@ Download the package for your system.
 
 | System | Package | Notes |
 | --- | --- | --- |
-| macOS 10.15+ (Intel and Apple Silicon) | `Anelli-macos.zip` | Unzip and run `bash "Install Anelli.command"`: it signs the app on your Mac and puts it in Applications |
-| Windows 10/11 x64 | `Anelli-windows-x64.zip` | WebView2 required, already present on Windows 11. SmartScreen may ask for confirmation |
-| Linux x64 / arm64 | `Anelli-linux-*.zip` | WebKitGTK required: `sudo apt install libwebkit2gtk-4.1-0` |
+| macOS 10.15+ (Intel and Apple Silicon) | `Stiva-macos.zip` | Unzip and run `bash "Install Stiva.command"`: it signs the app on your Mac and puts it in Applications |
+| Windows 10/11 x64 | `Stiva-windows-x64.zip` | WebView2 required, already present on Windows 11. SmartScreen may ask for confirmation |
+| Linux x64 / arm64 | `Stiva-linux-*.zip` | WebKitGTK required: `sudo apt install libwebkit2gtk-4.1-0` |
 
 Keep `resources.neu` next to the executable.
 
@@ -54,14 +54,14 @@ Every path destined for the shell ends up quoted in a temporary script, never on
 
 As long as an item is in the Trash it still takes up space. There is no automatic emptying. Moving
 is a rename on the same volume, never a copy. Items go into the user data folder if it's on the same
-volume, otherwise into `.anelli-trash-<user>` in the topmost writable folder.
+volume, otherwise into `.stiva-trash-<user>` in the topmost writable folder.
 The listing is in `trash.json` and survives restarts.
 
 | System | Data folder |
 | --- | --- |
-| Linux | `~/.local/share/Anelli` |
-| macOS | `~/Library/Application Support/Anelli` |
-| Windows | `%APPDATA%\Anelli` |
+| Linux | `~/.local/share/Stiva` |
+| macOS | `~/Library/Application Support/Stiva` |
+| Windows | `%APPDATA%\Stiva` |
 
 ## Security
 
@@ -73,7 +73,7 @@ The listing is in `trash.json` and survives restarts.
 ## Full Disk Access on macOS
 
 macOS ties the permission to the app's signature. Without a Developer ID certificate the signature is local and
-changes with every version: after an update, re-run the installer and re-enable the permission. If an old Anelli
+changes with every version: after an update, re-run the installer and re-enable the permission. If an old Stiva
 entry remains in Settings, remove it with the minus button before adding it again.
 
 Even with the permission enabled, macOS keeps out some areas protected by SIP and the data of sandboxed apps:

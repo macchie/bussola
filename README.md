@@ -27,7 +27,7 @@ Every app shares the same ring map, the same time periods and the same structure
 | App | The question | Version | 🍎 macOS | 🪟 Windows | 🐧 Linux |
 | --- | --- | :---: | :---: | :---: | :---: |
 | 🧭 **Bussola** | What's installed, and what needs updating? | 1.1.0 | ✅ | ✅ | ✅ |
-| 💿 **Anelli** | Where did my disk space go? | 2.1.0 | ✅ | ✅ | ✅ |
+| 💿 **Stiva** | Where did my disk space go? | 2.1.0 | ✅ | ✅ | ✅ |
 | 🌐 **Correnti** | Which apps use the network, and where to? | 1.2.0 | ✅ | ❌ | ✅ |
 | ⚡ **Battiti** | What's weighing on CPU and memory? | 1.1.0 | ✅ | ✅ | ✅ |
 | 🔋 **Scorte** | How much battery is left, and who's draining it? | 1.1.0 | ✅ | ✅ | ✅ |
@@ -71,14 +71,14 @@ Each app has its own package in the same release.
 Keep `resources.neu` next to the executable.
 
 > [!WARNING]
-> **Unsigned apps.** The apps carry no Apple or Microsoft certificates. On macOS the signature is local and changes with every version: Anelli must be re-authorized in Full Disk Access after each update. On Windows, SmartScreen may show a warning.
+> **Unsigned apps.** The apps carry no Apple or Microsoft certificates. On macOS the signature is local and changes with every version: Stiva must be re-authorized in Full Disk Access after each update. On Windows, SmartScreen may show a warning.
 
 ## 🧩 The apps
 
-All offer a light and dark theme, a name filter and — except Anelli and Bussola — the periods **Now, Last hour, Today and 7 days**, plus **Diagnostics** with the raw system output.
+All offer a light and dark theme, a name filter and — except Stiva and Bussola — the periods **Now, Last hour, Today and 7 days**, plus **Diagnostics** with the raw system output.
 
 <details>
-<summary>💿 <b>Anelli</b> — where your disk space goes</summary>
+<summary>💿 <b>Stiva</b> — where your disk space goes</summary>
 
 Radial disk map inspired by DaisyDisk. Shows disks and folders heaviest-first, with a ranking of the largest files and previews of images, video, audio and text.
 
@@ -148,7 +148,7 @@ Errors, warnings, shutdowns and restarts per app, with repeated messages merged 
 <details>
 <summary>🧭 <b>Bussola</b> — the launcher</summary>
 
-Reads the catalog from the most recent release, downloads with `curl` and verifies the SHA-256 checksum before extracting. When uninstalling you can also wipe the data, except for Anelli and Radici, whose data holds the Trash and the changes to restore.
+Reads the catalog from the most recent release, downloads with `curl` and verifies the SHA-256 checksum before extracting. When uninstalling you can also wipe the data, except for Stiva and Radici, whose data holds the Trash and the changes to restore.
 </details>
 
 ## 🌍 Languages & settings
@@ -189,7 +189,7 @@ The catalog and packages live in the same release: the checksum protects against
 
 | App | Linux x64 | macOS | Windows |
 | --- | --- | --- | --- |
-| Anelli | Tried with real scans and operations | Used on a Mac; 2.0.1 signature to confirm | Never run |
+| Stiva | Tried with real scans and operations | Used on a Mac; 2.0.1 signature to confirm | Never run |
 | Correnti | Tried with real traffic of known size | Never run, format checked against public sources | Not available |
 | Battiti | Tried with a known load | Never run | Never run |
 | Scorte | Tried with a simulated battery and without one | Never run | Never run |
@@ -198,14 +198,14 @@ The catalog and packages live in the same release: the checksum protects against
 | Registro | Simulated events with known counts | Never run | Never run |
 | Bussola | Real installs from a local server | Script tried with simulators | Never run |
 
-Linux arm64 is compiled but hasn't been launched. If something looks off, Diagnostics has **Copy data** with the raw system output (Anelli excepted).
+Linux arm64 is compiled but hasn't been launched. If something looks off, Diagnostics has **Copy data** with the raw system output (Stiva excepted).
 
 ## 🛠️ Develop & publish
 
 All apps live in this repository, one per folder. Node is only a development tool. You need `node`, `npm`, `zip`, `make`, and to publish `git` and [`gh`](https://cli.github.com). Run `make help` for the commands.
 
 ```
-anelli/ correnti/ battiti/ scorte/ sentinelle/ radici/ registro/ bussola/
+stiva/ correnti/ battiti/ scorte/ sentinelle/ radici/ registro/ bussola/
   neutralino.config.json   configuration and allowed APIs
   resources/               interface and logic
   scripts/package.mjs      packages for each system
@@ -235,7 +235,7 @@ Every app has its own `Makefile` with the same targets — `setup`, `dev`, `test
 | Command | What it does |
 | --- | --- |
 | `make dev-correnti` | Runs Correnti in development (`neu run`) |
-| `make build-anelli` | Builds just Anelli's packages |
+| `make build-stiva` | Builds just Stiva's packages |
 | `make test-registro` | Runs just Registro's tests |
 | `make setup-scorte` | Downloads just Scorte's runtime |
 
@@ -283,4 +283,4 @@ To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 🙏 Credits
 
-Built with [Neutralinojs](https://neutralino.js.org) (MIT) and IBM Plex Sans (SIL Open Font License), as noted in [THIRD-PARTY.md](THIRD-PARTY.md). Anelli is inspired by DaisyDisk, with which it has no affiliation.
+Built with [Neutralinojs](https://neutralino.js.org) (MIT) and IBM Plex Sans (SIL Open Font License), as noted in [THIRD-PARTY.md](THIRD-PARTY.md). Stiva is inspired by DaisyDisk, with which it has no affiliation.

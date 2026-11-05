@@ -3,7 +3,7 @@
 import { OS, sep, windows, run, removeScript, q } from './platform.js';
 import { ancestors, basename, dirname, inside, join, macDataPath } from './paths.js';
 
-export const TRASH_MARK = '.anelli-trash-';
+export const TRASH_MARK = '.stiva-trash-';
 const fs = () => globalThis.Neutralino.filesystem;
 
 export function parkingSpots(target, { home, mount, sameVolume, label }) {

@@ -36,7 +36,7 @@ D=/Applications
 /usr/bin/pkill -x ${app.id} 2>/dev/null
 /usr/bin/ditto "$A" "$D/.${app.name}.nuova" || fail COPY
 rm -rf "$D/${app.name}.app" && mv "$D/.${app.name}.nuova" "$D/${app.name}.app" || fail COPY
-${app.id === 'anelli' ? '/usr/bin/tccutil reset SystemPolicyAllFiles it.anelli.app >/dev/null 2>&1\n' : ''}rm -rf "$T"
+${app.id === 'stiva' ? '/usr/bin/tccutil reset SystemPolicyAllFiles it.stiva.app >/dev/null 2>&1\n' : ''}rm -rf "$T"
 echo DONE
 `;
 }

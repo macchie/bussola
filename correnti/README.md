@@ -1,6 +1,6 @@
 # Correnti
 
-Shows which apps use the network, where to and how much, with the same ring map as Anelli: from the center
+Shows which apps use the network, where to and how much, with the same ring map as Stiva: from the center
 app, process and destination, the most active first. A desktop app for macOS and Linux built with Neutralinojs.
 
 ## Install

@@ -1,7 +1,7 @@
 # Radici
 
 Shows what starts on its own on your computer: login items, services and scheduled tasks, with the suite's
-ring map (Anelli, Correnti, Battiti, Scorte, Sentinelle). A desktop app for macOS, Windows and Linux
+ring map (Stiva, Correnti, Battiti, Scorte, Sentinelle). A desktop app for macOS, Windows and Linux
 built with Neutralinojs.
 
 ## Install

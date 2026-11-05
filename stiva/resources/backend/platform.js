@@ -19,7 +19,7 @@ async function tempDir() {
   if (!temp) temp = (await N().os.getPath('temp')).replace(/[\\/]$/, '');
   return temp;
 }
-export const tempFile = async (ext) => join(await tempDir(), `anelli-${Date.now()}-${++seq}${ext}`, sep);
+export const tempFile = async (ext) => join(await tempDir(), `stiva-${Date.now()}-${++seq}${ext}`, sep);
 
 function listen() {
   if (listening) return;
@@ -75,7 +75,7 @@ export const kill = (id) => N().os.updateSpawnedProcess(id, 'exit').catch(() => 
 // The command that writes a folder's listing to outFile.
 export function scanScript(root, outFile, errFile, scanner) {
   if (windows) {
-    return `Add-Type -TypeDefinition @'\n${scanner}\n'@\n[AnelliScan]::Run(${q(root)}, ${q(outFile)}, ${q(errFile)})\n`;
+    return `Add-Type -TypeDefinition @'\n${scanner}\n'@\n[StivaScan]::Run(${q(root)}, ${q(outFile)}, ${q(errFile)})\n`;
   }
   return `exec du -akx ${q(root)} > ${q(outFile)} 2> ${q(errFile)}\n`;
 }
@@ -83,7 +83,7 @@ export function scanScript(root, outFile, errFile, scanner) {
 export function removeScript(target) {
   if (windows) {
     // rmdir doesn't follow junctions and removes read-only files too.
-    return `$env:ANELLI_TARGET = ${q(target)}\n& cmd.exe /d /c 'rmdir /s /q "%ANELLI_TARGET%"'\nif (Test-Path -LiteralPath ${q(target)}) { exit 1 }\n`;
+    return `$env:STIVA_TARGET = ${q(target)}\n& cmd.exe /d /c 'rmdir /s /q "%STIVA_TARGET%"'\nif (Test-Path -LiteralPath ${q(target)}) { exit 1 }\n`;
   }
   // find doesn't follow links: it only unlocks real read-only folders.
   return `rm -rf ${q(target)} 2>/dev/null || { find ${q(target)} -type d -exec chmod u+rwx {} + 2>/dev/null; rm -rf ${q(target)}; }\n[ ! -e ${q(target)} ]\n`;

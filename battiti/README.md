@@ -1,6 +1,6 @@
 # Battiti
 
-Shows what weighs on CPU and memory, with the ring map of Anelli and Correnti: from the center apps and processes,
+Shows what weighs on CPU and memory, with the ring map of Stiva and Correnti: from the center apps and processes,
 the heaviest first. A desktop app for macOS, Windows and Linux built with Neutralinojs.
 
 ## Install

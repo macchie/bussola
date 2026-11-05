@@ -1,6 +1,6 @@
 # Bussola
 
-Installs, opens, updates and removes the suite apps: Anelli, Correnti, Battiti, Scorte, Sentinelle,
+Installs, opens, updates and removes the suite apps: Stiva, Correnti, Battiti, Scorte, Sentinelle,
 Radici and Registro. A desktop app for macOS, Windows and Linux built with Neutralinojs.
 
 ## Install
@@ -22,7 +22,7 @@ Bussola doesn't update itself: when a new version ships, it shows the link to th
 | Linux | `~/.local/share/bussola/apps`, with a menu entry |
 
 No administrator privileges needed. On macOS each app is signed locally with `codesign`, so
-Anelli must be re-authorized in Full Disk Access after every update.
+Stiva must be re-authorized in Full Disk Access after every update.
 
 ## Publishing a version
 
@@ -48,7 +48,7 @@ addresses and checksums. Bussola always reads the catalog of the latest release.
 - The app list is fixed in the code: the catalog only states versions and packages.
 - Only HTTPS downloads from `macchie/bussola` releases are accepted.
 - Each package is verified with SHA-256 before extraction, and only the expected content is copied.
-- Uninstalling touches only known paths. Anelli's and Radici's data always stays: it holds the Trash and changes.
+- Uninstalling touches only known paths. Stiva's and Radici's data always stays: it holds the Trash and changes.
 
 The catalog and packages come from the same release, so the checksum protects against corrupted or swapped files
 along the way, not against whoever controls your GitHub account: protect it with two-factor authentication.

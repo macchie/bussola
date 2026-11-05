@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 const [dir, tag] = process.argv.slice(2);
 const catalog = JSON.parse(readFileSync(join(dir, 'catalog.json'), 'utf8'));
-const apps = ['anelli', 'correnti', 'battiti', 'scorte', 'sentinelle', 'radici', 'registro'];
+const apps = ['stiva', 'correnti', 'battiti', 'scorte', 'sentinelle', 'radici', 'registro'];
 const errors = [];
 if (catalog.tag !== tag) errors.push(`catalog tag ${catalog.tag}, expected ${tag}`);
 const listed = new Set(['catalog.json']);

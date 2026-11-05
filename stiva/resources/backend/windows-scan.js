@@ -2,7 +2,7 @@
 // faster than Get-ChildItem. Compatible with the C# 5 of Windows PowerShell 5.1.
 export const WINDOWS_SCANNER = String.raw`
 using System; using System.IO; using System.Text;
-public static class AnelliScan {
+public static class StivaScan {
   static StreamWriter o, e;
   static long Walk(DirectoryInfo d) {
     long total = 0;

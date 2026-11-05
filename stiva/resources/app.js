@@ -117,7 +117,7 @@ async function refreshTrash() {
 
 /* Disks */
 async function renderHome() {
-  document.title = tx('Anelli');
+  document.title = tx('Stiva');
   const token = ++state.token;
   const [volumes, active] = await Promise.all([backend.volumes(), backend.listScans(), refreshTrash()]);
   if (token !== state.token) return;
@@ -149,7 +149,7 @@ async function renderHome() {
   view.replaceChildren(h('div', { class: 'home' },
     fda === false && h('div', { class: 'banner' },
       h('div', null, h('strong', null, tt('Full Disk Access is off')),
-        h('p', null, tt('macOS doesn\'t recognize this copy of Anelli. Turn it on in Settings, then quit and reopen the app.'))),
+        h('p', null, tt('macOS doesn\'t recognize this copy of Stiva. Turn it on in Settings, then quit and reopen the app.'))),
       h('button', { class: 'quiet', onclick: () => backend.openPrivacySettings() }, tt('Open Settings'))),
     h('h1', null, tt('Where did the space go?')),
     h('p', null, tt('Choose a disk or a folder. Nothing changes until you decide.')),
@@ -700,7 +700,7 @@ async function restore(ids, rename = false) {
     if (conflicts.length) {
       openDialog(tt('An item with the same name already exists'),
         tt("{0} can't return to their place without overwriting.", items(conflicts.length)),
-        [h('p', null, tt('Anelli never overwrites. You can restore them next to the original under a different name.'))],
+        [h('p', null, tt('Stiva never overwrites. You can restore them next to the original under a different name.'))],
         [h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Leave in Trash')),
           h('button', { class: 'primary', onclick: () => { dialog.close(); restore(conflicts.map((c) => c.id), true); } }, tt('Restore with another name'))]);
     }
