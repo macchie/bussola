@@ -18,7 +18,7 @@ function listen() {
   });
 }
 
-// Lancia un comando e consegna stdout a blocchi man mano che arriva.
+// Launches a command and delivers stdout in chunks as it arrives.
 export async function spawn(command, { onOut, onExit }) {
   listen();
   const { id } = await N().os.spawnProcess(command);
@@ -42,7 +42,7 @@ export function run(command) {
   });
 }
 
-// Scrive uno script temporaneo e restituisce il comando che lo avvia.
+// Writes a temporary script and returns the command that launches it.
 export async function scriptCommand(body) {
   const temp = (await N().os.getPath('temp')).replace(/[\\/]$/, '');
   const win = OS === 'Windows';
@@ -82,8 +82,8 @@ echo ===VM
 echo ===SWAP
 /usr/sbin/sysctl -n vm.swapusage
 `;
-// Avviare PowerShell costa, quindi su Windows resta un processo solo. Si chiude da
-// sé quando Battiti non esiste più.
+// Starting PowerShell is costly, so on Windows a single process stays. It closes by
+// itself when Battiti no longer exists.
 export const windowsScript = (parent) => `$ErrorActionPreference = 'SilentlyContinue'
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
 $parent = ${parent}

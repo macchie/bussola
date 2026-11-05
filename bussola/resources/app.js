@@ -1,5 +1,5 @@
-import { t as tt, tx, locale } from './comune/i18n.js';
-import { salvaTema, primaDiRicaricare } from './comune/impostazioni.js';
+import { t as tt, tx, locale } from './shared/i18n.js';
+import { saveTheme, beforeReload } from './shared/settings.js';
 import { APPS } from './core/catalog.js';
 import { Manager } from './core/manager.js';
 import { OS } from './core/platform.js';
@@ -40,7 +40,7 @@ paintTheme();
 $('theme').onclick = () => {
   const next = theme() === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
-  salvaTema(next);
+  saveTheme(next);
   window.dispatchEvent(new Event('tema'));
 };
 window.addEventListener('tema', () => {
@@ -59,34 +59,34 @@ function dial(count) {
     return `<circle cx="115" cy="115" r="${r}" fill="none" stroke="${on ? a.color : 'var(--line)'}" stroke-width="20" stroke-dasharray="${seg} ${c - seg}" stroke-dashoffset="${-(i * (c / APPS.length))}" transform="rotate(-90 115 115)"/>`;
   }).join('');
   const t = document.createElement('template');
-  t.innerHTML = `<svg viewBox="0 0 230 230" role="img" aria-label="${tt('{0} app installate su {1}', count, APPS.length)}">${arcs}</svg>`;
-  return h('div', { class: 'dial' }, t.content.firstChild, h('div', { class: 'value' }, h('strong', null, tt("{0} di {1}", count, APPS.length)), h('span', null, count === 1 ? tt('app installata') : tt('app installate'))));
+  t.innerHTML = `<svg viewBox="0 0 230 230" role="img" aria-label="${tt('{0} apps installed out of {1}', count, APPS.length)}">${arcs}</svg>`;
+  return h('div', { class: 'dial' }, t.content.firstChild, h('div', { class: 'value' }, h('strong', null, tt("{0} of {1}", count, APPS.length)), h('span', null, count === 1 ? tt('app installed') : tt('apps installed'))));
 }
 
 const guard = (fn) => async (...args) => { try { await fn(...args); } catch (err) { toast(err.message); } };
 const doInstall = guard(async (app) => {
   const wasThere = manager.installed[app.id] !== undefined;
   await manager.install(app);
-  toast(wasThere ? tt('{0} aggiornata', app.name) : tt('{0} installata', app.name));
+  toast(wasThere ? tt('{0} updated', app.name) : tt('{0} installed', app.name));
   if (app.id === 'anelli' && OS === 'Darwin') askPrivacy();
 });
 const doAll = guard(async (list) => {
   for (const app of list) await manager.install(app);
-  toast(list.length === 1 ? tt('Fatto') : tt("{0} app pronte", list.length));
+  toast(list.length === 1 ? tt('Done') : tt("{0} apps ready", list.length));
 });
 
 function askPrivacy() {
-  openDialog(tt('Riattiva l\'Accesso completo al disco'), tt('Anelli ha una nuova firma locale, quindi macOS chiede di concedere di nuovo il permesso. Se in elenco trovi una vecchia voce di Anelli, toglila con il tasto meno e aggiungi di nuovo l\'app.'), null, [
-    h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Più tardi')),
-    h('button', { class: 'primary', onclick: () => { manager.openPrivacy(); dialog.close(); } }, tt('Apri Impostazioni')),
+  openDialog(tt('Turn Full Disk Access back on'), tt('Anelli has a new local signature, so macOS asks you to grant the permission again. If you find an old Anelli entry in the list, remove it with the minus button and add the app again.'), null, [
+    h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Later')),
+    h('button', { class: 'primary', onclick: () => { manager.openPrivacy(); dialog.close(); } }, tt('Open Settings')),
   ]);
 }
 function askUninstall(app) {
   const box = h('input', { type: 'checkbox' });
-  openDialog(tt("Disinstallare {0}?", app.name), tt('L\'app viene rimossa da questo computer. Puoi reinstallarla quando vuoi.'),
-    app.keepData ? h('p', null, tt("I dati di {0} restano al loro posto. {1}.", app.name, app.keepData)) : h('label', null, box, h('span', null, tt('Cancella anche dati e storico dell\'app'))), [
-      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Annulla')),
-      h('button', { class: 'danger', onclick: guard(async () => { dialog.close(); await manager.uninstall(app, box.checked); toast(tt("{0} disinstallata", app.name)); }) }, tt('Disinstalla')),
+  openDialog(tt("Uninstall {0}?", app.name), tt('The app is removed from this computer. You can reinstall it whenever you like.'),
+    app.keepData ? h('p', null, tt("{0}'s data stays where it is. {1}.", app.name, app.keepData)) : h('label', null, box, h('span', null, tt('Also delete the app\'s data and history'))), [
+      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Cancel')),
+      h('button', { class: 'danger', onclick: guard(async () => { dialog.close(); await manager.uninstall(app, box.checked); toast(tt("{0} uninstalled", app.name)); }) }, tt('Uninstall')),
     ]);
 }
 function openDialog(title, sub, body, footer) {
@@ -94,13 +94,13 @@ function openDialog(title, sub, body, footer) {
   if (!dialog.open) dialog.showModal();
 }
 $('diag').onclick = () => {
-  const report = [tt("Sistema: {0} {1}, Bussola {2}, pacchetti {3}", NL_OS, NL_ARCH, NL_APPVERSION, manager.key || tt('nessuno')), tt("Installate: {0}", JSON.stringify(manager.installed)), manager.catalogError ? tt("Catalogo: {0}", manager.catalogError) : tt("Catalogo: {0}", manager.catalog?.tag || 'nessuno'), '', ...manager.log].join('\n');
-  openDialog(tt('Diagnostica'), tt('Stato di Bussola e ultime operazioni.'), h('pre', null, report), [
-    h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(report); toast(tt('Dati copiati')); } }, tt('Copia dati')),
-    h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Chiudi')),
+  const report = [tt("System: {0} {1}, Bussola {2}, packages {3}", NL_OS, NL_ARCH, NL_APPVERSION, manager.key || tt('none')), tt("Installed: {0}", JSON.stringify(manager.installed)), manager.catalogError ? tt("Catalog: {0}", manager.catalogError) : tt("Catalog: {0}", manager.catalog?.tag || 'none'), '', ...manager.log].join('\n');
+  openDialog(tt('Diagnostics'), tt('Bussola status and latest operations.'), h('pre', null, report), [
+    h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(report); toast(tt('Data copied')); } }, tt('Copy data')),
+    h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Close')),
   ]);
 };
-$('check').onclick = guard(async () => { $('check').disabled = true; await manager.refresh(); $('check').disabled = false; toast(manager.catalogError ? tt('Catalogo non raggiungibile') : tt('Catalogo aggiornato')); });
+$('check').onclick = guard(async () => { $('check').disabled = true; await manager.refresh(); $('check').disabled = false; toast(manager.catalogError ? tt('Catalog unreachable') : tt('Catalog updated')); });
 
 function row(app) {
   const st = manager.status(app.id);
@@ -110,15 +110,15 @@ function row(app) {
   const prog = manager.progress[app.id];
   const busy = !!manager.busy;
   const badges = [];
-  if (have !== undefined) badges.push(h('span', { class: 'badge' }, have ? tt("Versione {0}", have) : tt('Installata')));
-  if (st === 'outdated') badges.push(h('span', { class: 'badge up' }, tt("Disponibile {0}", entry.version)));
-  if (st === 'unsupported') badges.push(h('span', { class: 'badge' }, tt('Non disponibile per questo sistema')));
+  if (have !== undefined) badges.push(h('span', { class: 'badge' }, have ? tt("Version {0}", have) : tt('Installed')));
+  if (st === 'outdated') badges.push(h('span', { class: 'badge up' }, tt("Available {0}", entry.version)));
+  if (st === 'unsupported') badges.push(h('span', { class: 'badge' }, tt('Not available for this system')));
   const btns = [];
-  if (st === 'available') btns.push(h('button', { class: 'primary', disabled: busy, onclick: () => doInstall(app) }, tt('Installa')));
-  if (st === 'outdated') btns.push(h('button', { class: 'primary', disabled: busy, onclick: () => doInstall(app) }, tt('Aggiorna')));
+  if (st === 'available') btns.push(h('button', { class: 'primary', disabled: busy, onclick: () => doInstall(app) }, tt('Install')));
+  if (st === 'outdated') btns.push(h('button', { class: 'primary', disabled: busy, onclick: () => doInstall(app) }, tt('Update')));
   if (have !== undefined) {
-    btns.push(h('button', { class: 'quiet', disabled: busy, onclick: guard(() => manager.open(app)) }, tt('Apri')));
-    btns.push(h('button', { class: 'quiet', disabled: busy, onclick: () => askUninstall(app) }, tt('Disinstalla')));
+    btns.push(h('button', { class: 'quiet', disabled: busy, onclick: guard(() => manager.open(app)) }, tt('Open')));
+    btns.push(h('button', { class: 'quiet', disabled: busy, onclick: () => askUninstall(app) }, tt('Uninstall')));
   }
   return h('section', { class: 'app' },
     h('img', { src: `/apps/${app.id}.svg`, alt: '' }),
@@ -137,13 +137,13 @@ function render() {
   const busy = !!manager.busy;
   const top = $('view').scrollTop;
   $('view').replaceChildren(h('div', { class: 'home' },
-    manager.catalogError ? h('div', { class: 'banner' }, h('div', null, h('strong', null, tt('Catalogo non raggiungibile')), h('p', null, tt('Le app già installate si aprono comunque. Per installare o aggiornare serve la connessione.'))), h('button', { class: 'quiet', disabled: busy, onclick: () => manager.refresh() }, tt('Riprova'))) : null,
-    !manager.key ? h('div', { class: 'banner' }, h('div', null, h('strong', null, tt('Sistema non supportato')), h('p', null, tt('Non ci sono pacchetti per questo sistema o processore.')))) : null,
-    update ? h('div', { class: 'banner' }, h('div', null, h('strong', null, tt("Bussola {0} è disponibile", update.version)), h('p', null, tt('Bussola non si aggiorna da sola: scarica la nuova versione dalla pagina della release.'))), update.page ? h('button', { class: 'quiet', onclick: () => Neutralino.os.open(update.page) }, tt('Apri la pagina')) : null) : null,
+    manager.catalogError ? h('div', { class: 'banner' }, h('div', null, h('strong', null, tt('Catalog unreachable')), h('p', null, tt('Installed apps still open. Installing or updating requires a connection.'))), h('button', { class: 'quiet', disabled: busy, onclick: () => manager.refresh() }, tt('Try again'))) : null,
+    !manager.key ? h('div', { class: 'banner' }, h('div', null, h('strong', null, tt('System not supported')), h('p', null, tt('There are no packages for this system or processor.')))) : null,
+    update ? h('div', { class: 'banner' }, h('div', null, h('strong', null, tt("Bussola {0} is available", update.version)), h('p', null, tt('Bussola doesn\'t update itself: download the new version from the release page.'))), update.page ? h('button', { class: 'quiet', onclick: () => Neutralino.os.open(update.page) }, tt('Open the page')) : null) : null,
     h('aside', { class: 'hero' }, dial(count),
       h('div', { class: 'bulk' },
-        outdated.length ? h('button', { class: 'primary', disabled: busy, onclick: () => doAll(outdated) }, outdated.length === 1 ? tt('Aggiorna 1 app') : tt("Aggiorna {0} app", num.format(outdated.length))) : null,
-        missing.length ? h('button', { class: outdated.length ? 'quiet' : 'primary', disabled: busy, onclick: () => doAll(missing) }, missing.length === 1 ? tt('Installa quella mancante') : tt("Installa le {0} mancanti", num.format(missing.length))) : null)),
+        outdated.length ? h('button', { class: 'primary', disabled: busy, onclick: () => doAll(outdated) }, outdated.length === 1 ? tt('Update 1 app') : tt("Update {0} apps", num.format(outdated.length))) : null,
+        missing.length ? h('button', { class: outdated.length ? 'quiet' : 'primary', disabled: busy, onclick: () => doAll(missing) }, missing.length === 1 ? tt('Install the missing one') : tt("Install the {0} missing", num.format(missing.length))) : null)),
     h('div', { class: 'apps' }, APPS.map(row))));
   $('view').scrollTop = top;
   $('check').disabled = busy;

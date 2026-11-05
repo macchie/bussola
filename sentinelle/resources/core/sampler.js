@@ -1,4 +1,4 @@
-// Legge porte e connessioni, le attribuisce alle app e ricorda cosa è già stato visto.
+// Reads ports and connections, attributes them to apps and remembers what has been seen.
 import { OS, run, spawn, kill, scriptCommand, LINUX_SCRIPT, MAC_SCRIPT, windowsScript } from './platform.js';
 import { PARSERS, splitBlocks, classify, portInfo, bindLabel } from './parse.js';
 import { appFor, destinationOf, UNKNOWN_APP } from './attribute.js';
@@ -12,7 +12,7 @@ const dayName = (t) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.jsonl`;
 };
 
-// Dalla lettura grezza alle voci dell'istantanea: chiave -> quante.
+// From the raw read to the snapshot entries: key -> how many.
 export function digest(sample, os, paths, bundles) {
   const names = new Map(sample.procs.map((p) => [p.pid, p]));
   const entries = new Map();
@@ -27,7 +27,7 @@ export function digest(sample, os, paths, bundles) {
     const item = kind === 'conn' ? destinationOf(k.remote) : info.label;
     const key = [kind, who.app, proc?.name || '', item].join(SEP);
     entries.set(key, (entries.get(key) || 0) + 1);
-    if (!details.has(key)) details.set(key, { detail: kind === 'conn' ? `porta ${k.rport}` : bindLabel(k), remote: !!(info?.remote && kind === 'exposed') });
+    if (!details.has(key)) details.set(key, { detail: kind === 'conn' ? `port ${k.rport}` : bindLabel(k), remote: !!(info?.remote && kind === 'exposed') });
   }
   const count = (kind) => [...entries].reduce((n, [key, c]) => n + (key.startsWith(kind + SEP) ? (kind === 'conn' ? c : 1) : 0), 0);
   return { entries, details, exposed: count('exposed'), conn: count('conn') };
@@ -79,15 +79,15 @@ export class Sampler {
     }
     this.store.prune(now);
     try {
-      const data = JSON.parse(await fs().readFile(this.dir + this.sep + 'visti.json'));
+      const data = JSON.parse(await fs().readFile(this.dir + this.sep + 'seen.json'));
       this.ledger = new Ledger(data.ledger);
       this.memory = new Map(Object.entries(data.details || {}));
-    } catch { /* primo avvio */ }
+    } catch { /* first launch */ }
   }
 
   async saveLedger(now) {
     this.savedAt = now;
-    const file = this.dir + this.sep + 'visti.json';
+    const file = this.dir + this.sep + 'seen.json';
     this.ledger.prune(now);
     const details = Object.fromEntries([...this.memory].filter(([k]) => this.ledger.items.has(k)));
     await fs().writeFile(`${file}.tmp`, JSON.stringify({ ledger: this.ledger, details }));
@@ -170,7 +170,7 @@ export class Sampler {
     this.ledger = new Ledger();
     this.memory.clear();
     for (const f of await fs().readDirectory(this.dir).catch(() => [])) {
-      if (f.entry.endsWith('.jsonl') || f.entry === 'visti.json') await fs().remove(this.dir + this.sep + f.entry).catch(() => {});
+      if (f.entry.endsWith('.jsonl') || f.entry === 'seen.json') await fs().remove(this.dir + this.sep + f.entry).catch(() => {});
     }
     this.onSample();
   }

@@ -1,10 +1,10 @@
-// Script di sistema. Gli unici valori esterni sono URL e impronta, già validati dal catalogo,
-// e finiscono comunque quotati. Gli errori escono come "ERR CODICE" e i passaggi come "STEP nome".
+// System scripts. The only external values are URL and checksum, already validated by the catalog,
+// and end up quoted anyway. Errors come out as "ERR CODE" and steps as "STEP name".
 const qs = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
 const qp = (s) => `'${String(s).replace(/'/g, "''")}'`;
 const CURL = "--proto '=https' --tlsv1.2";
 export const TOOLS = { curlFlags: CURL };
-const check = (app) => { if (!/^[a-z]+$/.test(app.id)) throw new Error('App non valida'); };
+const check = (app) => { if (!/^[a-z]+$/.test(app.id)) throw new Error('Invalid app'); };
 export const zipStem = (app, key) => `${app.name}-${key}`;
 
 const POSIX_HEAD = (work) => `set -u
@@ -55,7 +55,7 @@ D="${dir}"
 pkill -x ${app.id} 2>/dev/null
 mkdir -p "$D" || fail COPY
 cp "$S/${app.id}" "$D/.nuovo" && cp "$S/resources.neu" "$D/resources.neu" && chmod 755 "$D/.nuovo" && mv "$D/.nuovo" "$D/${app.id}" || fail COPY
-printf '%s' ${qs(pkg.version)} > "$D/.versione"
+printf '%s' ${qs(pkg.version)} > "$D/.version"
 M="$HOME/.local/share/applications"
 mkdir -p "$M"
 cat > "$M/it.${app.id}.desktop" <<FINE
@@ -98,7 +98,7 @@ try {
   New-Item -ItemType Directory -Path $D -Force | Out-Null
   Copy-Item -LiteralPath "$S\\${app.name}.exe" -Destination $D -Force
   Copy-Item -LiteralPath "$S\\resources.neu" -Destination $D -Force
-  Set-Content -LiteralPath "$D\\.versione" -Value ${qp(pkg.version)} -NoNewline
+  Set-Content -LiteralPath "$D\\.version" -Value ${qp(pkg.version)} -NoNewline
   Get-ChildItem -LiteralPath $D -File | Unblock-File
   $l = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path ([Environment]::GetFolderPath('Programs')) '${app.name}.lnk'))
   $l.TargetPath = "$D\\${app.name}.exe"
@@ -113,7 +113,7 @@ Write-Output 'DONE'
 export const installScript = (os, app, pkg, work, key) => (os === 'Darwin' ? macInstall(app, pkg, work)
   : os === 'Windows' ? windowsInstall(app, pkg, work, key) : linuxInstall(app, pkg, work, key));
 
-// Percorsi costruiti solo da id noti: la disinstallazione non legge mai un percorso da file.
+// Paths built only from known ids: uninstall never reads a path from a file.
 export function uninstallScript(os, app) {
   check(app);
   if (os === 'Darwin') return `/usr/bin/pkill -x ${app.id} 2>/dev/null
@@ -149,17 +149,17 @@ nohup ./${app.id} >/dev/null 2>&1 &
 `;
 }
 
-// Una riga "id<TAB>versione" per ogni app presente, comprese quelle installate a mano.
+// One "id<TAB>version" row per present app, including manually installed ones.
 export function detectScript(os, apps) {
   if (os === 'Darwin') return `${apps.map((a) => `for p in "/Applications/${a.name}.app" "$HOME/Applications/${a.name}.app"; do
   if [ -d "$p" ]; then printf '${a.id}\\t%s\\n' "$(/usr/bin/defaults read "$p/Contents/Info" CFBundleShortVersionString 2>/dev/null)"; break; fi
 done`).join('\n')}\nexit 0\n`;
   if (os === 'Windows') return `[Console]::OutputEncoding = [Text.Encoding]::UTF8
 $R = Join-Path $env:LOCALAPPDATA 'Programs\\Bussola'
-${apps.map((a) => `if (Test-Path -LiteralPath "$R\\${a.id}\\${a.name}.exe") { "${a.id}\`t" + (Get-Content -LiteralPath "$R\\${a.id}\\.versione" -ErrorAction SilentlyContinue) }`).join('\n')}
+${apps.map((a) => `if (Test-Path -LiteralPath "$R\\${a.id}\\${a.name}.exe") { "${a.id}\`t" + (Get-Content -LiteralPath "$R\\${a.id}\\.version" -ErrorAction SilentlyContinue) }`).join('\n')}
 `;
   return `${apps.map((a) => `D="$HOME/.local/share/bussola/apps/${a.id}"
-if [ -x "$D/${a.id}" ]; then printf '${a.id}\\t%s\\n' "$(cat "$D/.versione" 2>/dev/null)"; fi`).join('\n')}\nexit 0\n`;
+if [ -x "$D/${a.id}" ]; then printf '${a.id}\\t%s\\n' "$(cat "$D/.version" 2>/dev/null)"; fi`).join('\n')}\nexit 0\n`;
 }
 
 export function parseDetected(text) {
@@ -176,12 +176,12 @@ export const catalogCommandScript = (os, url) => (os === 'Windows'
   : `curl -fsSL ${CURL} --connect-timeout 15 --max-time 30 ${qs(url)}\n`);
 
 export const ERRORS = {
-  DOWNLOAD: 'Download non riuscito: controlla la connessione',
-  HASH: 'Il file scaricato non corrisponde all\'impronta del catalogo: installazione annullata',
-  UNZIP: 'Il pacchetto non si può estrarre',
-  NOUNZIP: 'Serve il comando unzip oppure python3',
-  LAYOUT: 'Il pacchetto non ha la struttura prevista: installazione annullata',
-  SIGN: 'La firma locale dell\'app non è riuscita',
-  COPY: 'Non è stato possibile scrivere nella cartella di installazione',
+  DOWNLOAD: 'Download failed: check your connection',
+  HASH: 'The downloaded file doesn\'t match the catalog checksum: installation cancelled',
+  UNZIP: 'The package can\'t be extracted',
+  NOUNZIP: 'The unzip or python3 command is required',
+  LAYOUT: 'The package doesn\'t have the expected structure: installation cancelled',
+  SIGN: 'Local app signing failed',
+  COPY: 'The installation folder couldn\'t be written to',
 };
-export const STEPS = { download: 'Download', verify: 'Verifica dell\'impronta', extract: 'Estrazione', sign: 'Firma sul computer', install: 'Installazione' };
+export const STEPS = { download: 'Download', verify: 'Checksum verification', extract: 'Extraction', sign: 'Signing on this computer', install: 'Installation' };

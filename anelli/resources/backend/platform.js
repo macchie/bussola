@@ -1,6 +1,6 @@
-// Unico punto che lancia processi. I percorsi non passano mai dalla riga di comando:
-// finiscono, quotati, in uno script temporaneo, così non servono le regole di
-// escaping di cmd.exe.
+// The only place that launches processes. Paths never go through the command line:
+// end up, quoted, in a temporary script, so there's no need for the
+// cmd.exe escaping.
 import { quoteSh, quotePs, join } from './paths.js';
 
 export const OS = globalThis.NL_OS;
@@ -34,7 +34,7 @@ function listen() {
   });
 }
 
-// Lancia uno script e restituisce { id, exited }. exited si risolve con { code, out, err }.
+// Launches a script and returns { id, exited }. exited resolves with { code, out, err }.
 export async function spawn(body) {
   listen();
   const file = await tempFile(windows ? '.ps1' : '.sh');
@@ -72,7 +72,7 @@ export async function run(body) {
 
 export const kill = (id) => N().os.updateSpawnedProcess(id, 'exit').catch(() => {});
 
-// Il comando che scrive l'elenco di una cartella in outFile.
+// The command that writes a folder's listing to outFile.
 export function scanScript(root, outFile, errFile, scanner) {
   if (windows) {
     return `Add-Type -TypeDefinition @'\n${scanner}\n'@\n[AnelliScan]::Run(${q(root)}, ${q(outFile)}, ${q(errFile)})\n`;
@@ -82,10 +82,10 @@ export function scanScript(root, outFile, errFile, scanner) {
 
 export function removeScript(target) {
   if (windows) {
-    // rmdir non segue le junction e rimuove anche i file in sola lettura.
+    // rmdir doesn't follow junctions and removes read-only files too.
     return `$env:ANELLI_TARGET = ${q(target)}\n& cmd.exe /d /c 'rmdir /s /q "%ANELLI_TARGET%"'\nif (Test-Path -LiteralPath ${q(target)}) { exit 1 }\n`;
   }
-  // find non segue i link: sblocca solo le cartelle reali in sola lettura.
+  // find doesn't follow links: it only unlocks real read-only folders.
   return `rm -rf ${q(target)} 2>/dev/null || { find ${q(target)} -type d -exec chmod u+rwx {} + 2>/dev/null; rm -rf ${q(target)}; }\n[ ! -e ${q(target)} ]\n`;
 }
 

@@ -6,13 +6,13 @@ import { appOfEvent } from '../resources/core/attribute.js';
 import { fresh, keyOf, firstLook } from '../resources/core/sampler.js';
 
 const j = (o) => JSON.stringify({ __REALTIME_TIMESTAMP: '1730000000123456', ...o });
-test('Linux: priorità, messaggi binari e arresti', () => {
+test('Linux: priorities, binary messages and shutdowns', () => {
   const ev = parseJournal([
     j({ PRIORITY: '3', SYSLOG_IDENTIFIER: 'nginx', MESSAGE: 'bind failed', _EXE: '/usr/sbin/nginx' }),
     j({ PRIORITY: '4', _COMM: 'cron', MESSAGE: 'lento' }),
     j({ PRIORITY: '2', SYSLOG_IDENTIFIER: 'kernel', MESSAGE: [104, 105] }),
     j({ PRIORITY: '6', SYSLOG_IDENTIFIER: 'systemd-coredump', MESSAGE: 'Process 12 (foo) dumped core.' }),
-    j({ PRIORITY: '6', SYSLOG_IDENTIFIER: 'chatty', MESSAGE: 'ok' }), 'non json',
+    j({ PRIORITY: '6', SYSLOG_IDENTIFIER: 'chatty', MESSAGE: 'ok' }), 'not json',
   ]);
   assert.deepEqual(ev.map((e) => e.kind), ['error', 'warn', 'error', 'event']);
   assert.equal(ev[0].t, 1730000000123);
@@ -33,10 +33,10 @@ test('macOS: ndjson, fuso orario, tipi', () => {
   assert.equal(ev.length, 2);
   assert.equal(ev[1].level, 'critical');
   assert.equal(appOfEvent('Darwin', ev[0]), 'Slack');
-  assert.equal(appOfEvent('Darwin', ev[1]), 'Sistema macOS');
+  assert.equal(appOfEvent('Darwin', ev[1]), 'macOS system');
 });
 
-test('macOS: rapporti di crash e avvio', () => {
+test('macOS: crash reports and boot', () => {
   const ev = parseCrashFiles(['Safari-2026-11-04-123456.ips', 'Google Chrome_2026-11-04-090000_mac.crash', 'kernel-2026-11-03-101010.panic', 'x.txt', 'Retired']);
   assert.equal(ev.length, 3);
   assert.equal(ev[0].source, 'Safari');
@@ -46,35 +46,35 @@ test('macOS: rapporti di crash e avvio', () => {
   assert.deepEqual([all.length, all[0].t, all[0].kind], [1, 1730000000000, 'event']);
 });
 
-test('Windows: livelli e identificativi con il provider giusto', () => {
+test('Windows: levels and ids with the right provider', () => {
   const row = (o) => JSON.stringify({ t: 1000, l: 2, i: 7, p: 'Disk', m: 'x', ...o });
   const ev = parseWindows([row({}), row({ l: 3, i: 8 }), row({ l: 1, i: 41, p: 'Microsoft-Windows-Kernel-Power' }), row({ l: 4, i: 6005, p: 'EventLog', m: '' }),
     row({ l: 2, i: 1000, p: 'Application Error', m: 'chrome.exe' }), row({ l: 2, i: 41, p: 'AltraApp' }), row({ l: 4, i: 9 }), 'rumore'].join('\r\n'));
   assert.deepEqual(ev.map((e) => e.kind), ['error', 'warn', 'event', 'event', 'event', 'error']);
-  assert.equal(ev[3].source, 'Sistema');
+  assert.equal(ev[3].source, 'System');
   assert.equal(appOfEvent('Windows', ev[2]), 'Kernel-Power');
-  assert.equal(appOfEvent('Windows', ev[3]), 'Sistema Windows');
+  assert.equal(appOfEvent('Windows', ev[3]), 'Windows system');
 });
 
-test('messaggi uguali a meno dei dettagli diventano uno', () => {
+test('messages equal except for the details become one', () => {
   const a = patternOf('Failed to connect to 10.0.0.5:443 after 3 tries, id 0xdeadbeef');
   const b = patternOf('Failed to connect to 192.168.1.9:8080 after 12 tries, id 0x1f');
   assert.equal(a, b);
   assert.equal(patternOf('open /var/log/a.log: denied'), patternOf('open /home/me/b.txt: denied'));
   assert.equal(patternOf('550e8400-e29b-41d4-a716-446655440000 fine'), '# fine');
   assert.notEqual(patternOf('disk full'), patternOf('disk slow'));
-  assert.equal(patternOf('  '), '(messaggio vuoto)');
+  assert.equal(patternOf('  '), '(empty message)');
   assert.ok(patternOf('x'.repeat(500)).length <= 140);
 });
 
-test('nessun evento nuovo non è un guasto', () => {
+test('no new event is not a fault', () => {
   assert.equal(accessOf(''), 'ok');
   assert.equal(accessOf('-- No entries --'), 'ok');
   assert.equal(accessOf('No journal files were found.'), 'failed');
   assert.equal(accessOf('Hint: You are currently not seeing messages from other users and the system.'), 'partial');
 });
 
-test('registro assente, anche se journalctl non lo dice', () => {
+test('log absent, even if journalctl doesn\'t say so', () => {
   assert.equal(journalMissing('===JOURNAL\n===BOOTS\n'), true);
   assert.equal(journalMissing('===JOURNAL\n===BOOTS\n 0 abc Tue 2026-11-03 08:30:00 CET Wed 2026-11-04 22:00:00 CET\n'), false);
 });
@@ -83,7 +83,7 @@ test('letture successive: niente doppioni', () => {
   const seen = new Set();
   const e = (t, kind) => ({ t, kind, text: 'a' });
   assert.equal(fresh([e(5, 'error'), e(10, 'error'), e(20, 'event')], 7, seen).length, 2);
-  assert.equal(fresh([e(10, 'error'), e(20, 'event')], 10, seen).length, 0, 'l\'evento al confine e il riavvio già visto non si ricontano');
+  assert.equal(fresh([e(10, 'error'), e(20, 'event')], 10, seen).length, 0, 'the boundary event and the already-seen restart are not recounted');
   assert.ok(firstLook('Darwin', 1e10) > firstLook('Linux', 1e10));
 });
 

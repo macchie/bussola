@@ -1,50 +1,50 @@
 # Registro
 
-Raccoglie errori, arresti e riavvii dai log di sistema e li ordina per app, unendo i messaggi che si ripetono.
-Fa parte della suite con Anelli, Correnti, Battiti, Scorte, Sentinelle e Radici. App desktop per macOS, Windows
-e Linux costruita con Neutralinojs.
+Collects errors, shutdowns and restarts from the system logs and sorts them by app, merging messages that repeat.
+Part of the suite with Anelli, Correnti, Battiti, Scorte, Sentinelle and Radici. A desktop app for macOS, Windows
+and Linux built with Neutralinojs.
 
-## Installazione
+## Install
 
-| Sistema | Pacchetto | Note |
+| System | Package | Notes |
 | --- | --- | --- |
-| macOS 10.15+ | `Registro-macos.zip` | Estrai in Download, poi `bash ~/Downloads/Registro-macos/Installa\ Registro.command` |
-| Windows 10/11 x64 | `Registro-windows-x64.zip` | Serve WebView2, già presente su Windows 11 |
-| Linux x64 / arm64 | `Registro-linux-*.zip` | Serve WebKitGTK: `sudo apt install libwebkit2gtk-4.1-0` |
+| macOS 10.15+ | `Registro-macos.zip` | Unzip in Downloads, then `bash ~/Downloads/Registro-macos/Install\ Registro.command` |
+| Windows 10/11 x64 | `Registro-windows-x64.zip` | WebView2 required, already present on Windows 11 |
+| Linux x64 / arm64 | `Registro-linux-*.zip` | WebKitGTK required: `sudo apt install libwebkit2gtk-4.1-0` |
 
-Tieni `resources.neu` accanto all'eseguibile.
+Keep `resources.neu` next to the executable.
 
-## Come si usa
+## How to use
 
-- Le schede dividono gli eventi in Errori, Avvisi, Arresti e riavvii.
-- Clic su un'app per vedere i suoi messaggi, dal più frequente. Doppio clic su un messaggio per il testo completo.
-- Il grafico mostra errori e arresti sopra, avvisi sotto, sulla stessa scala.
+- The tabs split the events into Errors, Warnings, Shutdowns and restarts.
+- Click an app to see its messages, most frequent first. Double-click a message for the full text.
+- The chart shows errors and shutdowns on top, warnings below, on the same scale.
 
-I messaggi uguali a meno di numeri, indirizzi e percorsi contano come uno solo: un errore ripetuto 500 volte
-occupa una riga, con il suo conteggio.
+Messages equal except for numbers, addresses and paths count as a single one: an error repeated 500 times
+takes up one row, with its count.
 
-## Come funziona
+## How it works
 
-Ogni minuto l'app legge ciò che è successo dall'ultima lettura: `journalctl` su Linux, `log show`, i rapporti in
-`DiagnosticReports` e `kern.boottime` su macOS, `Get-WinEvent` su Windows. I log li conserva il sistema, quindi
-alla riapertura recupera anche quanto accaduto mentre era chiusa. Al primo avvio guarda indietro di 24 ore
-(3 ore su macOS, dove la lettura è lenta).
+Every minute the app reads what happened since the last read: `journalctl` on Linux, `log show`, the reports in
+`DiagnosticReports` and `kern.boottime` on macOS, `Get-WinEvent` on Windows. The system keeps the logs, so
+on reopening it also recovers what happened while it was closed. On first launch it looks back 24 hours
+(3 hours on macOS, where reading is slow).
 
-## Limiti
+## Limits
 
-- I log contengono spesso nomi di file e account. Registro ne tiene un esempio per messaggio su questo computer,
-  per sette giorni, e non invia nulla. Diagnostica permette di cancellare lo storico.
-- macOS distingue solo errori e guasti: la scheda Avvisi resta vuota.
-- macOS produce molti errori innocui: tanti errori non significano un problema.
-- Su Linux senza il gruppo `systemd-journal` si vede solo parte del registro; l'app lo segnala.
-- Su macOS i riavvii compaiono solo da quando l'app è in uso.
-- Una lettura è limitata a 20.000 eventi.
+- Logs often contain file and account names. Registro keeps one sample per message on this computer,
+  for seven days, and sends nothing. Diagnostics lets you clear the history.
+- macOS distinguishes only errors and faults: the Warnings tab stays empty.
+- macOS produces many harmless errors: lots of errors don't mean a problem.
+- On Linux, without the `systemd-journal` group you see only part of the log; the app flags it.
+- On macOS, restarts appear only from when the app is in use.
+- A single read is capped at 20,000 events.
 
-## Sviluppo
+## Develop
 
 ```bash
 npm install
 npm run setup
 npm test
-npm run build    # crea i pacchetti in dist/pacchetti
+npm run build    # builds the packages into dist/packages
 ```

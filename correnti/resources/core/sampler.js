@@ -1,4 +1,4 @@
-// Campiona la rete con esecuzioni brevi di nettop e conserva lo storico su disco.
+// Samples the network with short nettop runs and keeps the history on disk.
 import { OS, run, quote, NETTOP_COMMAND, PS_COMMAND, LINUX_COMMAND } from './platform.js';
 import { parseSample, parseSs, parseNetDev, parseLinuxPaths, sections, residual, DeltaTracker } from './nettop.js';
 import { parsePs, appOf, linuxAppOf, destinationOf, isLocal, UNATTRIBUTED } from './attribute.js';
@@ -62,7 +62,7 @@ export class Sampler {
     });
   }
 
-  // ss dà solo indirizzi: i nomi arrivano in sottofondo e valgono dal campione successivo.
+  // ss gives only addresses: the names arrive in the background and apply from the next sample.
   async resolve(rows) {
     if (this.resolving) return;
     const ips = [...new Set(rows.map((r) => r.remote.host))]
@@ -146,7 +146,7 @@ export class Sampler {
 
   setPaused(value) {
     this.paused = value;
-    // Il traffico durante la pausa non va attribuito al primo campione successivo.
+    // Traffic during the pause must not be attributed to the first following sample.
     if (!value) { this.tracker = new DeltaTracker(); this.device = null; }
   }
 

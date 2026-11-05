@@ -1,4 +1,4 @@
-// Tutto ciò che l'interfaccia chiede al sistema passa da qui.
+// Everything the interface asks the system goes through here.
 import { OS, windows, sep, spawn, run, kill, tempFile, scanScript, revealScript } from './platform.js';
 import { WINDOWS_SCANNER } from './windows-scan.js';
 import { listVolumes } from './volumes.js';
@@ -31,7 +31,7 @@ export async function init() {
   return info;
 }
 
-// La cartella di Safari è leggibile solo con l'Accesso completo al disco. Null fuori da macOS.
+// Safari's folder is readable only with Full Disk Access. Null outside macOS.
 export async function checkFullDiskAccess() {
   if (OS !== 'Darwin') return null;
   const res = await run('LC_ALL=C ls "$HOME/Library/Safari" 2>&1 >/dev/null\n');
@@ -39,13 +39,13 @@ export async function checkFullDiskAccess() {
 }
 export const openPrivacySettings = () => run("open 'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles'\n");
 
-// Legge l'elenco man mano che cresce e lo passa al worker come ArrayBuffer.
+// Reads the list as it grows and passes it to the worker as an ArrayBuffer.
 async function tail(file, send, finished) {
   let pos = 0;
   for (;;) {
     const ended = finished();
     let size = 0;
-    try { size = (await fs().getStats(file)).size; } catch { /* non ancora creato */ }
+    try { size = (await fs().getStats(file)).size; } catch { /* not created yet */ }
     while (pos < size) {
       const want = Math.min(CHUNK, size - pos);
       const buffer = await fs().readBinaryFile(file, { pos, size: want });
@@ -73,7 +73,7 @@ class Scan {
     this.seq = 0;
     this.worker = new Worker('/backend/scan-worker.js', { type: 'module' });
     this.worker.onmessage = (e) => this.onMessage(e.data);
-    this.worker.onerror = () => this.fail('Memoria esaurita o errore di analisi: prova una cartella più piccola');
+    this.worker.onerror = () => this.fail('Out of memory or scan error: try a smaller folder');
     this.worker.postMessage({
       type: 'config',
       config: { root, sep, windows, trashHome: OS === 'Darwin' ? macDataPath(trash.home) : trash.home },
@@ -93,11 +93,11 @@ class Scan {
       }, () => done);
       const res = await exited;
       if (this.state !== 'running') return;
-      if (windows && res.code !== 0) { this.fail(res.err.trim().split('\n')[0] || 'Scansione non riuscita'); return; }
+      if (windows && res.code !== 0) { this.fail(res.err.trim().split('\n')[0] || 'Scan failed'); return; }
       this.progress.denied = await countLines(this.err);
       this.worker.postMessage({ type: 'end' });
     } catch (err) {
-      this.fail(err.message || 'Scansione non riuscita');
+      this.fail(err.message || 'Scan failed');
     } finally {
       this.cleanup();
     }
@@ -133,7 +133,7 @@ class Scan {
   }
 
   call(cmd, args) {
-    if (this.state !== 'done') return Promise.reject(new Error('Scansione non pronta'));
+    if (this.state !== 'done') return Promise.reject(new Error('Scan not ready'));
     return new Promise((resolve, reject) => {
       const id = ++this.seq;
       this.pending.set(id, { resolve, reject });
@@ -141,7 +141,7 @@ class Scan {
     });
   }
 
-  // Rianalizza una cartella con lo stesso strumento e sostituisce il ramo.
+  // Re-scans a folder with the same tool and replaces the branch.
   async refresh(target) {
     const at = await this.call('nearest', { target });
     if (!at) return null;
@@ -179,7 +179,7 @@ class Scan {
 
 function scanOf(id) {
   const s = scans.get(id);
-  if (!s) throw new Error('Analisi scaduta: avviane una nuova');
+  if (!s) throw new Error('Scan expired: start a new one');
   return s;
 }
 function dropScan(scan) {
@@ -199,8 +199,8 @@ export const listTrash = () => trash.list();
 export async function startScan(raw) {
   const root = stripTrailing(String(raw || ''), sep);
   let st;
-  try { st = await fs().getStats(root); } catch { throw new Error('Cartella non trovata'); }
-  if (!st.isDirectory) throw new Error('Il percorso indicato non è una cartella');
+  try { st = await fs().getStats(root); } catch { throw new Error('Folder not found'); }
+  if (!st.isDirectory) throw new Error('That path isn\'t a folder');
   for (const s of scans.values()) if (s.root === root) dropScan(s);
   while (scans.size >= MAX_SCANS) dropScan(scans.values().next().value);
   const scan = new Scan(root, await listVolumes());
@@ -213,7 +213,7 @@ export async function tree(id, path) {
   const scan = scanOf(id);
   const target = path || scan.root;
   const node = await scan.call('tree', { target, depth: 5 });
-  if (!node) throw new Error('Elemento non più presente');
+  if (!node) throw new Error('Item no longer exists');
   const hidden = target === scan.root ? await scan.hiddenSize() : 0;
   return { path: target, sep, root: scan.root, hidden, denied: scan.progress.denied, node };
 }
@@ -230,14 +230,14 @@ export async function moveToTrash(id, paths) {
   const moved = [];
   const failed = [];
   for (const target of paths) {
-    const reason = target === scan.root ? 'È la cartella analizzata'
-      : !under(target, scan.root) ? 'Fuori dalla cartella analizzata' : refuse(target, ctx);
+    const reason = target === scan.root ? 'It\'s the scanned folder'
+      : !under(target, scan.root) ? 'Outside the scanned folder' : refuse(target, ctx);
     if (reason) { failed.push({ path: target, error: reason }); continue; }
     try {
       const meta = (await scan.call('node', { target })) || { size: 0, files: 1, dir: false };
       const item = await trash.move(target, meta, vols).catch((err) => {
-        if (OS === 'Darwin' && err.message === 'Permessi insufficienti') {
-          throw new Error(info.fullDiskAccess ? 'macOS protegge questo elemento anche con l\'Accesso completo al disco' : 'Serve l\'Accesso completo al disco');
+        if (OS === 'Darwin' && err.message === 'Insufficient permissions') {
+          throw new Error(info.fullDiskAccess ? 'macOS protects this item even with Full Disk Access' : 'Full Disk Access is required');
         }
         throw err;
       });
@@ -283,7 +283,7 @@ export async function purgeItems(ids) {
 
 export async function reveal(path) {
   const res = await run(revealScript(path, dirname(path, sep)));
-  if (res.code !== 0) throw new Error('Nessun gestore file disponibile su questo sistema');
+  if (res.code !== 0) throw new Error('No file manager available on this system');
 }
 
 export async function listFolders(path) {
@@ -309,15 +309,15 @@ const TEXT_LIMIT = 128 * 1024;
 // { kind: 'media', url, type } | { kind: 'text', text, truncated } | { kind: 'none', reason }
 export async function preview(path, name) {
   const st = await fs().getStats(path);
-  if (!st.isFile) return { kind: 'none', reason: 'Nessuna anteprima per questo elemento.' };
+  if (!st.isFile) return { kind: 'none', reason: 'No preview for this item.' };
   const type = MIME[name.split('.').pop().toLowerCase()];
   if (type) {
-    if (st.size > MEDIA_LIMIT) return { kind: 'none', reason: 'File troppo grande per l\'anteprima: aprilo con "Mostra nella cartella".' };
+    if (st.size > MEDIA_LIMIT) return { kind: 'none', reason: 'File troppo grande per l\'anteprima: aprilo con "Show in folder".' };
     const buffer = await fs().readBinaryFile(path);
     return { kind: 'media', type, url: URL.createObjectURL(new Blob([buffer], { type })) };
   }
   const head = await fs().readBinaryFile(path, { pos: 0, size: Math.min(st.size, TEXT_LIMIT) });
   const bytes = new Uint8Array(head);
-  if (bytes.includes(0)) return { kind: 'none', reason: 'Nessuna anteprima per questo tipo di file.' };
+  if (bytes.includes(0)) return { kind: 'none', reason: 'No preview for this file type.' };
   return { kind: 'text', text: new TextDecoder().decode(bytes), truncated: st.size > TEXT_LIMIT };
 }

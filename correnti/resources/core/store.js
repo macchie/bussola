@@ -1,11 +1,11 @@
-// Storico a minuti più il dettaglio fine degli ultimi campioni. Nessun accesso al sistema.
+// Per-minute history plus the fine detail of the latest samples. No system access.
 export const SEP = '\u001f';
 export const ROOT = 'rete';
 export const PERIODS = {
-  live: { label: 'Adesso', phrase: 'nell\'ultimo minuto', span: 60000, bin: 3000 },
-  hour: { label: 'Ultima ora', phrase: 'nell\'ultima ora', span: 3600000, bin: 60000 },
-  day: { label: 'Oggi', phrase: 'oggi', bin: 900000 },
-  week: { label: '7 giorni', phrase: 'negli ultimi 7 giorni', span: 604800000, bin: 10800000 },
+  live: { label: 'Now', phrase: 'in the last minute', span: 60000, bin: 3000 },
+  hour: { label: 'Last hour', phrase: 'in the last hour', span: 3600000, bin: 60000 },
+  day: { label: 'Today', phrase: 'today', bin: 900000 },
+  week: { label: '7 days', phrase: 'in the last 7 days', span: 604800000, bin: 10800000 },
 };
 const MINUTE = 60000;
 const FINE_KEEP = 40;
@@ -37,7 +37,7 @@ export class Store {
     return sample;
   }
 
-  // Minuti conclusi e non ancora salvati.
+  // Minutes that are finished and not yet saved.
   drain(now, all = false) {
     const current = Math.floor(now / MINUTE);
     const lines = [];
@@ -115,9 +115,9 @@ const sortKids = (n, metric) => {
   n.s = n.c.reduce((sum, c) => sum + c.s, 0);
 };
 
-// app > processo > destinazione. Un'app con un solo processo omonimo salta il livello intermedio.
+// app > process > destination. An app with a single same-named process skips the middle level.
 export function buildTree(totals, metric) {
-  const root = { n: 'Tutto il traffico', d: 1, in: 0, out: 0, c: [] };
+  const root = { n: 'All traffic', d: 1, in: 0, out: 0, c: [] };
   const apps = new Map();
   for (const [key, [i, o]] of totals) {
     const [app, process, dest] = key.split(SEP);
@@ -140,7 +140,7 @@ export function buildTree(totals, metric) {
       sortKids(p, metric);
       if (p.c.length > MAX_DESTS) {
         const rest = p.c.splice(MAX_DESTS);
-        p.c.push({ n: `Altre ${rest.length} destinazioni`, kind: 'dest', in: rest.reduce((s, r) => s + r.in, 0), out: rest.reduce((s, r) => s + r.out, 0), s: rest.reduce((s, r) => s + r.s, 0) });
+        p.c.push({ n: `${rest.length} other destinations`, kind: 'dest', in: rest.reduce((s, r) => s + r.in, 0), out: rest.reduce((s, r) => s + r.out, 0), s: rest.reduce((s, r) => s + r.s, 0) });
       }
     }
     delete a.procs;

@@ -1,10 +1,10 @@
-// Da processo ad app e da host a destinazione leggibile.
-export const SYSTEM_APP = 'Sistema macOS';
-export const LINUX_SYSTEM = 'Sistema Linux';
-export const OTHER_USERS = 'Altri utenti o sistema';
-export const UNATTRIBUTED = 'Traffico non attribuito';
-export const LOCAL_DEST = 'Rete locale';
-export const UNKNOWN_DEST = 'Non connesso';
+// From process to app and from host to a readable destination.
+export const SYSTEM_APP = 'macOS system';
+export const LINUX_SYSTEM = 'Linux system';
+export const OTHER_USERS = 'Other users or system';
+export const UNATTRIBUTED = 'Unattributed traffic';
+export const LOCAL_DEST = 'Local network';
+export const UNKNOWN_DEST = 'Not connected';
 
 export function parsePs(text) {
   const map = new Map();

@@ -1,6 +1,6 @@
-import { t as tt, tx } from './comune/i18n.js';
-// Mappa radiale su canvas: un anello per livello, a partire dalle ore 12, i più
-// pesanti per primi. I segmenti troppo sottili confluiscono nel settore "altri".
+import { t as tt, tx } from './shared/i18n.js';
+// Radial canvas map: one ring per level, starting at 12 o'clock, the
+// heaviest first. Segments too thin merge into the "others" sector.
 const TAU = Math.PI * 2;
 const RINGS = 5;
 const MIN_SPAN = 0.006;
@@ -95,14 +95,14 @@ export class RadialMap {
       if (rest > 0.0005) {
         arcs.push({
           a0: a, a1: Math.min(a + rest, a1), ring, color: this.other, kind: 'other', parent: dir,
-          node: { n: tt('Elementi più piccoli'), s: rest / scale, count: tinyCount + (n.o ? n.o.count : 0) },
+          node: { n: tt('Smaller items'), s: rest / scale, count: tinyCount + (n.o ? n.o.count : 0) },
         });
       }
       return a + rest;
     };
     const end = walk(node, view.path, 0, TAU, 0, 0);
     if (view.hidden > 0) {
-      arcs.push({ a0: end, a1: TAU, ring: 0, kind: 'hidden', color: this.other, node: { n: tt('Spazio non attribuito'), s: view.hidden } });
+      arcs.push({ a0: end, a1: TAU, ring: 0, kind: 'hidden', color: this.other, node: { n: tt('Unattributed space'), s: view.hidden } });
     }
     return arcs;
   }

@@ -1,73 +1,73 @@
 # Correnti
 
-Mostra quali app usano la rete, verso dove e quanto, con la stessa mappa ad anelli di Anelli: dal centro
-app, processo e destinazione, le più attive per prime. App desktop per macOS e Linux costruita con Neutralinojs.
+Shows which apps use the network, where to and how much, with the same ring map as Anelli: from the center
+app, process and destination, the most active first. A desktop app for macOS and Linux built with Neutralinojs.
 
-## Installazione
+## Install
 
 ### Linux
 
-Estrai `Correnti-linux-x64.zip` (o `arm64`) e avvia `correnti`. Servono WebKitGTK e `ss`, di solito già presente:
+Unzip `Correnti-linux-x64.zip` (or `arm64`) and run `correnti`. WebKitGTK and `ss` are required, usually already present:
 
 ```bash
 sudo apt install libwebkit2gtk-4.1-0 iproute2
 ```
 
-Non serve root.
+No root needed.
 
 ### macOS
 
-Estrai `Correnti-macos.zip` in Download, poi in Terminale:
+Unzip `Correnti-macos.zip` in Downloads, then in Terminal:
 
 ```bash
-bash ~/Downloads/Correnti-macos/Installa\ Correnti.command
+bash ~/Downloads/Correnti-macos/Install\ Correnti.command
 ```
 
-L'installer firma l'app sul tuo Mac con lo strumento di Apple e la copia in Applicazioni. Non servono
-Accesso completo al disco né amministratore.
+The installer signs the app on your Mac with Apple's tool and copies it to Applications. Neither Full Disk
+Access nor an administrator is needed.
 
-## Come si usa
+## How to use
 
-- Scegli il periodo: Adesso, Ultima ora, Oggi, 7 giorni.
-- Scegli la direzione: Totale, Ricevuti, Inviati.
-- Clic su un'app per entrare, clic al centro per risalire. Il grafico in basso mostra l'andamento: ricevuti
-  sopra, inviati sotto, sulla stessa scala.
-- Pausa ferma il rilevamento. Diagnostica mostra cosa ha restituito macOS e cancella lo storico.
+- Pick the period: Now, Last hour, Today, 7 days.
+- Pick the direction: Total, Received, Sent.
+- Click an app to enter, click the center to go back up. The chart at the bottom shows the trend: received
+  on top, sent below, on the same scale.
+- Pause stops the sampling. Diagnostics shows what macOS returned and clears the history.
 
-## Come funziona
+## How it works
 
-Ogni 3 secondi l'app lancia una breve esecuzione di `/usr/bin/nettop -L 1`, legge i byte di ogni
-connessione e ricava il traffico dalla differenza col campione precedente. `ps` collega ogni processo alla
-sua app, così gli Helper di Chrome finiscono sotto Chrome.
+Every 3 seconds the app launches a short run of `/usr/bin/nettop -L 1`, reads the bytes of each
+connection and derives the traffic from the delta against the previous sample. `ps` links each process to
+its app, so Chrome Helpers end up under Chrome.
 
-Lo storico resta sul computer, sette giorni, in `~/Library/Application Support/Correnti` su macOS e
-`~/.local/share/Correnti` su Linux.
+The history stays on the computer, seven days, in `~/Library/Application Support/Correnti` on macOS and
+`~/.local/share/Correnti` on Linux.
 
-## Come funziona su Linux
+## How it works on Linux
 
-Ogni 3 secondi `ss -tinp` dà i byte di ogni connessione TCP e `/proc/net/dev` i byte reali delle schede di rete.
-La differenza compare come **Traffico non attribuito**, così il totale resta onesto. Gli indirizzi diventano
-nomi con `getent hosts`, in sottofondo.
+Every 3 seconds `ss -tinp` gives the bytes of each TCP connection and `/proc/net/dev` the real bytes of the network cards.
+The difference appears as **Unattributed traffic**, so the total stays honest. Addresses become
+names via `getent hosts`, in the background.
 
-- Il traffico UDP non è attribuibile alle app senza root. Include QUIC, quindi buona parte di YouTube e dei
-  siti Google nei browser Chromium finisce in Traffico non attribuito.
-- Senza root i processi di altri utenti compaiono come "Altri utenti o sistema".
-- Reti VPN e container sono escluse dal totale delle schede per non contare due volte.
+- UDP traffic isn't attributable to apps without root. It includes QUIC, so much of YouTube and of
+  Google sites in Chromium browsers ends up in Unattributed traffic.
+- Without root, other users' processes appear as "Other users or system".
+- VPN and container networks are excluded from the cards' total to avoid double counting.
 
-## Limiti
+## Limits
 
-- Il traffico viene registrato solo mentre l'app è aperta.
-- Una connessione aperta e chiusa tra due campioni può sfuggire.
-- Le destinazioni arrivano dalla risoluzione inversa dei nomi: molte risultano come il fornitore
-  dell'infrastruttura (Google, Akamai, AWS) o come semplice IP.
-- Il contenuto del traffico non è visibile. VPN e proxy possono raggruppare il traffico sotto la propria app.
-- Il blocco delle app non è incluso.
+- Traffic is recorded only while the app is open.
+- A connection opened and closed between two samples may slip through.
+- Destinations come from reverse name resolution: many show up as the infrastructure
+  provider (Google, Akamai, AWS) or as a plain IP.
+- The traffic content isn't visible. VPNs and proxies may group traffic under their own app.
+- App blocking isn't included.
 
-## Sviluppo
+## Develop
 
 ```bash
 npm install
 npm run setup
 npm test
-npm run build    # crea dist/pacchetti/Correnti-macos.zip
+npm run build    # builds dist/packages/Correnti-macos.zip
 ```

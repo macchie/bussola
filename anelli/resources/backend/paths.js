@@ -1,5 +1,5 @@
-// Operazioni sui percorsi, senza accesso al sistema: identiche su ogni piattaforma
-// una volta noto il separatore.
+// Path operations, with no system access: identical on every platform
+// once the separator is known.
 export function dirname(p, sep) {
   const i = p.lastIndexOf(sep);
   if (i < 0) return p;
@@ -19,7 +19,7 @@ export function inside(child, parent, sep, fold = false) {
   return c === p || c.startsWith(p.endsWith(sep) ? p : p + sep);
 }
 export function ancestors(p, sep) {
-  // Dalla radice alla cartella che contiene p.
+  // From the root to the folder that contains p.
   const out = [];
   let cur = dirname(p, sep);
   for (;;) {
@@ -29,8 +29,8 @@ export function ancestors(p, sep) {
     cur = up;
   }
 }
-// Su macOS i dati stanno in /System/Volumes/Data, ma il sistema li mostra anche da
-// /Users, /Applications e così via: sono lo stesso posto con due nomi.
+// On macOS the data lives in /System/Volumes/Data, but the system also shows it from
+// /Users, /Applications and so on: they are the same place under two names.
 export const MAC_DATA = '/System/Volumes/Data';
 export const macPublicPath = (p) => (p.startsWith(`${MAC_DATA}/`) ? p.slice(MAC_DATA.length) : p);
 export const macDataPath = (p) => (p === MAC_DATA || p.startsWith(`${MAC_DATA}/`) || p.startsWith('/Volumes/') ? p : MAC_DATA + p);

@@ -1,5 +1,5 @@
-import { t as tt, tx, locale } from './comune/i18n.js';
-import { salvaTema, primaDiRicaricare } from './comune/impostazioni.js';
+import { t as tt, tx, locale } from './shared/i18n.js';
+import { saveTheme, beforeReload } from './shared/settings.js';
 import { RadialMap } from './map.js';
 import { Sampler, PERIODS } from './core/sampler.js';
 import { SEP, ROOT } from './core/store.js';
@@ -25,15 +25,15 @@ function h(tag, attrs, ...kids) {
 const dec = new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 });
 const num = new Intl.NumberFormat(locale());
 function size(b) {
-  if (!b) return tt('0 byte');
-  const units = [tt('byte'), tt('kB'), tt('MB'), tt('GB'), tt('TB')];
+  if (!b) return tt('0 bytes');
+  const units = [tt('bytes'), tt('kB'), tt('MB'), tt('GB'), tt('TB')];
   const i = Math.min(units.length - 1, Math.floor(Math.log(b) / Math.log(1000)));
   return `${i === 0 ? Math.round(b) : dec.format(b / 1000 ** i)} ${units[i]}`;
 }
 const KINDS = {
-  error: { tab: tt('Errori'), one: tt('errore'), many: tt('errori'), empty: tt('Nessun errore in questo periodo.') },
-  warn: { tab: tt('Avvisi'), one: tt('avviso'), many: tt('avvisi'), empty: tt('Nessun avviso in questo periodo.') },
-  event: { tab: tt('Arresti e riavvii'), one: tt('arresto o riavvio'), many: tt('arresti e riavvii'), empty: tt('Nessun arresto o riavvio in questo periodo.') },
+  error: { tab: tt('Errors'), one: tt('error'), many: tt('errors'), empty: tt('No errors in this period.') },
+  warn: { tab: tt('Warnings'), one: tt('warning'), many: tt('warnings'), empty: tt('No warnings in this period.') },
+  event: { tab: tt('Shutdowns and restarts'), one: tt('shutdown or restart'), many: tt('shutdowns and restarts'), empty: tt('No shutdowns or restarts in this period.') },
 };
 const label = (n, kind = state.metric) => `${num.format(n)} ${n === 1 ? KINDS[kind].one : KINDS[kind].many}`;
 function toast(text) {
@@ -43,7 +43,7 @@ function toast(text) {
 }
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-/* Tema */
+/* Theme */
 const theme = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 const paintThemeIcon = () => {
   const t = document.createElement('template');
@@ -56,7 +56,7 @@ paintThemeIcon();
 $('theme').onclick = () => {
   const next = theme() === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
-  salvaTema(next);
+  saveTheme(next);
   window.dispatchEvent(new Event('tema'));
 };
 window.addEventListener('tema', () => {
@@ -97,11 +97,11 @@ function refresh(navigated = false) {
   const empty = !state.tree.c.length;
   $('stageEmpty').hidden = !empty;
   $('center').hidden = empty;
-  $('stageEmpty').textContent = tx(state.sampler.paused ? tt('Rilevamento in pausa.')
-    : state.sampler.diag.samples < 1 ? tt('Lettura del registro in corso…') : KINDS[state.metric].empty);
+  $('stageEmpty').textContent = tx(state.sampler.paused ? tt('Monitoring paused.')
+    : state.sampler.diag.samples < 1 ? tt('Reading the log…') : KINDS[state.metric].empty);
   const d = state.sampler.diag;
-  const note = state.metric === 'warn' && NL_OS === 'Darwin' ? tt('macOS distingue solo errori e guasti: gli avvisi non vengono letti.') : state.sampler.diag.truncated ? tt('Troppi eventi in una lettura: i conteggi sono parziali.')
-    : state.sampler.diag.access === 'partial' ? tt('Il sistema mostra solo parte del registro a questo utente.') : '';
+  const note = state.metric === 'warn' && NL_OS === 'Darwin' ? tt('macOS only distinguishes errors and faults: warnings aren\'t read.') : state.sampler.diag.truncated ? tt('Too many events in one reading: the counts are partial.')
+    : state.sampler.diag.access === 'partial' ? tt('The system only shows this user part of the log.') : '';
   $('notice').textContent = tx(note);
   $('alert').hidden = d.access !== 'failed';
 }
@@ -111,18 +111,18 @@ function go(names) {
   refresh(true);
 }
 function renderCrumbs() {
-  const parts = [h('button', { onclick: () => go([]) }, tt('Tutto il registro'))];
+  const parts = [h('button', { onclick: () => go([]) }, tt('Whole log'))];
   state.path.forEach((name, i) => parts.push(h('i', null, '/'), h('button', { onclick: () => go(state.path.slice(0, i + 1)) }, name)));
   $('crumbs').replaceChildren(...parts);
 }
 function renderCenter(arc) {
-  const node = arc ? (arc.kind === 'other' ? { n: tt('Elementi minori'), s: arc.node.s, kind: 'other' } : arc.node) : current();
+  const node = arc ? (arc.kind === 'other' ? { n: tt('Smaller items'), s: arc.node.s, kind: 'other' } : arc.node) : current();
   $('cName').textContent = tx(node.n);
   $('cSize').textContent = tx(num.format(Math.round(node.s)));
   $('cSplit').textContent = tx(KINDS[state.metric][Math.round(node.s) === 1 ? 'one' : 'many']);
   $('center').classList.toggle('up', state.path.length > 0);
 }
-const metaOf = (n) => (n.kind === 'item' ? (n.last ? tt("Ultimo: {0}", when(n.last)) : '') : label(n.s));
+const metaOf = (n) => (n.kind === 'item' ? (n.last ? tt("Last: {0}", when(n.last)) : '') : label(n.s));
 const when = (t) => new Date(t).toLocaleString(locale(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 const nameOf = (n) => n.n;
 function renderRows(node) {
@@ -147,7 +147,7 @@ function renderRows(node) {
   });
   const box = $('rows');
   const top = box.scrollTop;
-  box.replaceChildren(...(rows.length ? rows : [h('div', { class: 'empty' }, state.filter ? tt('Nessun elemento con questo nome.') : KINDS[state.metric].empty)]));
+  box.replaceChildren(...(rows.length ? rows : [h('div', { class: 'empty' }, state.filter ? tt('No items with this name.') : KINDS[state.metric].empty)]));
   box.scrollTop = top;
   $('paneTitle').textContent = tx(`${label(Math.round(node.s))} ${tx(PERIODS[state.period].phrase)}`);
 }
@@ -162,22 +162,22 @@ function renderActions() {
   if (!n) { box.replaceChildren(); return; }
   const item = n.kind === 'item';
   box.replaceChildren(
-    n.d ? h('button', { class: 'quiet', onclick: () => go([...state.path, n.n]) }, tt('Apri')) : '',
-    item ? h('button', { class: 'quiet', onclick: () => openEvent(n) }, tt('Dettagli')) : '',
-    h('button', { class: 'quiet', onclick: async () => { await Neutralino.clipboard.writeText(n.sample || n.n); toast(tt('Copiato')); } }, tt('Copia')),
+    n.d ? h('button', { class: 'quiet', onclick: () => go([...state.path, n.n]) }, tt('Open')) : '',
+    item ? h('button', { class: 'quiet', onclick: () => openEvent(n) }, tt('Details')) : '',
+    h('button', { class: 'quiet', onclick: async () => { await Neutralino.clipboard.writeText(n.sample || n.n); toast(tt('Copied')); } }, tt('Copy')),
   );
 }
 function openEvent(n) {
   dialog.replaceChildren(h('div', { class: 'dlg' },
-    h('header', null, h('h2', null, state.path[0] || tt('Evento')), h('p', null, tt(n.s === 1 ? '{0} volta {1}' : '{0} volte {1}', num.format(n.s), PERIODS[state.period].phrase))),
+    h('header', null, h('h2', null, state.path[0] || tt('Event')), h('p', null, tt(n.s === 1 ? '{0} time {1}' : '{0} times {1}', num.format(n.s), PERIODS[state.period].phrase))),
     h('div', { class: 'body' },
       h('dl', null,
-        n.first ? h('dt', null, tt('Prima volta')) : '', n.first ? h('dd', null, when(n.first)) : '',
-        n.last ? h('dt', null, tt('Ultima volta')) : '', n.last ? h('dd', null, when(n.last)) : ''),
+        n.first ? h('dt', null, tt('First time')) : '', n.first ? h('dd', null, when(n.first)) : '',
+        n.last ? h('dt', null, tt('Last time')) : '', n.last ? h('dd', null, when(n.last)) : ''),
       h('pre', { style: 'white-space:pre-wrap' }, n.sample || n.n)),
     h('footer', null, h('span'), h('div', null,
-      h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(n.sample || n.n); toast(tt('Copiato')); } }, tt('Copia messaggio')),
-      h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Chiudi'))))));
+      h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(n.sample || n.n); toast(tt('Copied')); } }, tt('Copy message')),
+      h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Close'))))));
   if (!dialog.open) dialog.showModal();
 }
 function renderRates() {
@@ -186,7 +186,7 @@ function renderRates() {
   $('memNow').textContent = tx(num.format(t.warns));
 }
 
-/* Grafico: errori e arresti sopra, avvisi sotto, stessa scala */
+/* Chart: errors and shutdowns on top, warnings below, same scale */
 function drawChart() {
   const canvas = $('chart');
   if (!canvas) return;
@@ -240,7 +240,7 @@ function drawChart() {
     ctx.fillText(tx(end), rect.width - ctx.measureText(end).width, rect.height - 3);
   }
   state.chartGeom = { leftW, step };
-  canvas.setAttribute('aria-label', tx(tt('Andamento di errori e avvisi')));
+  canvas.setAttribute('aria-label', tx(tt('Errors and warnings trend')));
 }
 const binLabel = (t) => new Intl.DateTimeFormat(locale(), state.period === 'week' ? { weekday: 'short', hour: '2-digit', minute: '2-digit' }
   : state.period === 'live' ? { hour: '2-digit', minute: '2-digit', second: '2-digit' } : { hour: '2-digit', minute: '2-digit' }).format(t);
@@ -256,7 +256,7 @@ function chartHover(e) {
   state.hoverBin = i;
   drawChart();
   tip.hidden = false;
-  tip.replaceChildren(h('b', null, binLabel(b.t)), b.w ? tt("Errori {0}   Avvisi {1}", num.format(b.cpu), num.format(b.mem)) : tt('Nessun dato'));
+  tip.replaceChildren(h('b', null, binLabel(b.t)), b.w ? tt("Errors {0}   Warnings {1}", num.format(b.cpu), num.format(b.mem)) : tt('No data'));
   const w = tip.offsetWidth;
   tip.style.left = `${Math.max(0, Math.min(canvas.clientWidth - w, x + 12))}px`;
 }
@@ -272,7 +272,7 @@ function build() {
       refresh();
     },
   }, p.label)));
-  const metric = h('div', { class: 'seg', role: 'group', 'aria-label': tt('Misura') }, Object.entries(KINDS).map(([id, { tab }]) => h('button', {
+  const metric = h('div', { class: 'seg', role: 'group', 'aria-label': tt('Measure') }, Object.entries(KINDS).map(([id, { tab }]) => h('button', {
     'aria-pressed': id === 'error' ? 'true' : 'false',
     onclick: (e) => {
       state.metric = id;
@@ -282,22 +282,22 @@ function build() {
       refresh(true);
     },
   }, tab)));
-  const canvas = h('canvas', { role: 'img', 'aria-label': tt('Mappa degli eventi per app. Lo stesso contenuto è nell\'elenco.') });
+  const canvas = h('canvas', { role: 'img', 'aria-label': tt('Events map by app. The same content is in the list.') });
   const center = h('button', { class: 'center', id: 'center', onclick: () => { if (state.path.length) go(state.path.slice(0, -1)); } },
     h('span', { class: 'c-name', id: 'cName' }), h('span', { class: 'c-size', id: 'cSize' }), h('span', { class: 'c-split', id: 'cSplit' }));
   view.replaceChildren(h('div', { class: 'app' },
-    h('div', { class: 'alert', id: 'alert', hidden: true }, h('span', null, tt('Il registro di sistema non si può leggere: apri la diagnostica per vedere il motivo.')),
-      h('button', { class: 'quiet', onclick: openDiag }, tt('Apri diagnostica'))),
+    h('div', { class: 'alert', id: 'alert', hidden: true }, h('span', null, tt('The system log can\'t be read: open diagnostics to see why.')),
+      h('button', { class: 'quiet', onclick: openDiag }, tt('Open diagnostics'))),
     h('aside', { class: 'pane' },
       h('div', { class: 'pane-head' }, h('strong', { id: 'paneTitle' }), metric),
-      h('input', { class: 'search', type: 'search', placeholder: tt('Filtra per nome'), 'aria-label': tt('Filtra per nome'), oninput: (e) => { state.filter = e.target.value.toLowerCase(); renderRows(current()); } }),
+      h('input', { class: 'search', type: 'search', placeholder: tt('Filter by name'), 'aria-label': tt('Filter by name'), oninput: (e) => { state.filter = e.target.value.toLowerCase(); renderRows(current()); } }),
       h('div', { class: 'rows', id: 'rows' }),
       h('div', { class: 'actions', id: 'actions', hidden: true })),
     h('div', { class: 'stage' }, canvas, center, h('div', { class: 'empty', id: 'stageEmpty', hidden: true }), h('div', { class: 'notice', id: 'notice' })),
-    h('section', { class: 'flow', 'aria-label': tt('Andamento') },
+    h('section', { class: 'flow', 'aria-label': tt('Trend') },
       h('div', { class: 'rates' },
-        h('div', { class: 'rate' }, h('i', { style: 'background:var(--cpu)' }), h('strong', { id: 'cpuNow' }, '—'), h('span', null, tt('Errori nell\'ultima ora'))),
-        h('div', { class: 'rate' }, h('i', { style: 'background:var(--ram)' }), h('strong', { id: 'memNow' }, '—'), h('span', null, tt('Avvisi nell\'ultima ora')))),
+        h('div', { class: 'rate' }, h('i', { style: 'background:var(--cpu)' }), h('strong', { id: 'cpuNow' }, '—'), h('span', null, tt('Errors in the last hour'))),
+        h('div', { class: 'rate' }, h('i', { style: 'background:var(--ram)' }), h('strong', { id: 'memNow' }, '—'), h('span', null, tt('Warnings in the last hour')))),
       h('div', { class: 'chart', onmousemove: chartHover, onmouseleave: () => { $('tip').hidden = true; state.hoverBin = undefined; drawChart(); } },
         h('canvas', { id: 'chart', role: 'img' }), h('div', { class: 'tip', id: 'tip', hidden: true })))));
   state.map = new RadialMap(canvas, {
@@ -323,33 +323,33 @@ function openDiag() {
   const d = state.sampler.diag;
   const report = JSON.stringify({ ...d, raw: undefined, os: NL_OS, version: NL_APPVERSION }, null, 1) + '\n\n' + d.raw;
   dialog.replaceChildren(h('div', { class: 'dlg' },
-    h('header', null, h('h2', null, tt('Diagnostica')), h('p', null, tt('Quello che il sistema ha restituito nell\'ultima lettura. I messaggi possono contenere nomi di file o account: restano su questo computer e non vengono inviati a nessuno.'))),
+    h('header', null, h('h2', null, tt('Diagnostics')), h('p', null, tt('What the system returned in the latest reading. Messages may contain file or account names: they stay on this computer and are never sent to anyone.'))),
     h('div', { class: 'body' },
       h('dl', null,
-        h('dt', null, tt('Campioni letti')), h('dd', null, num.format(d.samples)),
-        h('dt', null, tt('Eventi nell\'ultima lettura')), h('dd', null, num.format(d.processes)),
-        h('dt', null, tt('Codice di uscita')), h('dd', null, String(d.exitCode)),
-        d.error ? h('dt', null, tt('Messaggio')) : '', d.error ? h('dd', null, d.error) : ''),
-      h('pre', null, d.raw || tt('Nessun dato ancora.'))),
+        h('dt', null, tt('Samples read')), h('dd', null, num.format(d.samples)),
+        h('dt', null, tt('Events in the latest reading')), h('dd', null, num.format(d.processes)),
+        h('dt', null, tt('Exit code')), h('dd', null, String(d.exitCode)),
+        d.error ? h('dt', null, tt('Message')) : '', d.error ? h('dd', null, d.error) : ''),
+      h('pre', null, d.raw || tt('No data yet.'))),
     h('footer', null,
-      h('button', { class: 'danger', onclick: confirmClear }, tt('Cancella storico')),
+      h('button', { class: 'danger', onclick: confirmClear }, tt('Clear history')),
       h('div', null,
-        h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(report); toast(tt('Dati copiati')); } }, tt('Copia dati')),
-        h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Chiudi'))))));
+        h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(report); toast(tt('Data copied')); } }, tt('Copy data')),
+        h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Close'))))));
   if (!dialog.open) dialog.showModal();
 }
 function confirmClear() {
   dialog.replaceChildren(h('div', { class: 'dlg' },
-    h('header', null, h('h2', null, tt('Cancellare lo storico?')), h('p', null, tt('Elimina i dati raccolti finora su questo computer. L\'azione non si può annullare.'))),
+    h('header', null, h('h2', null, tt('Clear the history?')), h('p', null, tt('Deletes the data collected so far on this computer. This can\'t be undone.'))),
     h('footer', null, h('span'), h('div', null,
-      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Annulla')),
-      h('button', { class: 'danger', onclick: async () => { await state.sampler.clearHistory(); dialog.close(); toast(tt('Storico cancellato')); } }, tt('Cancella storico'))))));
+      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Cancel')),
+      h('button', { class: 'danger', onclick: async () => { await state.sampler.clearHistory(); dialog.close(); toast(tt('History cleared')); } }, tt('Clear history'))))));
 }
 
 (async () => {
   build();
   state.sampler = new Sampler(refresh);
-  primaDiRicaricare(() => state.sampler.stop());
+  beforeReload(() => state.sampler.stop());
   Neutralino.events.on('windowClose', async () => {
     await state.sampler.stop().catch(() => {});
     Neutralino.app.exit();
@@ -358,7 +358,7 @@ function confirmClear() {
   $('pause').onclick = () => {
     const next = !state.sampler.paused;
     state.sampler.setPaused(next);
-    $('pause').textContent = tx(next ? tt('Riprendi') : tt('Pausa'));
+    $('pause').textContent = tx(next ? tt('Resume') : tt('Pause'));
     $('pause').setAttribute('aria-pressed', next ? 'true' : 'false');
     refresh();
   };

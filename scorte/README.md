@@ -1,45 +1,45 @@
 # Scorte
 
-Mostra quanta batteria resta, in che stato è e quali app consumano di più, con la mappa ad anelli della
-suite (Anelli, Correnti, Battiti). App desktop per macOS, Windows e Linux costruita con Neutralinojs.
+Shows how much battery is left, what state it's in and which apps drain it most, with the suite's ring map
+(Anelli, Correnti, Battiti). A desktop app for macOS, Windows and Linux built with Neutralinojs.
 
-## Installazione
+## Install
 
-| Sistema | Pacchetto | Note |
+| System | Package | Notes |
 | --- | --- | --- |
-| macOS 10.15+ | `Scorte-macos.zip` | Estrai in Download, poi `bash ~/Downloads/Scorte-macos/Installa\ Scorte.command` |
-| Windows 10/11 x64 | `Scorte-windows-x64.zip` | Serve WebView2, già presente su Windows 11 |
-| Linux x64 / arm64 | `Scorte-linux-*.zip` | Serve WebKitGTK: `sudo apt install libwebkit2gtk-4.1-0` |
+| macOS 10.15+ | `Scorte-macos.zip` | Unzip in Downloads, then `bash ~/Downloads/Scorte-macos/Install\ Scorte.command` |
+| Windows 10/11 x64 | `Scorte-windows-x64.zip` | WebView2 required, already present on Windows 11 |
+| Linux x64 / arm64 | `Scorte-linux-*.zip` | WebKitGTK required: `sudo apt install libwebkit2gtk-4.1-0` |
 
-Tieni `resources.neu` accanto all'eseguibile.
+Keep `resources.neu` next to the executable.
 
-## Come si usa
+## How to use
 
-- **Impatto:** la quota di ogni app sul lavoro della CPU. Funziona anche senza batteria.
-- **Potenza:** i watt attribuiti a ogni app. Si misura solo quando il computer va a batteria.
-- **Batteria:** stato, autonomia, salute, cicli, capacità e temperatura.
+- **Impact:** each app's share of the CPU work. Works even without a battery.
+- **Power:** the watts attributed to each app. Measured only when the computer runs on battery.
+- **Battery:** state, runtime, health, cycles, capacity and temperature.
 
-Il grafico mostra il livello della batteria sopra e il carico della CPU sotto, entrambi da 0 a 100 %.
+The chart shows the battery level on top and the CPU load below, both from 0 to 100%.
 
-## Come funziona
+## How it works
 
-Ogni 5 secondi l'app legge batteria e processi: `/sys` e `/proc` su Linux, `pmset`, `ioreg` e `ps` su macOS,
-PowerShell con le classi WMI su Windows. La stima divide la potenza misurata in proporzione al tempo di CPU.
+Every 5 seconds the app reads the battery and processes: `/sys` and `/proc` on Linux, `pmset`, `ioreg` and `ps` on macOS,
+PowerShell with the WMI classes on Windows. The estimate splits the measured power in proportion to CPU time.
 
-## Limiti
+## Limits
 
-- I watt per app sono una stima: non contano schermo, rete o GPU, che pesano sul totale ma non sul tempo di
-  CPU di un'app. La potenza misurata include anche il consumo a riposo del computer.
-- In carica la potenza misurata riguarda la batteria, non il computer, quindi non viene attribuita.
-- Su Windows capacità e cicli possono richiedere l'avvio come amministratore; molti portatili non li espongono.
-- La temperatura dipende dal sistema e dall'hardware, e può mancare.
-- I dati si registrano solo mentre l'app è aperta. Lo storico resta sul computer per sette giorni.
+- Per-app watts are an estimate: they don't count screen, network or GPU, which weigh on the total but not on an
+  app's CPU time. The measured power also includes the computer's idle consumption.
+- While charging, the measured power concerns the battery, not the computer, so it isn't attributed.
+- On Windows, capacity and cycles may require running as administrator; many laptops don't expose them.
+- Temperature depends on the system and hardware, and may be missing.
+- Data is recorded only while the app is open. The history stays on the computer for seven days.
 
-## Sviluppo
+## Develop
 
 ```bash
 npm install
 npm run setup
 npm test
-npm run build    # crea i pacchetti in dist/pacchetti
+npm run build    # builds the packages into dist/packages
 ```

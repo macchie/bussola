@@ -1,4 +1,4 @@
-// Eventi di ogni sistema in una sola forma: { t, kind: error|warn|event, level, source, path?, text }
+// Events from every system in a single shape: { t, kind: error|warn|event, level, source, path?, text }
 // 'event' raccoglie arresti anomali e riavvii.
 const sections = (text) => {
   const out = {};
@@ -24,7 +24,7 @@ export function parseJournal(lines) {
     const source = r.SYSLOG_IDENTIFIER || r._COMM || 'kernel';
     const crash = source === 'systemd-coredump' || /dumped core|segfault at /.test(text);
     if (p > 4 && !crash) continue;
-    // Il messaggio di systemd-coredump nomina l'app caduta, che è ciò che interessa.
+    // The systemd-coredump message names the crashed app, which is what matters.
     const fallen = crash ? /Process \d+ \(([^)]+)\)/.exec(text)?.[1] : null;
     out.push({ t, kind: crash ? 'event' : p <= 3 ? 'error' : 'warn', level: p <= 2 ? 'critical' : p === 3 ? 'error' : 'warning', source: fallen || source, path: fallen ? undefined : r._EXE, text });
   }
@@ -35,7 +35,7 @@ export function parseBoots(lines) {
   const out = [];
   for (const line of lines || []) {
     const m = /(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/.exec(line);
-    if (m) out.push({ t: new Date(m[1].replace(' ', 'T')).getTime(), kind: 'event', level: 'info', source: 'Sistema', text: 'Avvio del sistema' });
+    if (m) out.push({ t: new Date(m[1].replace(' ', 'T')).getTime(), kind: 'event', level: 'info', source: 'System', text: 'System startup' });
   }
   return out;
 }
@@ -62,7 +62,7 @@ export function parseMacLog(lines) {
     const type = String(r.messageType || '').toLowerCase();
     if (type !== 'error' && type !== 'fault') continue;
     const path = r.processImagePath || '';
-    out.push({ t, kind: 'error', level: type === 'fault' ? 'critical' : 'error', source: path.slice(path.lastIndexOf('/') + 1) || 'Sistema', path, text: String(r.eventMessage ?? '') });
+    out.push({ t, kind: 'error', level: type === 'fault' ? 'critical' : 'error', source: path.slice(path.lastIndexOf('/') + 1) || 'System', path, text: String(r.eventMessage ?? '') });
   }
   return out;
 }
@@ -76,7 +76,7 @@ export function parseCrashFiles(lines) {
     const t = new Date(`${m[2]}-${m[3]}-${m[4]}T${m[5]}:${m[6]}:${m[7]}`).getTime();
     const hang = m[8] === 'hang';
     if (m[8] === 'diag') continue;
-    out.push({ t, kind: 'event', level: 'critical', source: m[1], text: hang ? 'L\'app non ha risposto' : m[8] === 'panic' ? 'Errore grave del kernel' : 'Chiusura imprevista dell\'app' });
+    out.push({ t, kind: 'event', level: 'critical', source: m[1], text: hang ? 'The app stopped responding' : m[8] === 'panic' ? 'Serious kernel error' : 'The app quit unexpectedly' });
   }
   return out;
 }
@@ -84,11 +84,11 @@ export function parseCrashFiles(lines) {
 export function parseMac(text) {
   const s = sections(text);
   const boot = /sec = (\d+)/.exec((s.BOOT || []).join(' '));
-  const boots = boot ? [{ t: Number(boot[1]) * 1000, kind: 'event', level: 'info', source: 'Sistema', text: 'Avvio del sistema' }] : [];
+  const boots = boot ? [{ t: Number(boot[1]) * 1000, kind: 'event', level: 'info', source: 'System', text: 'System startup' }] : [];
   return [...parseMacLog(s.LOG), ...parseCrashFiles(s.CRASH), ...boots];
 }
 
-const EVENT_IDS = { 41: 'Riavvio senza arresto corretto', 1000: 'Chiusura imprevista dell\'app', 1001: 'Arresto per errore di sistema', 1002: 'L\'app non ha risposto', 6005: 'Avvio del sistema', 6008: 'Arresto imprevisto' };
+const EVENT_IDS = { 41: 'Restart without a clean shutdown', 1000: 'The app quit unexpectedly', 1001: 'Shutdown due to a system error', 1002: 'The app stopped responding', 6005: 'System startup', 6008: 'Unexpected shutdown' };
 export function parseWindows(text) {
   const out = [];
   for (const line of text.split('\n')) {
@@ -98,15 +98,15 @@ export function parseWindows(text) {
     const special = EVENT_IDS[r.i];
     const crashProvider = r.i === 41 ? /Kernel-Power/.test(r.p) : r.i === 1000 || r.i === 1002 ? /Application (Error|Hang)/.test(r.p) : r.i === 1001 ? /BugCheck/.test(r.p) : r.i === 6005 || r.i === 6008 ? /EventLog/.test(r.p) : false;
     if (special && crashProvider) {
-      out.push({ t: r.t, kind: 'event', level: r.i === 6005 ? 'info' : 'critical', source: r.i === 6005 ? 'Sistema' : r.p, text: `${special}${r.m ? `: ${r.m}` : ''}` });
+      out.push({ t: r.t, kind: 'event', level: r.i === 6005 ? 'info' : 'critical', source: r.i === 6005 ? 'System' : r.p, text: `${special}${r.m ? `: ${r.m}` : ''}` });
     } else if (r.l >= 1 && r.l <= 3) {
-      out.push({ t: r.t, kind: r.l === 3 ? 'warn' : 'error', level: r.l === 1 ? 'critical' : r.l === 2 ? 'error' : 'warning', source: r.p, text: r.m || `Evento ${r.i}` });
+      out.push({ t: r.t, kind: r.l === 3 ? 'warn' : 'error', level: r.l === 1 ? 'critical' : r.l === 2 ? 'error' : 'warning', source: r.p, text: r.m || `Event ${r.i}` });
     }
   }
   return out;
 }
 
-// Cosa dice il sistema sul proprio registro. Nessun evento nuovo è normale, non un guasto.
+// What the system says about its own log. No new event is normal, not a fault.
 export function accessOf(stderr) {
   const text = String(stderr || '');
   if (/No journal files|command not found|not found|Cannot find|Failed to/i.test(text)) return 'failed';
@@ -114,12 +114,12 @@ export function accessOf(stderr) {
   return 'ok';
 }
 
-// journalctl non segnala un registro assente: senza nemmeno un avvio elencato, non c'è nulla da leggere.
+// journalctl doesn't report a missing log: with not even a boot listed, there's nothing to read.
 export const journalMissing = (text) => !/\d{4}-\d{2}-\d{2}/.test(sections(text).BOOTS?.join('\n') || '');
 
 export const PARSERS = { Linux: parseLinux, Darwin: parseMac, Windows: parseWindows };
 
-// Riduce un messaggio alla sua forma: ciò che cambia a ogni ripetizione diventa #.
+// Reduces a message to its shape: what changes on every repeat becomes #.
 export function patternOf(text) {
   const clean = String(text).replace(/\s+/g, ' ').trim()
     .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '#')
@@ -128,5 +128,5 @@ export function patternOf(text) {
     .replace(/\b[0-9a-f]{12,}\b/gi, '#')
     .replace(/(?:\/[\w.@+-]+){2,}/g, '#')
     .replace(/\b\d+(?:\.\d+)*\b/g, '#');
-  return (clean || '(messaggio vuoto)').slice(0, 140);
+  return (clean || '(empty message)').slice(0, 140);
 }

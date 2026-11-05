@@ -1,9 +1,9 @@
-// Dal processo all'app, con le regole di ciascun sistema.
+// From process to app, with each system's rules.
 const title = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-export const SYSTEM = { Linux: 'Sistema Linux', Darwin: 'Sistema macOS', Windows: 'Sistema Windows' };
+export const SYSTEM = { Linux: 'Linux system', Darwin: 'macOS system', Windows: 'Windows system' };
 
 function linux(p, info) {
-  if (p.pid === 2 || p.ppid === 2) return { app: 'Kernel Linux', bundle: null };
+  if (p.pid === 2 || p.ppid === 2) return { app: 'Linux kernel', bundle: null };
   const path = info?.path;
   if (!path) return { app: SYSTEM.Linux, bundle: null };
   const m = /^\/(?:opt|snap)\/([^/]+)\//.exec(path) || /^\/usr\/lib(?:64)?\/([^/]+)\//.exec(path);
@@ -30,7 +30,7 @@ function windows(p, info) {
 export const appFor = (os, p, info) => (os === 'Linux' ? linux : os === 'Darwin' ? mac : windows)(p, info);
 
 
-// Il gruppo di un elemento: l'app se il percorso la rivela, altrimenti il produttore
+// An item's group: the app if the path reveals it, otherwise the vendor
 // ricavato dall'etichetta (com.google.keystone -> Google).
 const LABELS = /^(com|org|net|io|co|de|me|app|dev)\.([\w-]+)\./;
 export function groupOf(os, item, program) {
@@ -38,10 +38,10 @@ export function groupOf(os, item, program) {
   const path = program.split('/').length > 2 || /^[A-Za-z]:\\/.test(program) ? program : null;
   if (path) {
     const who = appFor(os, fake, { path });
-    if (who.app && who.app !== item.name && !who.app.startsWith('Sistema')) return who.app;
-    if (who.app.startsWith('Sistema')) return who.app;
+    if (who.app && who.app !== item.name && !who.app.startsWith('System')) return who.app;
+    if (who.app.startsWith('System')) return who.app;
   }
   const m = LABELS.exec(item.name);
   if (m) return m[2] === 'apple' ? SYSTEM.Darwin : title(m[2]);
-  return item.source?.includes('di sistema') || item.source === 'Servizi di Windows' ? SYSTEM[os] : item.name.split(/[\s.]/)[0];
+  return item.source?.includes('system') || item.source === 'Windows services' ? SYSTEM[os] : item.name.split(/[\s.]/)[0];
 }

@@ -1,7 +1,7 @@
-# Contribuire
+# Contributing
 
-Segnalazioni e proposte sono benvenute nelle issue.
+Reports and suggestions are welcome in the issues.
 
-Il progetto ha una doppia licenza, quindi il titolare deve poter distribuire tutto il codice anche con licenza
-commerciale. Per questo, al momento, le modifiche esterne vengono accettate solo dopo un accordo scritto sui diritti.
-Apri una issue prima di iniziare a lavorare su una pull request.
+The project is dual-licensed, so the rights holder must be able to distribute all the code under a commercial
+license too. For this reason, external changes are currently accepted only after a written agreement on the rights.
+Open an issue before starting work on a pull request.

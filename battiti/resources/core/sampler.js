@@ -1,4 +1,4 @@
-// Campiona processi e memoria, calcola l'uso di CPU dalle differenze e tiene lo storico.
+// Samples processes and memory, computes CPU usage from deltas and keeps the history.
 import { OS, run, spawn, kill, scriptCommand, LINUX_SCRIPT, MAC_SCRIPT, windowsScript } from './platform.js';
 import { PARSERS, splitBlocks } from './parse.js';
 import { appFor, UNATTRIBUTED } from './attribute.js';
@@ -12,7 +12,7 @@ const dayName = (t) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.jsonl`;
 };
 
-// Dalla lettura grezza agli elementi di un campione. Senza stato di sistema: si prova da solo.
+// From the raw read to the items of a sample. No system state: it tests on its own.
 export function digest(prev, now, sample, machine, os) {
   const seconds = prev ? (now.t - prev.t) / 1000 : 0;
   const cpuOf = new Map();
@@ -143,7 +143,7 @@ export class Sampler {
 
   setPaused(value) {
     this.paused = value;
-    if (!value) this.prev = null; // la pausa non deve finire nella differenza successiva
+    if (!value) this.prev = null; // the pause must not land in the next delta
   }
 
   async stop() {

@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "Batteria ed energia per app. App desktop Neutralinojs per macOS, Windows e Linux.",
+  "description": "Battery and energy by app. Neutralinojs desktop app for macOS, Windows and Linux.",
   "scripts": {
     "setup": "neu update",
     "dev": "neu run",

@@ -1,4 +1,4 @@
-// Legge il registro di sistema a intervalli e conserva conteggi e un esempio per ogni messaggio.
+// Reads the system log at intervals and keeps counts and one sample per message.
 import { OS, run, scriptCommand, readScript, MAX_EVENTS } from './platform.js';
 import { PARSERS, patternOf, accessOf, journalMissing } from './parse.js';
 import { appOfEvent } from './attribute.js';
@@ -13,14 +13,14 @@ const dayName = (t) => {
   const d = new Date(t);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.jsonl`;
 };
-// log show è lento su periodi lunghi: al primo avvio su macOS si guarda meno indietro.
+// log show is slow over long periods: on first launch on macOS it looks less far back.
 export const firstLook = (os, now) => now - (os === 'Darwin' ? 3 * 3600000 : DAY);
 
 export function keyOf(os, e) {
   return [e.kind, appOfEvent(os, e), patternOf(e.text)].join(SEP);
 }
 
-// Solo ciò che è successo dopo l'ultima lettura, senza ricontare i riavvii già visti.
+// Only what happened after the last read, without recounting already-seen restarts.
 export function fresh(events, since, seen) {
   return events.filter((e) => {
     if (!(e.t > since)) return false;
@@ -85,7 +85,7 @@ export class Sampler {
       this.since = data.since || 0;
       this.samples = new Map(Object.entries(data.samples || {}));
       this.seen = new Set(data.seen || []);
-    } catch { /* primo avvio */ }
+    } catch { /* first launch */ }
   }
 
   async save() {

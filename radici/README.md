@@ -1,49 +1,49 @@
 # Radici
 
-Mostra cosa parte da solo sul tuo computer: elementi all'accesso, servizi e attività pianificate, con la mappa
-ad anelli della suite (Anelli, Correnti, Battiti, Scorte, Sentinelle). App desktop per macOS, Windows e Linux
-costruita con Neutralinojs.
+Shows what starts on its own on your computer: login items, services and scheduled tasks, with the suite's
+ring map (Anelli, Correnti, Battiti, Scorte, Sentinelle). A desktop app for macOS, Windows and Linux
+built with Neutralinojs.
 
-## Installazione
+## Install
 
-| Sistema | Pacchetto | Note |
+| System | Package | Notes |
 | --- | --- | --- |
-| macOS 10.15+ | `Radici-macos.zip` | Estrai in Download, poi `bash ~/Downloads/Radici-macos/Installa\ Radici.command` |
-| Windows 10/11 x64 | `Radici-windows-x64.zip` | Serve WebView2, già presente su Windows 11 |
-| Linux x64 / arm64 | `Radici-linux-*.zip` | Serve WebKitGTK: `sudo apt install libwebkit2gtk-4.1-0` |
+| macOS 10.15+ | `Radici-macos.zip` | Unzip in Downloads, then `bash ~/Downloads/Radici-macos/Install\ Radici.command` |
+| Windows 10/11 x64 | `Radici-windows-x64.zip` | WebView2 required, already present on Windows 11 |
+| Linux x64 / arm64 | `Radici-linux-*.zip` | WebKitGTK required: `sudo apt install libwebkit2gtk-4.1-0` |
 
-Tieni `resources.neu` accanto all'eseguibile.
+Keep `resources.neu` next to the executable.
 
-## Come si usa
+## How to use
 
-- Le schede dividono gli elementi in Accesso, Servizi, Pianificati e Disattivati.
-- Il badge **Nuovo** segna ciò che è comparso nelle ultime 24 ore. La prima lettura vale come punto di partenza.
-- **Disattiva all'avvio** impedisce a un elemento di partire dal prossimo accesso. Se è già aperto resta aperto.
-- **Riattiva**, dalla scheda Disattivati, riporta tutto com'era.
+- The tabs split the items into Login, Services, Scheduled and Disabled.
+- The **New** badge flags what appeared in the last 24 hours. The first read counts as a starting point.
+- **Disable at startup** stops an item from launching at the next login. If it's already open it stays open.
+- **Re-enable**, from the Disabled tab, restores everything as it was.
 
-## Cosa può modificare
+## What it can change
 
-Radici non cancella nulla e chiede sempre conferma. Dopo ogni modifica rilegge lo stato dal sistema e segnala
-se non è cambiato.
+Radici deletes nothing and always asks for confirmation. After each change it re-reads the state from the system and
+flags whether it changed.
 
-| Sistema | Modificabile | Come | Sola lettura |
+| System | Editable | How | Read-only |
 | --- | --- | --- | --- |
-| macOS | Agenti in `~/Library/LaunchAgents` e `/Library/LaunchAgents` | `launchctl disable` | Daemon, componenti Apple, cron |
-| Linux | Autostart e unità systemd utente | `Hidden=true`, `systemctl --user disable` | Servizi di sistema, timer, cron, sessione grafica |
-| Windows | Valori `Run` dell'utente | `StartupApproved`, come Gestione attività | Elementi per tutti gli utenti, servizi, attività, cartella Esecuzione automatica |
+| macOS | Agents in `~/Library/LaunchAgents` and `/Library/LaunchAgents` | `launchctl disable` | Daemons, Apple components, cron |
+| Linux | Autostart and systemd user units | `Hidden=true`, `systemctl --user disable` | System services, timers, cron, graphical session |
+| Windows | User `Run` values | `StartupApproved`, like Task Manager | Items for all users, services, tasks, Startup folder |
 
-## Limiti
+## Limits
 
-- Alcune app ricreano da sole i propri elementi di avvio: disattivare non lo impedisce.
-- Su macOS gli elementi di Impostazioni > Generali > Elementi login non sono elencati, e i componenti in
-  `/System/Library` sono esclusi.
-- Lo storico resta sul computer per sette giorni e si aggiorna solo mentre l'app è aperta.
+- Some apps recreate their own startup items: disabling doesn't prevent it.
+- On macOS, the items in Settings > General > Login Items aren't listed, and the components in
+  `/System/Library` are excluded.
+- The history stays on the computer for seven days and updates only while the app is open.
 
-## Sviluppo
+## Develop
 
 ```bash
 npm install
 npm run setup
 npm test
-npm run build    # crea i pacchetti in dist/pacchetti
+npm run build    # builds the packages into dist/packages
 ```

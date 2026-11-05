@@ -1,4 +1,4 @@
-// Stato della suite su questo computer e operazioni, una alla volta.
+// State of the suite on this computer and operations, one at a time.
 import { OS, runScript } from './platform.js';
 import { APPS, CATALOG_URL, TRUSTED_PREFIX, parseCatalog, platformKey, statusOf, compareVersions } from './catalog.js';
 import { installScript, uninstallScript, openScript, detectScript, parseDetected, catalogCommandScript, ERRORS, STEPS } from './scripts.js';
@@ -26,16 +26,16 @@ export class Manager {
   }
 
   async refresh() {
-    await this.detect().catch((err) => this.note(`Rilevamento: ${err.message}`));
+    await this.detect().catch((err) => this.note(`Detection: ${err.message}`));
     try {
       const res = await runScript(catalogCommandScript(OS, CATALOG_URL));
       if (res.code !== 0) throw new Error(`curl ${res.code}: ${res.err.trim().slice(0, 200)}`);
       this.catalog = parseCatalog(res.out, TRUSTED_PREFIX);
       this.catalogError = '';
-      this.note(`Catalogo letto: ${this.catalog.tag || 'senza etichetta'}`);
+      this.note(`Catalog read: ${this.catalog.tag || 'untagged'}`);
     } catch (err) {
       this.catalogError = err.message;
-      this.note(`Catalogo: ${err.message}`);
+      this.note(`Catalog: ${err.message}`);
     }
     this.onChange();
   }
@@ -48,10 +48,10 @@ export class Manager {
   }
 
   async install(app) {
-    if (this.busy) throw new Error('Un\'altra operazione è in corso');
+    if (this.busy) throw new Error('Another operation is in progress');
     const entry = this.catalog?.apps[app.id];
     const pkg = entry?.packages[this.key];
-    if (!pkg) throw new Error('Pacchetto non disponibile per questo sistema');
+    if (!pkg) throw new Error('Package not available for this system');
     const temp = (await N().os.getPath('temp')).replace(/[\\/]$/, '');
     const sep = OS === 'Windows' ? '\\' : '/';
     const work = `${temp}${sep}bussola-${app.id}-${Date.now()}`;
@@ -64,7 +64,7 @@ export class Manager {
         const { size } = await N().filesystem.getStats(zip);
         const p = this.progress[app.id];
         if (p?.step === STEPS.download) { p.part = Math.min(1, size / pkg.size); this.onChange(); }
-      } catch { /* non ancora creato */ }
+      } catch { /* not created yet */ }
     }, 250);
     let error = null;
     try {
@@ -72,7 +72,7 @@ export class Manager {
         for (const m of d.matchAll(/STEP (\w+)/g)) { this.progress[app.id] = { step: STEPS[m[1]], part: m[1] === 'download' ? 0 : 1 }; this.onChange(); }
       });
       const code = /ERR (\w+)/.exec(res.out)?.[1];
-      if (code || res.code !== 0 || !/DONE/.test(res.out)) throw new Error(ERRORS[code] || (res.err.trim().slice(0, 200) || 'Installazione non riuscita'));
+      if (code || res.code !== 0 || !/DONE/.test(res.out)) throw new Error(ERRORS[code] || (res.err.trim().slice(0, 200) || 'Installation failed'));
       if (OS === 'Linux') await this.saveIcon(app);
     } catch (err) {
       error = err;
@@ -85,7 +85,7 @@ export class Manager {
     await this.detect().catch(() => {});
     this.onChange();
     if (error) throw error;
-    this.note(`${app.name} ${entry.version} installata`);
+    this.note(`${app.name} ${entry.version} installed`);
   }
 
   async saveIcon(app) {
@@ -95,17 +95,17 @@ export class Manager {
   }
 
   async uninstall(app, removeData) {
-    if (this.busy) throw new Error('Un\'altra operazione è in corso');
+    if (this.busy) throw new Error('Another operation is in progress');
     this.busy = app.id;
     this.onChange();
     try {
       const res = await runScript(uninstallScript(OS, app));
-      if (res.code !== 0) throw new Error('Non è stato possibile rimuovere l\'app: controlla che non serva l\'amministratore');
+      if (res.code !== 0) throw new Error('The app couldn\'t be removed: check whether it needs an administrator');
       if (removeData && !app.keepData) {
         const base = (await N().os.getPath('data')).replace(/[\\/]$/, '');
         await N().filesystem.remove(`${base}${OS === 'Windows' ? '\\' : '/'}${app.name}`).catch(() => {});
       }
-      this.note(`${app.name} disinstallata`);
+      this.note(`${app.name} uninstalled`);
     } finally {
       this.busy = null;
       await this.detect().catch(() => {});
@@ -115,7 +115,7 @@ export class Manager {
 
   async open(app) {
     const res = await runScript(openScript(OS, app));
-    if (res.code !== 0) throw new Error(`${app.name} non si può aprire`);
+    if (res.code !== 0) throw new Error(`${app.name} can't be opened`);
   }
 
   openPrivacy() { return runScript(`/usr/bin/open '${SETTINGS_FDA}'\n`); }

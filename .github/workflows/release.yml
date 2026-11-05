@@ -1,6 +1,6 @@
 name: Release
 
-# Parte quando arriva un tag suite-*, che crei con `make publish`.
+# Runs when a suite-* tag arrives, which you create with `make publish`.
 on:
   push:
     tags: ["suite-*"]
@@ -25,11 +25,11 @@ jobs:
         with:
           path: "*/bin"
           key: neutralino-${{ hashFiles('*/neutralino.config.json') }}
-      - name: Test, pacchetti e catalogo
+      - name: Test, packages and catalog
         run: make release TAG="$GITHUB_REF_NAME"
-      - name: Controlla il catalogo
-        run: node scripts/controlla-release.mjs bussola/dist/release "$GITHUB_REF_NAME"
-      - name: Pubblica la release
+      - name: Check the catalog
+        run: node scripts/check-release.mjs bussola/dist/release "$GITHUB_REF_NAME"
+      - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: >

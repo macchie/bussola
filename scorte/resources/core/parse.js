@@ -1,5 +1,5 @@
-// Una lettura del sistema, tre formati. Ogni parser restituisce la stessa forma:
-//   procs: [{ pid, ppid, name, cpuMs, mem }]   cpuMs è cumulativo
+// One system read, three formats. Each parser returns the same shape:
+//   procs: [{ pid, ppid, name, cpuMs, mem }]   cpuMs is cumulative
 //   cpu:   { busy, total } in tick cumulativi, o null se va ricavata dai processi
 //   mem:   { total?, used, swap }
 //   paths: Map pid -> { path, description? }
@@ -87,7 +87,7 @@ export function parseWindows(text) {
   return { procs, cpu: null, mem, paths, battery: parseBatteryWindows(text), thermal: null };
 }
 
-// Il flusso di Windows arriva a blocchi arbitrari: ogni campione finisce con una riga END.
+// The Windows stream arrives in arbitrary chunks: each sample ends with an END line.
 export function splitBlocks(buffer) {
   const blocks = [];
   let rest = buffer;
@@ -128,7 +128,7 @@ export function parseBatteryLinux(lines) {
     level: n('capacity') !== null ? n('capacity') / 100 : (now && full ? now / full : null), charging, plugged: !discharging,
     watts: watts ?? null, health: full && design ? full / design : null, cycles: n('cycle_count') || null,
     full: full !== null ? (energy ? full / 1e6 : full / 1000) : null, design: design !== null ? (energy ? design / 1e6 : design / 1000) : null,
-    unit: energy ? 'Wh' : 'mAh', temperature: n('temp') !== null ? n('temp') / 10 : null, tempLabel: 'Batteria', minutes,
+    unit: energy ? 'Wh' : 'mAh', temperature: n('temp') !== null ? n('temp') / 10 : null, tempLabel: 'Battery', minutes,
   });
 }
 
@@ -149,7 +149,7 @@ export function parseIoreg(lines) {
     const m = /^([\s|]*)"(\w+)" = (.+)$/.exec(line);
     if (!m) continue;
     const indent = m[1].length;
-    // Lo stesso nome ricompare in sottoalberi: vale quello meno annidato.
+    // The same name reappears in subtrees: the least nested one wins.
     if (!keys.has(m[2]) || indent < keys.get(m[2]).indent) keys.set(m[2], { indent, value: m[3].trim() });
   }
   return (k) => keys.get(k)?.value;
@@ -175,7 +175,7 @@ export function parseBatteryMac(ioreg, pmset) {
     level: Number(m[1]) / 100, charging: state === 'charging', plugged,
     watts: ma !== null && mv !== null ? Math.abs(ma * mv) / 1e6 : null,
     health: full && design ? full / design : null, cycles: n('CycleCount'), full, design, unit: 'mAh',
-    temperature: temp !== null && temp > 1000 ? temp / 100 : null, tempLabel: 'Batteria',
+    temperature: temp !== null && temp > 1000 ? temp / 100 : null, tempLabel: 'Battery',
     minutes: m[3] !== undefined ? Number(m[3]) * 60 + Number(m[4]) : null,
   });
 }

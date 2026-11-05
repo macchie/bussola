@@ -32,7 +32,7 @@ ssh.service enabled enabled
 MAILTO=a
 0 3 * * * /home/a/bin/backup --all
 `;
-test('Linux: tutte le origini, con la copia utente che prevale', () => {
+test('Linux: all sources, with the user copy taking precedence', () => {
   const items = parseLinux(LINUX, '/home/a/.config');
   const by = (id) => items.find((i) => i.id === id);
   assert.equal(items.filter((i) => i.id === 'autostart:spotify.desktop').length, 1);
@@ -42,7 +42,7 @@ test('Linux: tutte le origini, con la copia utente che prevale', () => {
   assert.equal(by('user:pipewire.service').editable, false);
   assert.equal(by('user:syncd.service').editable, true);
   assert.equal(by('user:old.service').state, 'off');
-  assert.equal(by('user:dbus.service'), undefined, 'static non si può disattivare');
+  assert.equal(by('user:dbus.service'), undefined, 'static cannot be disabled');
   assert.equal(by('user:backup.timer').kind, 'task');
   assert.equal(by('user:backup.timer').editable, false);
   assert.equal(by('system:ssh.service').editable, false);
@@ -75,14 +75,14 @@ test('macOS: etichette, protezioni, plist illeggibili, stato', () => {
   assert.equal(items.length, 5);
   const [g, a, d, broken, tick] = items;
   assert.deepEqual([g.state, g.editable, g.kind], ['off', true, 'login']);
-  assert.equal(a.editable, false, 'Apple non si tocca');
+  assert.equal(a.editable, false, 'Apple is left untouched');
   assert.deepEqual([d.kind, d.editable], ['service', false]);
   assert.equal(broken.name, 'org.rotto');
   assert.equal(tick.kind, 'task');
-  assert.ok(parseDisabled(['"x" => true']).has('x'), 'formato dei macOS più vecchi');
+  assert.ok(parseDisabled(['"x" => true']).has('x'), 'format of older macOS');
 });
 
-test('Windows: stato da StartupApproved, solo HKCU modificabile', () => {
+test('Windows: state from StartupApproved, only HKCU editable', () => {
   const items = parseWindows('avviso\n' + JSON.stringify({
     run: [{ hive: 'HKCU', name: 'Discord', value: '"C:\\Users\\a\\Discord\\Update.exe" --start', approved: '030000000000000000000000' },
       { hive: 'HKCU', name: 'Steam', value: 'C:\\Steam\\steam.exe', approved: null }, { hive: 'HKLM', name: 'Security', value: 'C:\\Windows\\sec.exe', approved: '020000000000000000000000' }],
@@ -96,7 +96,7 @@ test('Windows: stato da StartupApproved, solo HKCU modificabile', () => {
   assert.equal(firstToken(items[0].program), 'C:\\Users\\a\\Discord\\Update.exe');
 });
 
-test('i comandi non lasciano passare nomi malformati', () => {
+test('the commands don\'t let malformed names through', () => {
   assert.throws(() => commandFor({ type: 'systemd', unit: 'x; rm -rf ~.service' }, false));
   assert.throws(() => commandFor({ type: 'launchd', label: 'a$(id)' }, false));
   assert.throws(() => commandFor({ type: 'nope' }, false));

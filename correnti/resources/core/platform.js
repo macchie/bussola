@@ -2,7 +2,7 @@ export const OS = globalThis.NL_OS;
 export const SUPPORTED = OS === 'Darwin' || OS === 'Linux';
 export const NETTOP_COMMAND = '/usr/bin/nettop -L 1';
 export const PS_COMMAND = '/bin/ps -axo pid=,comm=';
-// Una sola esecuzione: connessioni, contatori delle interfacce, eseguibili.
+// A single run: connections, interface counters, executables.
 export const LINUX_COMMAND = `sh -c 'echo ===SS; ss -Htinp || echo SSMISSING; echo ===DEV; cat /proc/net/dev; echo ===EXE; ls -l /proc/[0-9]*/exe 2>/dev/null; exit 0'`;
 const N = () => globalThis.Neutralino;
 const handlers = new Map();

@@ -1,10 +1,10 @@
-// Strumento di sviluppo: dal risultato di `neu build` ai pacchetti di ogni sistema.
+// Dev tool: from the result of `neu build` to the packages for every system.
 import { execFileSync } from 'node:child_process';
 import { chmodSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIST = 'dist/scorte';
-const OUT = 'dist/pacchetti';
+const OUT = 'dist/packages';
 const { version } = JSON.parse(readFileSync('neutralino.config.json', 'utf8'));
 rmSync(OUT, { recursive: true, force: true });
 const root = join(OUT, 'Scorte-macos');
@@ -27,9 +27,9 @@ writeFileSync(join(contents, 'Info.plist'), `<?xml version="1.0" encoding="UTF-8
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 `);
-const installer = join(root, 'Installa Scorte.command');
+const installer = join(root, 'Install Scorte.command');
 writeFileSync(installer, `#!/bin/bash
-# Firma Scorte con lo strumento di Apple e la installa in Applicazioni.
+# Sign Scorte with Apple's tool and install it in Applications.
 set -e
 cd "$(dirname "$0")"
 pkill -x scorte 2>/dev/null || true
@@ -39,7 +39,7 @@ codesign --verify --deep --strict Scorte.app
 rm -rf /Applications/Scorte.app
 ditto Scorte.app /Applications/Scorte.app
 echo
-echo "Scorte è installata in Applicazioni."
+echo "Scorte is installed in Applications."
 open /Applications/Scorte.app
 `);
 chmodSync(installer, 0o755);
@@ -57,7 +57,7 @@ function plain(id, binary, target) {
 const folders = [root, plain('windows-x64', 'scorte-win_x64.exe', 'Scorte.exe'), plain('linux-x64', 'scorte-linux_x64', 'scorte'), plain('linux-arm64', 'scorte-linux_arm64', 'scorte')];
 for (const dir of folders) {
   const name = dir.split(/[\\/]/).pop();
-  for (const legal of ['LICENSE', 'LICENZA.md', 'TERZE-PARTI.md']) cpSync(join('..', legal), join(dir, legal));
+  for (const legal of ['LICENSE', 'LICENSING.md', 'THIRD-PARTY.md']) cpSync(join('..', legal), join(dir, legal));
   execFileSync('zip', ['-qry', `${name}.zip`, name], { cwd: OUT });
   rmSync(dir, { recursive: true, force: true });
   console.log(`${OUT}/${name}.zip`);

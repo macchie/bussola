@@ -1,5 +1,5 @@
-import { t as tt, tx, locale } from './comune/i18n.js';
-import { salvaTema, primaDiRicaricare } from './comune/impostazioni.js';
+import { t as tt, tx, locale } from './shared/i18n.js';
+import { saveTheme, beforeReload } from './shared/settings.js';
 import { RadialMap } from './map.js';
 import * as backend from './backend/index.js';
 
@@ -43,20 +43,20 @@ const ICON = {
 const num = new Intl.NumberFormat(locale());
 const dec = new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 });
 function size(b) {
-  if (!b) return tt('0 byte');
-  const units = [tt('byte'), tt('kB'), tt('MB'), tt('GB'), tt('TB'), tt('PB')];
+  if (!b) return tt('0 bytes');
+  const units = [tt('bytes'), tt('kB'), tt('MB'), tt('GB'), tt('TB'), tt('PB')];
   const i = Math.min(units.length - 1, Math.floor(Math.log(b) / Math.log(1000)));
   const v = b / 1000 ** i;
   return `${i === 0 ? v : dec.format(v)} ${units[i]}`;
 }
-const files = (n) => tt("{0} file", num.format(n));
-const items = (n) => (n === 1 ? tt('1 elemento') : tt("{0} elementi", num.format(n)));
+const files = (n) => tt("{0} files", num.format(n));
+const items = (n) => (n === 1 ? tt('1 item') : tt("{0} items", num.format(n)));
 const dateFmt = new Intl.DateTimeFormat(locale(), { dateStyle: 'medium' });
 function ago(ms) {
   const m = Math.round((Date.now() - ms) / 60000);
-  if (m < 1) return tt('ora');
-  if (m < 60) return tt("{0} min fa", m);
-  if (m < 1440) return tt("{0} h fa", Math.round(m / 60));
+  if (m < 1) return tt('now');
+  if (m < 60) return tt("{0} min ago", m);
+  if (m < 1440) return tt("{0} h ago", Math.round(m / 60));
   return dateFmt.format(ms);
 }
 
@@ -69,12 +69,12 @@ function toast(text, action) {
 }
 const report = (err) => toast(err.message || String(err));
 
-/* Tema */
+/* Theme */
 function currentTheme() {
   return document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 }
-globalThis.AVVISO_LINGUA = () => (location.hash.length > 2 ? tt("Cambiando lingua l'analisi aperta si chiude.") : null);
-primaDiRicaricare(() => { location.hash = '#/'; });
+globalThis.LANGUAGE_NOTICE = () => (location.hash.length > 2 ? tt("Changing the language closes the open scan.") : null);
+beforeReload(() => { location.hash = '#/'; });
 function setThemeIcon() {
   $('theme').replaceChildren(svg(currentTheme() === 'dark' ? ICON.sun : '<path d="M15.5 12.2A6.5 6.5 0 0 1 7.8 4.5a6.5 6.5 0 1 0 7.7 7.7z"/>'));
 }
@@ -82,7 +82,7 @@ setThemeIcon();
 $('theme').onclick = () => {
   const next = currentTheme() === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
-  salvaTema(next);
+  saveTheme(next);
   window.dispatchEvent(new Event('tema'));
 };
 window.addEventListener('tema', () => {
@@ -90,7 +90,7 @@ window.addEventListener('tema', () => {
   if (state.map && state.data) { state.map.arcs = state.map.build(state.data); state.map.index(); state.map.draw(); renderRows(); }
 });
 
-/* Rotte */
+/* Routes */
 function route() {
   clearTimeout(state.poll);
   const hash = location.hash.slice(1) || '/';
@@ -114,7 +114,7 @@ async function refreshTrash() {
   c.textContent = tx(state.trash.length);
 }
 
-/* Dischi */
+/* Disks */
 async function renderHome() {
   document.title = tx('Anelli');
   const token = ++state.token;
@@ -130,33 +130,33 @@ async function renderHome() {
       h('div', { style: 'min-width:0' },
         h('h2', null, v.name),
         h('div', { class: 'where' }, v.mount),
-        h('div', { class: 'free' }, tt("{0} liberi su {1}", size(v.free), size(v.total)))),
+        h('div', { class: 'free' }, tt("{0} free of {1}", size(v.free), size(v.total)))),
       h('div', { class: 'btns' },
-        resume && h('button', { class: 'quiet', onclick: () => go(resume.id) }, tt('Riprendi')),
-        h('button', { class: resume ? 'quiet' : 'primary', onclick: () => startScan(v.mount) }, tt('Scansiona'))));
+        resume && h('button', { class: 'quiet', onclick: () => go(resume.id) }, tt('Resume')),
+        h('button', { class: resume ? 'quiet' : 'primary', onclick: () => startScan(v.mount) }, tt('Scan'))));
   }));
-  const input = h('input', { type: 'text', placeholder: state.info.home, 'aria-label': tt('Percorso della cartella'), spellcheck: 'false' });
+  const input = h('input', { type: 'text', placeholder: state.info.home, 'aria-label': tt('Folder path'), spellcheck: 'false' });
   const form = h('form', {
     class: 'pathform',
     onsubmit: (e) => { e.preventDefault(); startScan(input.value.trim() || state.info.home); },
   }, input,
-  h('button', { type: 'button', class: 'quiet', onclick: () => browseFolders(input.value.trim() || state.info.home) }, tt('Sfoglia')),
-  h('button', { class: 'quiet' }, tt('Scansiona cartella')));
+  h('button', { type: 'button', class: 'quiet', onclick: () => browseFolders(input.value.trim() || state.info.home) }, tt('Browse')),
+  h('button', { class: 'quiet' }, tt('Scan folder')));
   const others = active.filter((s) => s.state === 'done' && !volumes.some((v) => v.mount === s.root));
   const fda = state.info.fullDiskAccess = await backend.checkFullDiskAccess();
   if (token !== state.token) return;
   view.replaceChildren(h('div', { class: 'home' },
     fda === false && h('div', { class: 'banner' },
-      h('div', null, h('strong', null, tt('Accesso completo al disco non attivo')),
-        h('p', null, tt('macOS non riconosce questa copia di Anelli. Attivala in Impostazioni, poi chiudi e riapri l\'app.'))),
-      h('button', { class: 'quiet', onclick: () => backend.openPrivacySettings() }, tt('Apri Impostazioni'))),
-    h('h1', null, tt('Dove è finito lo spazio?')),
-    h('p', null, tt('Scegli un disco o una cartella. Nulla viene modificato finché non lo decidi tu.')),
+      h('div', null, h('strong', null, tt('Full Disk Access is off')),
+        h('p', null, tt('macOS doesn\'t recognize this copy of Anelli. Turn it on in Settings, then quit and reopen the app.'))),
+      h('button', { class: 'quiet', onclick: () => backend.openPrivacySettings() }, tt('Open Settings'))),
+    h('h1', null, tt('Where did the space go?')),
+    h('p', null, tt('Choose a disk or a folder. Nothing changes until you decide.')),
     disks,
     others.length ? h('div', { style: 'margin-bottom:32px' },
-      h('h2', { class: 'section' }, tt('Analisi recenti')),
+      h('h2', { class: 'section' }, tt('Recent scans')),
       others.map((s) => h('div', null, h('button', { class: 'ghost', onclick: () => go(s.id) }, s.root)))) : null,
-    h('h2', { class: 'section' }, tt('Una cartella specifica')),
+    h('h2', { class: 'section' }, tt('A specific folder')),
     form));
 }
 function diskRing(r, len, part) {
@@ -172,14 +172,14 @@ async function browseFolders(start) {
   const open = (p) => browseFolders(p);
   dialog.className = '';
   dialog.replaceChildren(h('div', { class: 'dlg' },
-    h('header', null, h('h2', null, tt('Scegli una cartella')), h('p', null, data.path)),
+    h('header', null, h('h2', null, tt('Choose a folder')), h('p', null, data.path)),
     h('div', { class: 'body dirs' },
-      data.parent && h('button', { onclick: () => open(data.parent) }, tt('Cartella superiore')),
+      data.parent && h('button', { onclick: () => open(data.parent) }, tt('Parent folder')),
       data.dirs.map((d) => h('button', { onclick: () => open(data.path + (data.path.endsWith(state.info.sep) ? '' : state.info.sep) + d) }, d)),
-      !data.dirs.length && h('p', { class: 'empty' }, tt('Nessuna sottocartella qui.'))),
+      !data.dirs.length && h('p', { class: 'empty' }, tt('No subfolders here.'))),
     h('footer', null,
-      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Chiudi')),
-      h('button', { class: 'primary', onclick: () => { dialog.close(); startScan(data.path); } }, tt('Scansiona questa cartella')))));
+      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Close')),
+      h('button', { class: 'primary', onclick: () => { dialog.close(); startScan(data.path); } }, tt('Scan this folder')))));
   if (!dialog.open) dialog.showModal();
 }
 async function startScan(path) {
@@ -190,7 +190,7 @@ async function startScan(path) {
   } catch (err) { report(err); }
 }
 
-/* Scansione in corso */
+/* Scan in progress */
 async function openScan(id, path) {
   const token = ++state.token;
   let s;
@@ -208,7 +208,7 @@ async function openScan(id, path) {
   renderExplorer(path || s.root);
 }
 function renderProgress(s, token) {
-  document.title = tx(tt('Scansione in corso'));
+  document.title = tx(tt('Scanning'));
   const known = s.expected > 0;
   const c = 2 * Math.PI * 46;
   const fill = h('template');
@@ -222,8 +222,8 @@ function renderProgress(s, token) {
     where,
     h('button', {
       class: 'quiet',
-      onclick: () => { try { backend.cancelScan(s.id); } catch { /* già conclusa */ } location.hash = '#/'; },
-    }, tt('Annulla scansione'))));
+      onclick: () => { try { backend.cancelScan(s.id); } catch { /* already finished */ } location.hash = '#/'; },
+    }, tt('Cancel scan'))));
   const tick = async () => {
     if (token !== state.token) return;
     let cur;
@@ -246,25 +246,25 @@ function renderProgress(s, token) {
   tick();
 }
 
-/* Esplora */
+/* Explore */
 function renderExplorer(path) {
   if (!state.map || state.data?.root !== state.scan.root) buildExplorer();
   loadPath(path);
 }
 function buildExplorer() {
-  const canvas = h('canvas', { role: 'img', 'aria-label': tt('Mappa radiale dello spazio occupato. Lo stesso contenuto è nell\'elenco a fianco.') });
+  const canvas = h('canvas', { role: 'img', 'aria-label': tt('Radial map of used space. The same content is in the list alongside.') });
   const center = h('button', { class: 'center', id: 'center', onclick: goUp },
     h('span', { class: 'c-name', id: 'cName' }), h('span', { class: 'c-size', id: 'cSize' }), h('span', { class: 'c-up', id: 'cUp' }));
   const notice = h('div', { class: 'notice', id: 'notice' });
-  const rows = h('div', { class: 'rows', id: 'rows', tabindex: '0', role: 'listbox', 'aria-label': tt('Contenuto ordinato per dimensione'), onkeydown: rowKeys });
+  const rows = h('div', { class: 'rows', id: 'rows', tabindex: '0', role: 'listbox', 'aria-label': tt('Contents sorted by size'), onkeydown: rowKeys });
   const search = h('input', {
-    class: 'search', type: 'search', placeholder: tt('Filtra per nome'), 'aria-label': tt('Filtra per nome'), id: 'search',
+    class: 'search', type: 'search', placeholder: tt('Filter by name'), 'aria-label': tt('Filter by name'), id: 'search',
     oninput: (e) => { state.filter = e.target.value.toLowerCase(); renderRows(); },
   });
   const tabs = h('div', { class: 'tabs', role: 'tablist' },
-    h('button', { role: 'tab', id: 'tabList', onclick: () => setTab('list') }, tt('In questa cartella')),
-    h('button', { role: 'tab', id: 'tabLarge', onclick: () => setTab('large') }, tt('File più grandi')));
-  const tray = h('section', { class: 'tray', id: 'tray', 'aria-label': tt('Raccolta') });
+    h('button', { role: 'tab', id: 'tabList', onclick: () => setTab('list') }, tt('In this folder')),
+    h('button', { role: 'tab', id: 'tabLarge', onclick: () => setTab('large') }, tt('Largest files')));
+  const tray = h('section', { class: 'tray', id: 'tray', 'aria-label': tt('Collection') });
   bindDrop(tray);
   view.replaceChildren(h('div', { class: 'explorer' },
     h('aside', { class: 'pane' }, tabs, search, rows, h('div', { class: 'actions', id: 'actions' })),
@@ -321,8 +321,8 @@ async function loadPath(path) {
   const n = $('notice');
   const protectedByMac = state.info.fullDiskAccess === true;
   n.textContent = tx(!data.denied ? ''
-    : protectedByMac ? tt("{0} protetti da macOS restano esclusi: succede anche con l'Accesso completo al disco.", items(data.denied))
-      : tt("{0} non leggibili per mancanza di permessi.", items(data.denied)));
+    : protectedByMac ? tt("{0} protected by macOS stay excluded: this happens even with Full Disk Access.", items(data.denied))
+      : tt("{0} unreadable due to missing permissions.", items(data.denied)));
 }
 function renderCrumbs() {
   const { root, path, sep } = state.data;
@@ -348,19 +348,19 @@ function updateCenter(arc) {
   const node = arc ? arc.node : d.node;
   $('cName').textContent = tx(node.n);
   $('cSize').textContent = tx(size(node.s));
-  const note = arc ? (arc.kind === 'other' ? items(node.count) : arc.kind === 'hidden' ? tt('clicca per saperne di più') : share(node.s))
-    : d.path !== d.root ? tt('Torna su') : '';
+  const note = arc ? (arc.kind === 'other' ? items(node.count) : arc.kind === 'hidden' ? tt('click to learn more') : share(node.s))
+    : d.path !== d.root ? tt('Go up') : '';
   $('cUp').textContent = tx(note);
   $('center').classList.toggle('up', d.path !== d.root);
 }
 const share = (s) => `${dec.format(s / (state.data.node.s + state.data.hidden || 1) * 100)}%`;
 function showHiddenInfo() {
-  openDialog(tt('Spazio non attribuito'), tt("{0} risultano occupati sul disco ma non appartengono a file leggibili.", size(state.data.hidden)), [
-    h('p', null, tt('Di solito sono cartelle per cui mancano i permessi, metadati del filesystem, snapshot o file di altri utenti. Per vedere di più, avvia il servizio con sudo.')),
-  ], [h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Ho capito'))]);
+  openDialog(tt('Unattributed space'), tt("{0} are in use on the disk but don't belong to readable files.", size(state.data.hidden)), [
+    h('p', null, tt('Usually these are folders without permissions, filesystem metadata, snapshots or other users\' files. To see more, start the service with sudo.')),
+  ], [h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Got it'))]);
 }
 
-/* Elenco */
+/* List */
 const childPath = (name) => {
   const { path, sep } = state.data;
   return path.endsWith(sep) ? path + name : path + sep + name;
@@ -405,24 +405,24 @@ function renderRows() {
     h('div', { style: 'min-width:0' }, h('div', { class: 'name', title: item.path }, item.name), h('div', { class: 'meta' }, meta)),
     h('div', null, h('div', { class: 'size' }, size(item.size)), h('div', { class: 'pct' }, `${dec.format(item.size / total * 100)}%`)),
     h('button', {
-      class: 'add', title: tt('Aggiungi alla raccolta'), 'aria-label': tt("Aggiungi {0} alla raccolta", item.name),
+      class: 'add', title: tt('Add to collection'), 'aria-label': tt("Add {0} to collection", item.name),
       onclick: (e) => { e.stopPropagation(); collect(item); },
     }, svg(ICON.plus)));
     return el;
   });
   if (state.tab === 'list' && !state.filter) {
     const o = state.data.node.o;
-    if (o) out.push(passive(ICON.more, tt("{0} più piccoli", items(o.count)), tt('Raggruppati per leggerezza'), o.size, total));
+    if (o) out.push(passive(ICON.more, tt("{0} smaller", items(o.count)), tt('Grouped because they are small'), o.size, total));
     if (state.data.hidden > 0) {
-      const row = passive(ICON.hidden, tt('Spazio non attribuito'), tt('Occupato ma non leggibile'), state.data.hidden, total);
+      const row = passive(ICON.hidden, tt('Unattributed space'), tt('Used but unreadable'), state.data.hidden, total);
       row.style.cursor = 'pointer';
       row.onclick = showHiddenInfo;
       out.push(row);
     }
   }
   if (!out.length) {
-    const msg = state.tab === 'large' && state.largest && !state.largest.length ? tt('Nessun file oltre 1 MB in questa analisi.')
-      : state.filter ? tt('Nessun elemento con questo nome.') : state.tab === 'large' ? tt('Caricamento…') : tt('Questa cartella è vuota.');
+    const msg = state.tab === 'large' && state.largest && !state.largest.length ? tt('No files over 1 MB in this scan.')
+      : state.filter ? tt('No items with this name.') : state.tab === 'large' ? tt('Loading…') : tt('This folder is empty.');
     out.push(h('div', { class: 'empty' }, msg));
   }
   box.replaceChildren(...out);
@@ -471,14 +471,14 @@ function openItem(item) {
 }
 function actionsFor(item) {
   return [
-    item.dir && [tt('Apri'), () => openItem(item)],
-    !item.dir && [tt('Anteprima'), () => preview(item)],
-    [tt('Mostra nella cartella'), () => backend.reveal(item.path).catch(report)],
-    [tt('Copia percorso'), async () => {
-      try { await Neutralino.clipboard.writeText(item.path); toast(tt('Percorso copiato')); } catch { toast(item.path); }
+    item.dir && [tt('Open'), () => openItem(item)],
+    !item.dir && [tt('Preview'), () => preview(item)],
+    [tt('Show in folder'), () => backend.reveal(item.path).catch(report)],
+    [tt('Copy path'), async () => {
+      try { await Neutralino.clipboard.writeText(item.path); toast(tt('Path copied')); } catch { toast(item.path); }
     }],
-    item.dir && [tt('Riscansiona'), () => rescan(item.path)],
-    isCollected(item.path) ? [tt('Togli dalla raccolta'), () => uncollect(item.path)] : [tt('Aggiungi alla raccolta'), () => collect(item)],
+    item.dir && [tt('Rescan'), () => rescan(item.path)],
+    isCollected(item.path) ? [tt('Remove from collection'), () => uncollect(item.path)] : [tt('Add to collection'), () => collect(item)],
   ].filter(Boolean);
 }
 function renderActions() {
@@ -487,7 +487,7 @@ function renderActions() {
   const item = selectedItem();
   box.hidden = !item;
   if (!item) { box.replaceChildren(); return; }
-  box.replaceChildren(...actionsFor(item).filter(([l]) => l !== 'Riscansiona').map(([label, run]) => h('button', { class: 'quiet', onclick: run }, label)));
+  box.replaceChildren(...actionsFor(item).filter(([l]) => l !== 'Rescan').map(([label, run]) => h('button', { class: 'quiet', onclick: run }, label)));
 }
 function openMenu(item, x, y) {
   menu.replaceChildren(...actionsFor(item).map(([label, run]) => h('button', {
@@ -523,7 +523,7 @@ async function rescan(path) {
     state.largest = null;
     if (state.tab === 'large') setTab('large');
     await reload();
-    toast(tt('Analisi aggiornata'));
+    toast(tt('Scan updated'));
   } catch (err) { report(err); }
 }
 const rescanCurrent = () => rescan(state.data.path);
@@ -534,7 +534,7 @@ async function reload() {
   await loadPath(keep);
 }
 
-/* Raccolta */
+/* Collection */
 function isCollected(path) {
   const sep = state.data?.sep || '/';
   for (const c of state.collection.keys()) if (path === c || path.startsWith(c + sep)) return true;
@@ -574,20 +574,20 @@ function renderTray() {
   if (!tray) return;
   const list = [...state.collection.values()];
   if (!list.length) {
-    tray.replaceChildren(h('span', { class: 'hint' }, tt('Trascina qui, o premi +, ciò che vuoi togliere dal disco. Nulla cambia finché non lo sposti nel cestino.')));
+    tray.replaceChildren(h('span', { class: 'hint' }, tt('Drag here, or press +, whatever you want off the disk. Nothing changes until you move it to the Trash.')));
     return;
   }
   const total = list.reduce((s, i) => s + i.size, 0);
   tray.replaceChildren(
-    h('div', { class: 'title' }, tt("Raccolta: {0}", size(total)), h('small', null, items(list.length))),
+    h('div', { class: 'title' }, tt("Collection: {0}", size(total)), h('small', null, items(list.length))),
     h('div', { class: 'chips' }, list.map((i) => {
       const fail = state.failures.get(i.path);
       return h('div', { class: `chip${fail ? ' bad' : ''}`, title: fail || i.path },
         h('span', null, i.name), h('em', null, size(i.size)),
-        h('button', { 'aria-label': tt("Togli {0}", i.name), onclick: () => uncollect(i.path) }, '×'));
+        h('button', { 'aria-label': tt("Remove {0}", i.name), onclick: () => uncollect(i.path) }, '×'));
     })),
-    h('button', { class: 'ghost', onclick: () => { state.collection.clear(); state.failures.clear(); syncCollection(); } }, tt('Svuota')),
-    h('button', { class: 'primary', onclick: moveCollection }, tt('Sposta nel cestino')));
+    h('button', { class: 'ghost', onclick: () => { state.collection.clear(); state.failures.clear(); syncCollection(); } }, tt('Empty')),
+    h('button', { class: 'primary', onclick: moveCollection }, tt('Move to Trash')));
 }
 async function moveCollection() {
   try {
@@ -604,21 +604,21 @@ async function moveCollection() {
     if (res.moved.length) {
       const ids = res.moved.map((m) => m.id);
       const total = res.moved.reduce((s, m) => s + m.size, 0);
-      toast(tt("{0} nel cestino. Lo spazio si libera quando li elimini.", size(total)), {
-        label: tt('Annulla'),
+      toast(tt("{0} in the Trash. Space is freed when you delete them.", size(total)), {
+        label: tt('Cancel'),
         run: async () => {
           const back = await backend.restoreItems(ids, false);
           await refreshTrash();
           await reload();
-          toast(back.failed.length ? tt('Alcuni elementi non sono tornati al loro posto: controlla il cestino') : tt('Elementi ripristinati'));
+          toast(back.failed.length ? tt('Some items didn\'t return to their place: check the Trash') : tt('Items restored'));
         },
       });
     }
-    if (res.failed.length) toast(`${res.failed.length === 1 ? tt('Un elemento non spostato') : tt("{0} non spostati", items(res.failed.length))}: ${res.failed[0].error}`);
+    if (res.failed.length) toast(`${res.failed.length === 1 ? tt('One item not moved') : tt("{0} not moved", items(res.failed.length))}: ${res.failed[0].error}`);
   } catch (err) { report(err); }
 }
 
-/* Anteprima */
+/* Preview */
 async function preview(item) {
   let body;
   let url = null;
@@ -631,10 +631,10 @@ async function preview(item) {
       else body = h('audio', { src: url, controls: true });
     } else if (p.kind === 'text') body = h('pre', null, p.text + (p.truncated ? '\n…' : ''));
     else body = h('p', { class: 'empty' }, p.reason);
-  } catch { body = h('p', { class: 'empty' }, tt('Questo elemento non si può aprire.')); }
+  } catch { body = h('p', { class: 'empty' }, tt('This item can\'t be opened.')); }
   openDialog(item.name, tt("{0} in {1}", size(item.size), item.path), [body], [
-    h('button', { class: 'ghost', onclick: () => { collect(item); dialog.close(); } }, tt('Aggiungi alla raccolta')),
-    h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Chiudi')),
+    h('button', { class: 'ghost', onclick: () => { collect(item); dialog.close(); } }, tt('Add to collection')),
+    h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Close')),
   ], 'wide');
   if (url) dialog.addEventListener('close', () => URL.revokeObjectURL(url), { once: true });
 }
@@ -647,69 +647,69 @@ function openDialog(title, sub, body, footer, cls = '') {
   if (!dialog.open) dialog.showModal();
 }
 
-/* Cestino */
+/* Trash */
 async function renderBin() {
-  document.title = tx(tt('Cestino'));
+  document.title = tx(tt('Trash'));
   const token = ++state.token;
   await refreshTrash();
   if (token !== state.token) return;
   const list = [...state.trash].sort((a, b) => b.size - a.size);
   const picked = new Set();
   const total = list.reduce((s, i) => s + i.size, 0);
-  const restoreBtn = h('button', { class: 'quiet', disabled: true, onclick: () => restore([...picked]) }, tt('Ripristina'));
-  const purgeBtn = h('button', { class: 'danger', disabled: !list.length, onclick: () => askPurge(picked.size ? list.filter((i) => picked.has(i.id)) : list) }, tt('Elimina tutto'));
+  const restoreBtn = h('button', { class: 'quiet', disabled: true, onclick: () => restore([...picked]) }, tt('Restore'));
+  const purgeBtn = h('button', { class: 'danger', disabled: !list.length, onclick: () => askPurge(picked.size ? list.filter((i) => picked.has(i.id)) : list) }, tt('Delete all'));
   const sync = () => {
     restoreBtn.disabled = !picked.size;
-    purgeBtn.textContent = tx(picked.size ? tt("Elimina {0}", items(picked.size)) : tt('Elimina tutto'));
+    purgeBtn.textContent = tx(picked.size ? tt("Delete {0}", items(picked.size)) : tt('Delete all'));
   };
   const rows = list.map((item) => h('div', { class: 'bin-row' },
     h('input', {
-      type: 'checkbox', 'aria-label': tt("Seleziona {0}", item.name),
+      type: 'checkbox', 'aria-label': tt("Select {0}", item.name),
       onchange: (e) => { if (e.target.checked) picked.add(item.id); else picked.delete(item.id); sync(); },
     }),
     svg(item.dir ? ICON.folder : ICON.file),
     h('div', { style: 'min-width:0' }, h('div', { class: 'name', title: item.name }, item.name),
-      h('div', { class: `from${item.missing ? ' gone' : ''}`, title: item.original }, item.missing ? tt('Non più presente nel cestino') : item.original)),
+      h('div', { class: `from${item.missing ? ' gone' : ''}`, title: item.original }, item.missing ? tt('No longer in the Trash') : item.original)),
     h('div', { class: 'num' }, size(item.size)),
     h('div', { class: 'when' }, ago(item.trashedAt)),
-    h('button', { class: 'quiet', disabled: item.missing, onclick: () => restore([item.id]) }, tt('Ripristina'))));
+    h('button', { class: 'quiet', disabled: item.missing, onclick: () => restore([item.id]) }, tt('Restore'))));
   view.replaceChildren(h('div', { class: 'bin' },
     h('div', { class: 'bin-head' },
-      h('div', null, h('h1', null, list.length ? tt("{0} nel cestino", size(total)) : tt('Il cestino è vuoto')),
-        h('p', null, list.length ? tt('Questi elementi occupano ancora spazio sul disco finché non li elimini. Puoi ripristinarli quando vuoi.') : tt('Quello che sposti dalla raccolta resta qui, recuperabile, finché non decidi di eliminarlo.'))),
+      h('div', null, h('h1', null, list.length ? tt("{0} in the Trash", size(total)) : tt('The Trash is empty')),
+        h('p', null, list.length ? tt('These items still take up disk space until you delete them. You can restore them whenever you like.') : tt('What you move from the collection stays here, recoverable, until you decide to delete it.'))),
       list.length ? h('div', { class: 'bin-actions' }, restoreBtn, purgeBtn) : null),
-    rows.length ? rows : h('div', { class: 'bin-empty' }, h('a', { class: 'quiet', href: '#/' }, tt('Torna ai dischi')))));
+    rows.length ? rows : h('div', { class: 'bin-empty' }, h('a', { class: 'quiet', href: '#/' }, tt('Back to disks')))));
 }
 async function restore(ids, rename = false) {
   try {
     const res = await backend.restoreItems(ids, rename);
     const conflicts = res.failed.filter((f) => f.code === 'CONFLICT');
-    if (res.restored.length) toast(res.restored.length === 1 ? tt('Elemento ripristinato') : tt("{0} ripristinati", items(res.restored.length)));
+    if (res.restored.length) toast(res.restored.length === 1 ? tt('Item restored') : tt("{0} restored", items(res.restored.length)));
     const other = res.failed.find((f) => f.code !== 'CONFLICT');
     if (other) toast(other.error);
     if (conflicts.length) {
-      openDialog(tt('Esiste già un elemento con lo stesso nome'),
-        tt("{0} non possono tornare al loro posto senza sovrascrivere.", items(conflicts.length)),
-        [h('p', null, tt('Anelli non sovrascrive mai. Puoi ripristinarli accanto all\'originale con un nome diverso.'))],
-        [h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Lascia nel cestino')),
-          h('button', { class: 'primary', onclick: () => { dialog.close(); restore(conflicts.map((c) => c.id), true); } }, tt('Ripristina con altro nome'))]);
+      openDialog(tt('An item with the same name already exists'),
+        tt("{0} can't return to their place without overwriting.", items(conflicts.length)),
+        [h('p', null, tt('Anelli never overwrites. You can restore them next to the original under a different name.'))],
+        [h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Leave in Trash')),
+          h('button', { class: 'primary', onclick: () => { dialog.close(); restore(conflicts.map((c) => c.id), true); } }, tt('Restore with another name'))]);
     }
     renderBin();
   } catch (err) { report(err); }
 }
 function askPurge(list) {
   const total = list.reduce((s, i) => s + i.size, 0);
-  const confirmBtn = h('button', { class: 'danger', onclick: () => countdown(list, confirmBtn) }, tt("Elimina {0}", size(total)));
-  openDialog(tt("Eliminare definitivamente {0}?", items(list.length)), tt('Questa azione non si può annullare.'),
+  const confirmBtn = h('button', { class: 'danger', onclick: () => countdown(list, confirmBtn) }, tt("Delete {0}", size(total)));
+  openDialog(tt("Permanently delete {0}?", items(list.length)), tt('This action can\'t be undone.'),
     [h('ul', null, list.slice(0, 40).map((i) => h('li', null, h('span', null, i.original), h('span', null, size(i.size))))),
-      list.length > 40 ? h('p', { class: 'empty' }, tt("e altri {0}", num.format(list.length - 40))) : null],
-    [h('button', { class: 'ghost', onclick: () => { clearInterval(state.timer); dialog.close(); } }, tt('Annulla')), confirmBtn]);
+      list.length > 40 ? h('p', { class: 'empty' }, tt("and {0} more", num.format(list.length - 40))) : null],
+    [h('button', { class: 'ghost', onclick: () => { clearInterval(state.timer); dialog.close(); } }, tt('Cancel')), confirmBtn]);
 }
 function countdown(list, btn) {
   if (state.timer) clearInterval(state.timer);
   let left = 5;
   btn.disabled = true;
-  const paint = () => { btn.textContent = tx(tt("Eliminazione tra {0} s", left)); };
+  const paint = () => { btn.textContent = tx(tt("Deleting in {0} s", left)); };
   paint();
   state.timer = setInterval(async () => {
     left--;
@@ -717,11 +717,11 @@ function countdown(list, btn) {
     clearInterval(state.timer);
     state.timer = null;
     if (!dialog.open) return;
-    btn.textContent = tx(tt('Eliminazione in corso'));
+    btn.textContent = tx(tt('Deleting'));
     try {
       const res = await backend.purgeItems(list.map((i) => i.id));
       dialog.close();
-      toast(res.failed.length ? tt("{0} non eliminati: {1}", res.failed.length, res.failed[0].error) : (res.purged.length === 1 ? tt('Elemento eliminato definitivamente') : tt("{0} eliminati definitivamente", items(res.purged.length))));
+      toast(res.failed.length ? tt("{0} not deleted: {1}", res.failed.length, res.failed[0].error) : (res.purged.length === 1 ? tt('Item permanently deleted') : tt("{0} permanently deleted", items(res.purged.length))));
     } catch (err) { dialog.close(); report(err); }
     renderBin();
   }, 1000);

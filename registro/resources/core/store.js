@@ -1,12 +1,12 @@
-// Conteggi per minuto, kind > app > forma del messaggio. I file giornalieri sono solo
-// aggiunte: ogni lettura salva i nuovi conteggi, e rileggerli li somma.
+// Counts per minute, kind > app > message shape. The daily files are only
+// additions: each read saves the new counts, and re-reading them sums them.
 export const SEP = '\u001f';
 export const ROOT = 'registro';
 export const PERIODS = {
-  live: { label: 'Recenti', phrase: 'negli ultimi 15 minuti', span: 900000, bin: 30000 },
-  hour: { label: 'Ultima ora', phrase: 'nell\'ultima ora', span: 3600000, bin: 60000 },
-  day: { label: 'Oggi', phrase: 'oggi', bin: 900000 },
-  week: { label: '7 giorni', phrase: 'in 7 giorni', span: 604800000, bin: 10800000 },
+  live: { label: 'Recent', phrase: 'in the last 15 minutes', span: 900000, bin: 30000 },
+  hour: { label: 'Last hour', phrase: 'in the last hour', span: 3600000, bin: 60000 },
+  day: { label: 'Today', phrase: 'today', bin: 900000 },
+  week: { label: '7 days', phrase: 'in 7 days', span: 604800000, bin: 10800000 },
 };
 const MINUTE = 60000;
 export const startOfDay = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
@@ -20,7 +20,7 @@ export class Store {
     b.set(key, (b.get(key) || 0) + count);
   }
 
-  // events: [{ t, key }]. Restituisce le righe da salvare, una per minuto.
+  // events: [{ t, key }]. Returns the rows to save, one per minute.
   ingest(events) {
     const fresh = new Map();
     for (const { t, key } of events) {
@@ -80,7 +80,7 @@ export class Store {
 }
 
 export function buildTree(totals, kind, describe) {
-  const root = { n: 'Tutto il registro', d: 1, c: [], s: 0 };
+  const root = { n: 'Whole log', d: 1, c: [], s: 0 };
   const apps = new Map();
   for (const [key, count] of totals) {
     const [k, app, pattern] = key.split(SEP);

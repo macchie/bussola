@@ -1,5 +1,5 @@
-import { t as tt, tx, locale } from './comune/i18n.js';
-import { salvaTema, primaDiRicaricare } from './comune/impostazioni.js';
+import { t as tt, tx, locale } from './shared/i18n.js';
+import { saveTheme, beforeReload } from './shared/settings.js';
 import { RadialMap } from './map.js';
 import { Sampler, PERIODS } from './core/sampler.js';
 import { SEP, ROOT } from './core/store.js';
@@ -25,15 +25,15 @@ function h(tag, attrs, ...kids) {
 const dec = new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 });
 const num = new Intl.NumberFormat(locale());
 function size(b) {
-  if (!b) return tt('0 byte');
-  const units = [tt('byte'), tt('kB'), tt('MB'), tt('GB'), tt('TB')];
+  if (!b) return tt('0 bytes');
+  const units = [tt('bytes'), tt('kB'), tt('MB'), tt('GB'), tt('TB')];
   const i = Math.min(units.length - 1, Math.floor(Math.log(b) / Math.log(1000)));
   return `${i === 0 ? Math.round(b) : dec.format(b / 1000 ** i)} ${units[i]}`;
 }
 const KINDS = {
-  exposed: { tab: tt('Esposte'), one: tt('porta esposta'), many: tt('porte esposte'), empty: tt('Nessuna porta è raggiungibile dalla rete.') },
-  local: { tab: tt('Locali'), one: tt('porta locale'), many: tt('porte locali'), empty: tt('Nessuna porta locale in ascolto.') },
-  conn: { tab: tt('Connessioni'), one: tt('connessione'), many: tt('connessioni'), empty: tt('Nessuna connessione attiva.') },
+  exposed: { tab: tt('Exposed'), one: tt('exposed port'), many: tt('exposed ports'), empty: tt('No port is reachable from the network.') },
+  local: { tab: tt('Local'), one: tt('local port'), many: tt('local ports'), empty: tt('No local port listening.') },
+  conn: { tab: tt('Connections'), one: tt('connection'), many: tt('connections'), empty: tt('No active connections.') },
 };
 const label = (n, kind = state.metric) => `${num.format(n)} ${n === 1 ? KINDS[kind].one : KINDS[kind].many}`;
 function toast(text) {
@@ -43,7 +43,7 @@ function toast(text) {
 }
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-/* Tema */
+/* Theme */
 const theme = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 const paintThemeIcon = () => {
   const t = document.createElement('template');
@@ -56,7 +56,7 @@ paintThemeIcon();
 $('theme').onclick = () => {
   const next = theme() === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
-  salvaTema(next);
+  saveTheme(next);
   window.dispatchEvent(new Event('tema'));
 };
 window.addEventListener('tema', () => {
@@ -97,12 +97,12 @@ function refresh(navigated = false) {
   const empty = !state.tree.c.length;
   $('stageEmpty').hidden = !empty;
   $('center').hidden = empty;
-  $('stageEmpty').textContent = tx(state.sampler.paused ? tt('Rilevamento in pausa.')
-    : state.sampler.diag.samples < 2 ? tt('Lettura delle porte in corso…') : KINDS[state.metric].empty);
+  $('stageEmpty').textContent = tx(state.sampler.paused ? tt('Monitoring paused.')
+    : state.sampler.diag.samples < 2 ? tt('Reading ports…') : KINDS[state.metric].empty);
   const d = state.sampler.diag;
   const firstDay = state.sampler.ledger.since && now - state.sampler.ledger.since < 60000;
-  $('notice').textContent = tx(state.tree.fresh ? tt("{0} nelle ultime 24 ore.", state.tree.fresh === 1 ? tt('1 novità') : tt("{0} novità", num.format(state.tree.fresh)))
-    : firstDay ? tt('Prima osservazione: da ora Sentinelle segnala ciò che compare di nuovo.') : '');
+  $('notice').textContent = tx(state.tree.fresh ? tt("{0} in the last 24 hours.", state.tree.fresh === 1 ? tt('1 new item') : tt("{0} new items", num.format(state.tree.fresh)))
+    : firstDay ? tt('First look: from now on Sentinelle reports whatever newly appears.') : '');
   $('alert').hidden = !(d.samples >= 2 && !d.processes) && !(d.samples === 0 && d.exitCode !== null && d.exitCode !== 0);
 }
 function go(names) {
@@ -111,20 +111,20 @@ function go(names) {
   refresh(true);
 }
 function renderCrumbs() {
-  const parts = [h('button', { onclick: () => go([]) }, tt('Questo computer'))];
+  const parts = [h('button', { onclick: () => go([]) }, tt('This computer'))];
   state.path.forEach((name, i) => parts.push(h('i', null, '/'), h('button', { onclick: () => go(state.path.slice(0, i + 1)) }, name)));
   $('crumbs').replaceChildren(...parts);
 }
 function renderCenter(arc) {
-  const node = arc ? (arc.kind === 'other' ? { n: tt('Elementi minori'), s: arc.node.s, kind: 'other' } : arc.node) : current();
+  const node = arc ? (arc.kind === 'other' ? { n: tt('Smaller items'), s: arc.node.s, kind: 'other' } : arc.node) : current();
   $('cName').textContent = tx(node.n);
   $('cSize').textContent = tx(num.format(Math.round(node.s)));
   $('cSplit').textContent = tx(node.kind === 'item' ? metaOf(node) : KINDS[state.metric][Math.round(node.s) === 1 ? 'one' : 'many']);
   $('center').classList.toggle('up', state.path.length > 0);
 }
 const metaOf = (n) => (n.kind === 'item' ? [n.detail, [...n.processes][0]].filter(Boolean).join(', ') : label(Math.round(n.s)));
-const nameOf = (n) => [n.n, n.isNew ? h('span', { class: 'badge' }, tt('Nuova')) : null, n.remote ? h('span', { class: 'badge' }, tt('Accesso remoto')) : null,
-  n.fresh ? h('span', { class: 'badge' }, n.fresh === 1 ? tt('1 nuova') : tt("{0} nuove", num.format(n.fresh))) : null];
+const nameOf = (n) => [n.n, n.isNew ? h('span', { class: 'badge' }, tt('New')) : null, n.remote ? h('span', { class: 'badge' }, tt('Remote access')) : null,
+  n.fresh ? h('span', { class: 'badge' }, n.fresh === 1 ? tt('1 new') : tt("{0} new", num.format(n.fresh))) : null];
 function renderRows(node) {
   const list = (node.c || []).filter((c) => !state.filter || tx(c.n).toLowerCase().includes(state.filter));
   const max = list.length && list[0].s ? list[0].s : 1;
@@ -147,7 +147,7 @@ function renderRows(node) {
   });
   const box = $('rows');
   const top = box.scrollTop;
-  box.replaceChildren(...(rows.length ? rows : [h('div', { class: 'empty' }, state.filter ? tt('Nessun elemento con questo nome.') : KINDS[state.metric].empty)]));
+  box.replaceChildren(...(rows.length ? rows : [h('div', { class: 'empty' }, state.filter ? tt('No items with this name.') : KINDS[state.metric].empty)]));
   box.scrollTop = top;
   $('paneTitle').textContent = tx(`${label(Math.round(node.s))} ${tx(PERIODS[state.period].phrase)}`);
 }
@@ -162,9 +162,9 @@ function renderActions() {
   if (!n) { box.replaceChildren(); return; }
   const target = state.sampler.bundles.get(n.kind === 'app' ? n.n : state.path[0]);
   box.replaceChildren(
-    n.d ? h('button', { class: 'quiet', onclick: () => go([...state.path, n.n]) }, tt('Apri')) : '',
-    target ? h('button', { class: 'quiet', onclick: async () => { if (!await reveal(target).catch(() => false)) toast(tt('Nessun gestore file disponibile')); } }, tt('Mostra nella cartella')) : '',
-    h('button', { class: 'quiet', onclick: async () => { await Neutralino.clipboard.writeText(n.n); toast(tt('Nome copiato')); } }, tt('Copia nome')),
+    n.d ? h('button', { class: 'quiet', onclick: () => go([...state.path, n.n]) }, tt('Open')) : '',
+    target ? h('button', { class: 'quiet', onclick: async () => { if (!await reveal(target).catch(() => false)) toast(tt('No file manager available')); } }, tt('Show in folder')) : '',
+    h('button', { class: 'quiet', onclick: async () => { await Neutralino.clipboard.writeText(n.n); toast(tt('Name copied')); } }, tt('Copy name')),
   );
 }
 function renderRates() {
@@ -173,7 +173,7 @@ function renderRates() {
   $('memNow').textContent = tx(num.format(conn));
 }
 
-/* Grafico: porte esposte sopra, connessioni sotto, stessa scala */
+/* Chart: exposed ports on top, connections below, same scale */
 function drawChart() {
   const canvas = $('chart');
   if (!canvas) return;
@@ -228,7 +228,7 @@ function drawChart() {
   }
   state.chartGeom = { leftW, step };
   const last = [...bins].reverse().find((b) => b.w);
-  canvas.setAttribute('aria-label', tx(last ? tt("Andamento: {0}, {1}", label(Math.round(last.cpu), 'exposed'), label(Math.round(last.mem), 'conn')) : tt('Andamento di porte e connessioni')));
+  canvas.setAttribute('aria-label', tx(last ? tt("Trend: {0}, {1}", label(Math.round(last.cpu), 'exposed'), label(Math.round(last.mem), 'conn')) : tt('Ports and connections trend')));
 }
 const binLabel = (t) => new Intl.DateTimeFormat(locale(), state.period === 'week' ? { weekday: 'short', hour: '2-digit', minute: '2-digit' }
   : state.period === 'live' ? { hour: '2-digit', minute: '2-digit', second: '2-digit' } : { hour: '2-digit', minute: '2-digit' }).format(t);
@@ -244,7 +244,7 @@ function chartHover(e) {
   state.hoverBin = i;
   drawChart();
   tip.hidden = false;
-  tip.replaceChildren(h('b', null, binLabel(b.t)), b.w ? tt("Esposte {0}   Connessioni {1}", dec.format(b.cpu), dec.format(b.mem)) : tt('Nessun dato'));
+  tip.replaceChildren(h('b', null, binLabel(b.t)), b.w ? tt("Exposed {0}   Connections {1}", dec.format(b.cpu), dec.format(b.mem)) : tt('No data'));
   const w = tip.offsetWidth;
   tip.style.left = `${Math.max(0, Math.min(canvas.clientWidth - w, x + 12))}px`;
 }
@@ -260,7 +260,7 @@ function build() {
       refresh();
     },
   }, p.label)));
-  const metric = h('div', { class: 'seg', role: 'group', 'aria-label': tt('Misura') }, Object.entries(KINDS).map(([id, { tab }]) => h('button', {
+  const metric = h('div', { class: 'seg', role: 'group', 'aria-label': tt('Measure') }, Object.entries(KINDS).map(([id, { tab }]) => h('button', {
     'aria-pressed': id === 'exposed' ? 'true' : 'false',
     onclick: (e) => {
       state.metric = id;
@@ -270,22 +270,22 @@ function build() {
       refresh(true);
     },
   }, tab)));
-  const canvas = h('canvas', { role: 'img', 'aria-label': tt('Mappa di porte e connessioni per app. Lo stesso contenuto è nell\'elenco.') });
+  const canvas = h('canvas', { role: 'img', 'aria-label': tt('Ports and connections map by app. The same content is in the list.') });
   const center = h('button', { class: 'center', id: 'center', onclick: () => { if (state.path.length) go(state.path.slice(0, -1)); } },
     h('span', { class: 'c-name', id: 'cName' }), h('span', { class: 'c-size', id: 'cSize' }), h('span', { class: 'c-split', id: 'cSplit' }));
   view.replaceChildren(h('div', { class: 'app' },
-    h('div', { class: 'alert', id: 'alert', hidden: true }, h('span', null, tt('Il sistema ha risposto in un formato inatteso: le porte non si possono leggere.')),
-      h('button', { class: 'quiet', onclick: openDiag }, tt('Apri diagnostica'))),
+    h('div', { class: 'alert', id: 'alert', hidden: true }, h('span', null, tt('The system answered in an unexpected format: ports can\'t be read.')),
+      h('button', { class: 'quiet', onclick: openDiag }, tt('Open diagnostics'))),
     h('aside', { class: 'pane' },
       h('div', { class: 'pane-head' }, h('strong', { id: 'paneTitle' }), metric),
-      h('input', { class: 'search', type: 'search', placeholder: tt('Filtra per nome'), 'aria-label': tt('Filtra per nome'), oninput: (e) => { state.filter = e.target.value.toLowerCase(); renderRows(current()); } }),
+      h('input', { class: 'search', type: 'search', placeholder: tt('Filter by name'), 'aria-label': tt('Filter by name'), oninput: (e) => { state.filter = e.target.value.toLowerCase(); renderRows(current()); } }),
       h('div', { class: 'rows', id: 'rows' }),
       h('div', { class: 'actions', id: 'actions', hidden: true })),
     h('div', { class: 'stage' }, canvas, center, h('div', { class: 'empty', id: 'stageEmpty', hidden: true }), h('div', { class: 'notice', id: 'notice' })),
-    h('section', { class: 'flow', 'aria-label': tt('Andamento') },
+    h('section', { class: 'flow', 'aria-label': tt('Trend') },
       h('div', { class: 'rates' },
-        h('div', { class: 'rate' }, h('i', { style: 'background:var(--cpu)' }), h('strong', { id: 'cpuNow' }, '—'), h('span', null, tt('Porte esposte'))),
-        h('div', { class: 'rate' }, h('i', { style: 'background:var(--ram)' }), h('strong', { id: 'memNow' }, '—'), h('span', null, tt('Connessioni attive')))),
+        h('div', { class: 'rate' }, h('i', { style: 'background:var(--cpu)' }), h('strong', { id: 'cpuNow' }, '—'), h('span', null, tt('Exposed ports'))),
+        h('div', { class: 'rate' }, h('i', { style: 'background:var(--ram)' }), h('strong', { id: 'memNow' }, '—'), h('span', null, tt('Active connections')))),
       h('div', { class: 'chart', onmousemove: chartHover, onmouseleave: () => { $('tip').hidden = true; state.hoverBin = undefined; drawChart(); } },
         h('canvas', { id: 'chart', role: 'img' }), h('div', { class: 'tip', id: 'tip', hidden: true })))));
   state.map = new RadialMap(canvas, {
@@ -311,33 +311,33 @@ function openDiag() {
   const d = state.sampler.diag;
   const report = JSON.stringify({ ...d, raw: undefined, os: NL_OS, version: NL_APPVERSION }, null, 1) + '\n\n' + d.raw;
   dialog.replaceChildren(h('div', { class: 'dlg' },
-    h('header', null, h('h2', null, tt('Diagnostica')), h('p', null, tt('Quello che il sistema ha restituito nell\'ultimo campione. Sentinelle guarda solo questo computer: non analizza altri dispositivi e non invia dati a nessuno.'))),
+    h('header', null, h('h2', null, tt('Diagnostics')), h('p', null, tt('What the system returned in the latest sample. Sentinelle only looks at this computer: it doesn\'t scan other devices and sends data to no one.'))),
     h('div', { class: 'body' },
       h('dl', null,
-        h('dt', null, tt('Campioni letti')), h('dd', null, num.format(d.samples)),
-        h('dt', null, tt('Porte e connessioni')), h('dd', null, num.format(d.processes)),
-        h('dt', null, tt('Codice di uscita')), h('dd', null, String(d.exitCode)),
-        d.error ? h('dt', null, tt('Messaggio')) : '', d.error ? h('dd', null, d.error) : ''),
-      h('pre', null, d.raw || tt('Nessun dato ancora.'))),
+        h('dt', null, tt('Samples read')), h('dd', null, num.format(d.samples)),
+        h('dt', null, tt('Ports and connections')), h('dd', null, num.format(d.processes)),
+        h('dt', null, tt('Exit code')), h('dd', null, String(d.exitCode)),
+        d.error ? h('dt', null, tt('Message')) : '', d.error ? h('dd', null, d.error) : ''),
+      h('pre', null, d.raw || tt('No data yet.'))),
     h('footer', null,
-      h('button', { class: 'danger', onclick: confirmClear }, tt('Cancella storico')),
+      h('button', { class: 'danger', onclick: confirmClear }, tt('Clear history')),
       h('div', null,
-        h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(report); toast(tt('Dati copiati')); } }, tt('Copia dati')),
-        h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Chiudi'))))));
+        h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(report); toast(tt('Data copied')); } }, tt('Copy data')),
+        h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Close'))))));
   if (!dialog.open) dialog.showModal();
 }
 function confirmClear() {
   dialog.replaceChildren(h('div', { class: 'dlg' },
-    h('header', null, h('h2', null, tt('Cancellare lo storico?')), h('p', null, tt('Elimina i dati raccolti finora su questo computer. L\'azione non si può annullare.'))),
+    h('header', null, h('h2', null, tt('Clear the history?')), h('p', null, tt('Deletes the data collected so far on this computer. This can\'t be undone.'))),
     h('footer', null, h('span'), h('div', null,
-      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Annulla')),
-      h('button', { class: 'danger', onclick: async () => { await state.sampler.clearHistory(); dialog.close(); toast(tt('Storico cancellato')); } }, tt('Cancella storico'))))));
+      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Cancel')),
+      h('button', { class: 'danger', onclick: async () => { await state.sampler.clearHistory(); dialog.close(); toast(tt('History cleared')); } }, tt('Clear history'))))));
 }
 
 (async () => {
   build();
   state.sampler = new Sampler(refresh);
-  primaDiRicaricare(() => state.sampler.stop());
+  beforeReload(() => state.sampler.stop());
   Neutralino.events.on('windowClose', async () => {
     await state.sampler.stop().catch(() => {});
     Neutralino.app.exit();
@@ -346,7 +346,7 @@ function confirmClear() {
   $('pause').onclick = () => {
     const next = !state.sampler.paused;
     state.sampler.setPaused(next);
-    $('pause').textContent = tx(next ? tt('Riprendi') : tt('Pausa'));
+    $('pause').textContent = tx(next ? tt('Resume') : tt('Pause'));
     $('pause').setAttribute('aria-pressed', next ? 'true' : 'false');
     refresh();
   };

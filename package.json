@@ -1,7 +1,7 @@
 {
   "name": "bussola-suite",
   "private": true,
-  "description": "Strumenti di sviluppo della suite. Le app finali non usano Node.",
+  "description": "Development tooling for the suite. The final apps don't use Node.",
   "devDependencies": {
     "@neutralinojs/neu": "11.8.0"
   },

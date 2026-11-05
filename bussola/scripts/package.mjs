@@ -1,10 +1,10 @@
-// Strumento di sviluppo: dal risultato di `neu build` ai pacchetti di ogni sistema.
+// Dev tool: from the result of `neu build` to the packages for every system.
 import { execFileSync } from 'node:child_process';
 import { chmodSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIST = 'dist/bussola';
-const OUT = 'dist/pacchetti';
+const OUT = 'dist/packages';
 const { version } = JSON.parse(readFileSync('neutralino.config.json', 'utf8'));
 rmSync(OUT, { recursive: true, force: true });
 const root = join(OUT, 'Bussola-macos');
@@ -27,9 +27,9 @@ writeFileSync(join(contents, 'Info.plist'), `<?xml version="1.0" encoding="UTF-8
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 `);
-const installer = join(root, 'Installa Bussola.command');
+const installer = join(root, 'Install Bussola.command');
 writeFileSync(installer, `#!/bin/bash
-# Firma Bussola con lo strumento di Apple e la installa in Applicazioni.
+# Sign Bussola with Apple's tool and install it in Applications.
 set -e
 cd "$(dirname "$0")"
 pkill -x bussola 2>/dev/null || true
@@ -39,7 +39,7 @@ codesign --verify --deep --strict Bussola.app
 rm -rf /Applications/Bussola.app
 ditto Bussola.app /Applications/Bussola.app
 echo
-echo "Bussola è installata in Applicazioni."
+echo "Bussola is installed in Applications."
 open /Applications/Bussola.app
 `);
 chmodSync(installer, 0o755);
@@ -57,7 +57,7 @@ function plain(id, binary, target) {
 const folders = [root, plain('windows-x64', 'bussola-win_x64.exe', 'Bussola.exe'), plain('linux-x64', 'bussola-linux_x64', 'bussola'), plain('linux-arm64', 'bussola-linux_arm64', 'bussola')];
 for (const dir of folders) {
   const name = dir.split(/[\\/]/).pop();
-  for (const legal of ['LICENSE', 'LICENZA.md', 'TERZE-PARTI.md']) cpSync(join('..', legal), join(dir, legal));
+  for (const legal of ['LICENSE', 'LICENSING.md', 'THIRD-PARTY.md']) cpSync(join('..', legal), join(dir, legal));
   execFileSync('zip', ['-qry', `${name}.zip`, name], { cwd: OUT });
   rmSync(dir, { recursive: true, force: true });
   console.log(`${OUT}/${name}.zip`);

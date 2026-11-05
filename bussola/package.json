@@ -3,13 +3,13 @@
   "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "Installa e aggiorna le app della suite. App desktop Neutralinojs per macOS, Windows e Linux.",
+  "description": "Installs and updates the suite apps. Neutralinojs desktop app for macOS, Windows and Linux.",
   "scripts": {
     "setup": "neu update",
     "dev": "neu run",
     "build": "neu build && node scripts/package.mjs",
     "test": "node --test",
-    "pubblica": "node scripts/pubblica.mjs"
+    "publish": "node scripts/publish.mjs"
   },
   "devDependencies": {
     "@neutralinojs/neu": "^11.8.0"

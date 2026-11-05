@@ -1,5 +1,5 @@
-// Una lettura del sistema, tre formati. Ogni parser restituisce la stessa forma:
-//   procs: [{ pid, ppid, name, cpuMs, mem }]   cpuMs è cumulativo
+// One system read, three formats. Each parser returns the same shape:
+//   procs: [{ pid, ppid, name, cpuMs, mem }]   cpuMs is cumulative
 //   cpu:   { busy, total } in tick cumulativi, o null se va ricavata dai processi
 //   mem:   { total?, used, swap }
 //   paths: Map pid -> { path, description? }
@@ -87,7 +87,7 @@ export function parseWindows(text) {
   return { procs, cpu: null, mem, paths };
 }
 
-// Il flusso di Windows arriva a blocchi arbitrari: ogni campione finisce con una riga END.
+// The Windows stream arrives in arbitrary chunks: each sample ends with an END line.
 export function splitBlocks(buffer) {
   const blocks = [];
   let rest = buffer;

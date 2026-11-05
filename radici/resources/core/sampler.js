@@ -1,4 +1,4 @@
-// Legge gli elementi di avvio, ricorda cosa è già stato visto e tiene il diario delle modifiche.
+// Reads the startup items, remembers what has been seen and keeps a diary of changes.
 import { OS, run, scriptCommand, linuxScript, MAC_SCRIPT, WINDOWS_SCRIPT } from './platform.js';
 import { parseLinux, parseMac, parseWindows, firstToken } from './parse.js';
 import { commandFor, hiddenDesktop } from './actions.js';
@@ -73,7 +73,7 @@ export class Sampler {
       const data = JSON.parse(await fs().readFile(this.dir + this.sep + 'stato.json'));
       this.ledger = new Ledger(data.ledger);
       this.journal = data.journal || [];
-    } catch { /* primo avvio */ }
+    } catch { /* first launch */ }
   }
 
   async save(now) {
@@ -123,23 +123,23 @@ export class Sampler {
     this.timer = setTimeout(() => this.loop(), INTERVAL);
   }
 
-  // Cambia lo stato, poi rilegge dal sistema: conta ciò che il sistema dice, non il comando.
+  // Changes the state, then re-reads from the system: counts what the system says, not the command.
   async toggle(item, enable) {
-    if (!item.editable || !item.mech) throw new Error(item.why || 'Elemento in sola lettura');
+    if (!item.editable || !item.mech) throw new Error(item.why || 'Read-only item');
     const entry = this.journal.find((j) => j.id === item.id && !j.restoredAt);
     if (item.mech.type === 'autostart') await this.toggleAutostart(item, enable, entry);
     else {
-      // Disattivato altrove, per esempio da Gestione attività: non c'è un valore da rimettere.
+      // Disabled elsewhere, for example by Task Manager: there is no value to restore.
       const mech = enable && entry ? entry.mech
         : enable && item.mech.type === 'run' ? { ...item.mech, approved: '020000000000000000000000' } : item.mech;
       const { command, file } = await scriptCommand(commandFor(mech, enable));
       const res = await run(command);
       fs().remove(file).catch(() => {});
-      if (res.code !== 0) throw new Error((res.err || 'Il sistema ha rifiutato la modifica').trim().slice(0, 200));
+      if (res.code !== 0) throw new Error((res.err || 'The system rejected the change').trim().slice(0, 200));
     }
     await this.scan();
     const after = this.items.find((i) => i.id === item.id);
-    if (!after || after.state !== (enable ? 'on' : 'off')) throw new Error('Il sistema non ha applicato la modifica');
+    if (!after || after.state !== (enable ? 'on' : 'off')) throw new Error('The system didn\'t apply the change');
     if (enable) { if (entry) entry.restoredAt = Date.now(); } else {
       this.journal.push({ id: item.id, name: item.name, at: Date.now(), mech: item.mech, backup: this.backup ?? null });
     }
@@ -149,7 +149,7 @@ export class Sampler {
 
   async toggleAutostart(item, enable, entry) {
     const path = `${this.config}/autostart/${item.mech.base}`;
-    if (!/^[\w@.+-]+\.desktop$/.test(item.mech.base)) throw new Error('Nome non valido');
+    if (!/^[\w@.+-]+\.desktop$/.test(item.mech.base)) throw new Error('Invalid name');
     if (enable) {
       if (entry?.backup) await fs().writeFile(path, entry.backup);
       else if (entry) await fs().remove(path);
@@ -161,7 +161,7 @@ export class Sampler {
     }
     await fs().createDirectory(`${this.config}/autostart`).catch(() => {});
     let previous = null;
-    try { previous = await fs().readFile(path); } catch { /* elemento di sistema: la copia è nuova */ }
+    try { previous = await fs().readFile(path); } catch { /* system item: the copy is new */ }
     this.backup = previous;
     await fs().writeFile(path, hiddenDesktop(previous, item.name));
   }

@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "Mappa visuale del traffico di rete per app e destinazione. App desktop Neutralinojs per macOS e Linux.",
+  "description": "Visual map of network traffic by app and destination. Neutralinojs desktop app for macOS and Linux.",
   "scripts": {
     "setup": "neu update",
     "dev": "neu run",

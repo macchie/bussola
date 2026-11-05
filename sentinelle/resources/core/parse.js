@@ -1,5 +1,5 @@
-// Tre sistemi, una sola forma: sockets: [{ proto, local, port, remote, rport, state, pid }]
-// dove state è 'listen' oppure 'open'. procs: [{ pid, ppid, name }], paths: Map pid -> { path, description }
+// Three systems, a single shape: sockets: [{ proto, local, port, remote, rport, state, pid }]
+// where state is 'listen' or 'open'. procs: [{ pid, ppid, name }], paths: Map pid -> { path, description }
 const sections = (text) => {
   const out = {};
   let cur = null;
@@ -150,9 +150,9 @@ export const isLoopback = (a) => /^(127\.|::1$|::ffff:127\.|localhost$)/.test(a 
 const anyAddress = (a) => ['0.0.0.0', '::', '*', ''].includes(a || '');
 const WELL_KNOWN = {
   21: 'FTP', 22: 'SSH', 23: 'Telnet', 25: 'SMTP', 53: 'DNS', 67: 'DHCP', 80: 'HTTP', 88: 'Kerberos', 123: 'NTP', 137: 'NetBIOS', 138: 'NetBIOS', 139: 'NetBIOS',
-  143: 'IMAP', 443: 'HTTPS', 445: 'Condivisione file (SMB)', 548: 'Condivisione file (AFP)', 631: 'Stampa (IPP)', 993: 'IMAPS', 1433: 'SQL Server', 1900: 'SSDP',
-  2049: 'NFS', 3000: 'Sviluppo web', 3306: 'MySQL', 3389: 'Desktop remoto (RDP)', 4200: 'Sviluppo web', 5000: 'Sviluppo web o AirPlay', 5173: 'Sviluppo web (Vite)', 5353: 'mDNS',
-  5355: 'LLMNR', 5432: 'PostgreSQL', 5900: 'Condivisione schermo (VNC)', 6379: 'Redis', 7000: 'AirPlay', 8080: 'HTTP alternativo', 8443: 'HTTPS alternativo', 11434: 'Ollama', 27017: 'MongoDB',
+  143: 'IMAP', 443: 'HTTPS', 445: 'File sharing (SMB)', 548: 'File sharing (AFP)', 631: 'Printing (IPP)', 993: 'IMAPS', 1433: 'SQL Server', 1900: 'SSDP',
+  2049: 'NFS', 3000: 'Web development', 3306: 'MySQL', 3389: 'Remote desktop (RDP)', 4200: 'Web development', 5000: 'Web development or AirPlay', 5173: 'Web development (Vite)', 5353: 'mDNS',
+  5355: 'LLMNR', 5432: 'PostgreSQL', 5900: 'Screen sharing (VNC)', 6379: 'Redis', 7000: 'AirPlay', 8080: 'Alternate HTTP', 8443: 'Alternate HTTPS', 11434: 'Ollama', 27017: 'MongoDB',
 };
 const REMOTE_ACCESS = new Set([22, 23, 3389, 5900, 5901]);
 export const portInfo = (port, proto) => ({
@@ -160,11 +160,11 @@ export const portInfo = (port, proto) => ({
   remote: REMOTE_ACCESS.has(port) && proto === 'tcp',
 });
 
-// 'exposed' raggiungibile dalla rete, 'local' solo da questo computer, 'conn' connessione attiva.
+// 'exposed' reachable from the network, 'local' only from this computer, 'conn' active connection.
 export function classify(k) {
   if (k.state === 'listen') return isLoopback(k.local) ? 'local' : 'exposed';
   return isLoopback(k.remote) || isLoopback(k.local) ? null : 'conn';
 }
-export const bindLabel = (k) => (anyAddress(k.local) ? 'tutte le interfacce' : k.local);
+export const bindLabel = (k) => (anyAddress(k.local) ? 'all interfaces' : k.local);
 
 export const PARSERS = { Linux: parseLinux, Darwin: parseMac, Windows: parseWindows };

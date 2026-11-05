@@ -1,11 +1,11 @@
-// Strumento di sviluppo: da `neu build` ai pacchetti da distribuire.
-// L'app finale non usa Node.
+// Dev tool: from `neu build` to the packages to distribute.
+// The final app doesn't use Node.
 import { execFileSync } from 'node:child_process';
 import { cpSync, chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIST = 'dist/anelli';
-const OUT = 'dist/pacchetti';
+const OUT = 'dist/packages';
 const { version: VERSION } = JSON.parse(readFileSync('neutralino.config.json', 'utf8'));
 
 rmSync(OUT, { recursive: true, force: true });
@@ -41,9 +41,9 @@ function macApp() {
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 `);
-  writeFileSync(join(root, 'Installa Anelli.command'), `#!/bin/bash
-# Firma Anelli con lo strumento di Apple e lo installa in Applicazioni.
-# macOS lega l'Accesso completo al disco alla firma dell'app.
+  writeFileSync(join(root, 'Install Anelli.command'), `#!/bin/bash
+# Sign Anelli with Apple's tool and install it in Applications.
+# macOS ties Full Disk Access to the app's signature.
 set -e
 cd "$(dirname "$0")"
 pkill -x anelli 2>/dev/null || true
@@ -54,11 +54,11 @@ rm -rf /Applications/Anelli.app
 ditto Anelli.app /Applications/Anelli.app
 tccutil reset SystemPolicyAllFiles it.anelli.app >/dev/null 2>&1 || true
 echo
-echo "Anelli è installata in Applicazioni."
-echo "Ora attiva Anelli in Accesso completo al disco, poi aprila dalla cartella Applicazioni."
+echo "Anelli is installed in Applications."
+echo "Now enable Anelli in Full Disk Access, then open it from the Applications folder."
 open 'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles'
 `);
-  chmodSync(join(root, 'Installa Anelli.command'), 0o755);
+  chmodSync(join(root, 'Install Anelli.command'), 0o755);
   if (process.platform === 'darwin') {
     execFileSync('codesign', ['--force', '--deep', '--sign', '-', '--identifier', 'it.anelli.app', join(root, 'Anelli.app')]);
   }
@@ -74,9 +74,9 @@ const folders = [
 
 for (const dir of folders) {
   const name = dir.split(/[\\/]/).pop();
-  for (const legal of ['LICENSE', 'LICENZA.md', 'TERZE-PARTI.md']) cpSync(join('..', legal), join(dir, legal));
+  for (const legal of ['LICENSE', 'LICENSING.md', 'THIRD-PARTY.md']) cpSync(join('..', legal), join(dir, legal));
   execFileSync('zip', ['-qry', `${name}.zip`, name], { cwd: OUT });
   rmSync(dir, { recursive: true, force: true });
-  if (!existsSync(join(OUT, `${name}.zip`))) throw new Error(`Archivio mancante: ${name}`);
+  if (!existsSync(join(OUT, `${name}.zip`))) throw new Error(`Missing archive: ${name}`);
   console.log(`${OUT}/${name}.zip`);
 }

@@ -1,90 +1,90 @@
 # Anelli
 
-Analizzatore visuale dello spazio su disco nello stile di DaisyDisk: app desktop per macOS, Linux e
-Windows. Costruita con [Neutralinojs](https://neutralino.js.org): nessun Node e nessun server da
-avviare a runtime, solo un eseguibile di pochi MB che usa la webview del sistema.
+Visual disk space analyzer in the style of DaisyDisk: a desktop app for macOS, Linux and Windows.
+Built with [Neutralinojs](https://neutralino.js.org): no Node and no server to start at runtime, just a
+few-MB executable that uses the system webview.
 
-## Installazione
+## Install
 
-Scarica il pacchetto per il tuo sistema.
+Download the package for your system.
 
-| Sistema | Pacchetto | Note |
+| System | Package | Notes |
 | --- | --- | --- |
-| macOS 10.15+ (Intel e Apple Silicon) | `Anelli-macos.zip` | Estrai e lancia `bash "Installa Anelli.command"`: firma l'app sul tuo Mac e la mette in Applicazioni |
-| Windows 10/11 x64 | `Anelli-windows-x64.zip` | Serve WebView2, già presente su Windows 11. SmartScreen può chiedere conferma |
-| Linux x64 / arm64 | `Anelli-linux-*.zip` | Serve WebKitGTK: `sudo apt install libwebkit2gtk-4.1-0` |
+| macOS 10.15+ (Intel and Apple Silicon) | `Anelli-macos.zip` | Unzip and run `bash "Install Anelli.command"`: it signs the app on your Mac and puts it in Applications |
+| Windows 10/11 x64 | `Anelli-windows-x64.zip` | WebView2 required, already present on Windows 11. SmartScreen may ask for confirmation |
+| Linux x64 / arm64 | `Anelli-linux-*.zip` | WebKitGTK required: `sudo apt install libwebkit2gtk-4.1-0` |
 
-Tieni `resources.neu` accanto all'eseguibile.
+Keep `resources.neu` next to the executable.
 
-## Sviluppo
+## Develop
 
-Node serve solo qui, come strumento, mai nell'app finale.
+Node is only used here, as a tool, never in the final app.
 
 ```bash
 npm install
-npm run setup    # scarica runtime e libreria client
-npm run dev      # avvia l'app
-npm test         # logica pura, senza runtime
-npm run build    # crea i pacchetti in dist/pacchetti per tutti i sistemi, da qualunque sistema
+npm run setup    # downloads the runtime and client library
+npm run dev      # starts the app
+npm test         # pure logic, no runtime
+npm run build    # builds the packages into dist/packages for every system, from any system
 ```
 
-## Come si usa
+## How to use
 
-1. Scegli un disco o una cartella e avvia la scansione.
-2. Esplora la mappa: ogni anello è un livello, dalle ore 12 con i più pesanti. Clic su una cartella
-   per entrare, clic al centro per risalire. L'elenco a fianco ha lo stesso contenuto.
-3. Trascina nella Raccolta, o premi +. La raccolta non tocca il disco.
-4. "Sposta nel cestino" sposta davvero gli elementi, in modo istantaneo e reversibile.
-5. Dal Cestino puoi ripristinare, o eliminare definitivamente dopo un conto alla rovescia di 5 secondi.
+1. Pick a disk or a folder and start the scan.
+2. Explore the map: each ring is a level, starting at 12 o'clock with the heaviest. Click a folder
+   to enter, click the center to go back up. The list beside it has the same content.
+3. Drag into the Collection, or press +. The collection doesn't touch the disk.
+4. "Move to Trash" actually moves the items, instantly and reversibly.
+5. From the Trash you can restore, or permanently delete after a 5-second countdown.
 
-Tastiera nell'elenco: frecce, Invio per aprire, Spazio per l'anteprima, Canc per la raccolta,
-Backspace per risalire. Il tasto destro apre il menu delle azioni.
+Keyboard in the list: arrows, Enter to open, Space for the preview, Delete for the collection,
+Backspace to go up. Right-click opens the actions menu.
 
-## Come funziona
+## How it works
 
-Neutralino non ha `lstat` né thread, e una chiamata per file sarebbe troppo lenta. La scansione usa
-quindi strumenti nativi che scrivono un elenco in un file temporaneo; l'app lo legge a blocchi e lo
-passa a un Web Worker, che tiene l'albero.
+Neutralino has no `lstat` and no threads, and a per-file call would be too slow. The scan therefore uses
+native tools that write a listing to a temporary file; the app reads it in chunks and passes it to a Web
+Worker, which keeps the tree.
 
-- **Linux e macOS:** `du -akx`, che dà spazio allocato, conta gli hardlink una volta e resta sul volume.
-- **Windows:** un piccolo enumeratore C# compilato al volo da PowerShell. Salta junction e link, e conta
-  zero i file solo cloud. Le dimensioni sono quelle logiche, non lo spazio allocato.
+- **Linux and macOS:** `du -akx`, which gives allocated space, counts hardlinks once and stays on the volume.
+- **Windows:** a small C# enumerator compiled on the fly by PowerShell. It skips junctions and links, and counts
+  cloud-only files as zero. Sizes are logical, not allocated space.
 
-Ogni percorso destinato alla shell finisce quotato in uno script temporaneo, mai sulla riga di comando.
+Every path destined for the shell ends up quoted in a temporary script, never on the command line.
 
-## Il cestino
+## The Trash
 
-Finché un elemento è nel cestino occupa ancora spazio. Non esiste svuotamento automatico. Lo spostamento
-è una rinomina sullo stesso volume, mai una copia. Gli elementi vanno nella cartella dati dell'utente se
-è sullo stesso volume, altrimenti in `.anelli-trash-<utente>` nella cartella più alta scrivibile.
-L'elenco è in `trash.json` e sopravvive ai riavvii.
+As long as an item is in the Trash it still takes up space. There is no automatic emptying. Moving
+is a rename on the same volume, never a copy. Items go into the user data folder if it's on the same
+volume, otherwise into `.anelli-trash-<user>` in the topmost writable folder.
+The listing is in `trash.json` and survives restarts.
 
-| Sistema | Cartella dati |
+| System | Data folder |
 | --- | --- |
 | Linux | `~/.local/share/Anelli` |
 | macOS | `~/Library/Application Support/Anelli` |
 | Windows | `%APPDATA%\Anelli` |
 
-## Sicurezza
+## Security
 
-- Solo le API native elencate in `nativeAllowList` sono disponibili, con token monouso.
-- L'eliminazione accetta solo id del cestino, mai percorsi; i link si rimuovono senza seguirli.
-- Rifiuta radici, punti di montaggio, la home e i suoi antenati, le cartelle di sistema di ogni piattaforma.
-- Il ripristino non sovrascrive mai: in caso di conflitto propone un nome diverso.
+- Only the native APIs listed in `nativeAllowList` are available, with one-time tokens.
+- Deletion accepts only Trash ids, never paths; links are removed without following them.
+- It refuses roots, mount points, the home and its ancestors, and each platform's system folders.
+- Restore never overwrites: in case of a conflict it proposes a different name.
 
-## Accesso completo al disco su macOS
+## Full Disk Access on macOS
 
-macOS lega il permesso alla firma dell'app. Senza un certificato Developer ID la firma è locale e cambia
-a ogni versione: dopo un aggiornamento rilancia l'installer e riattiva il permesso. Se in Impostazioni c'è
-una vecchia voce di Anelli, toglila con il tasto meno prima di aggiungerla di nuovo.
+macOS ties the permission to the app's signature. Without a Developer ID certificate the signature is local and
+changes with every version: after an update, re-run the installer and re-enable the permission. If an old Anelli
+entry remains in Settings, remove it with the minus button before adding it again.
 
-Anche con il permesso attivo, macOS tiene fuori alcune aree protette da SIP e i dati delle app in
-contenitore: la scansione le conta come escluse e non si possono spostare.
+Even with the permission enabled, macOS keeps out some areas protected by SIP and the data of sandboxed apps:
+the scan counts them as excluded and they can't be moved.
 
-## Limiti
+## Limits
 
-- Per le cartelle protette serve avviare l'app come amministratore.
-- Su Linux e macOS una cartella vuota appare come file, perché `du` non distingue i due casi.
-- Una riscansione parziale può ricontare un file con hardlink esterni alla cartella.
-- Ogni cartella conserva i 200 file più grandi; gli altri restano nel totale come gruppo.
-- Anteprima multimediale fino a 256 MB.
+- Protected folders require running the app as an administrator.
+- On Linux and macOS an empty folder appears as a file, because `du` doesn't tell the two cases apart.
+- A partial re-scan may recount a file with hardlinks outside the folder.
+- Each folder keeps its 200 largest files; the rest stay in the total as a group.
+- Media preview up to 256 MB.

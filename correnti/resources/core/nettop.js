@@ -1,8 +1,8 @@
-// Lettura dell'output di `nettop -L 1`, guidata dall'intestazione:
+// Reading the output of `nettop -L 1`, driven by the header:
 //   time,,interface,state,bytes_in,bytes_out,...
 //   12:49:53.399032,firefox.5356,,,5427,1386,...
 //   12:49:53.392327,tcp4 192.168.1.2:52429<->host.example:443,en7,Established,5427,1386,...
-// Le righe di connessione seguono quella del processo a cui appartengono.
+// The connection rows follow the row of the process they belong to.
 const UNITS = { b: 1, kib: 1024, mib: 1048576, gib: 1073741824, tib: 1099511627776, kb: 1000, mb: 1e6, gb: 1e9 };
 
 export function parseBytes(raw) {
@@ -19,7 +19,7 @@ export function parseEndpoint(raw) {
   const bracket = /^\[(.+)\][:.](\d+|\*)$/.exec(text);
   if (bracket) return { host: bracket[1], port: bracket[2] };
   const colons = (text.match(/:/g) || []).length;
-  // IPv6: la porta segue un punto, perché i due punti fanno parte dell'indirizzo.
+  // IPv6: the port follows a dot, because the colons are part of the address.
   const at = colons > 1 ? text.lastIndexOf('.') : text.lastIndexOf(':');
   if (at < 0) return { host: text, port: '*' };
   return { host: text.slice(0, at), port: text.slice(at + 1) };
@@ -64,7 +64,7 @@ export function parseSample(text) {
   return { rows, issues };
 }
 
-// Linux: `ss -Htinp` dà una riga per connessione seguita da una rientrata con i contatori.
+// Linux: `ss -Htinp` gives one row per connection followed by an indented one with the counters.
 //   ESTAB 0 0 192.0.2.2:54376 160.79.104.10:443 users:(("claude",pid=104,fd=15))
 //   \t bbr wscale:7,10 ... bytes_sent:43354 bytes_acked:43355 bytes_received:3746 ...
 const unmap = (host) => host.replace(/^::ffff:/i, '').replace(/%.*$/, '');
@@ -93,7 +93,7 @@ export function parseSs(lines) {
 }
 
 const VIRTUAL = /^(lo|veth|docker|br-|virbr|vmnet|vboxnet|tun|tap|wg|ifb|dummy|cni|flannel|tailscale)/;
-// Byte reali delle interfacce fisiche, per sapere quanto traffico resta fuori da ss.
+// Real bytes of the physical interfaces, to know how much traffic stays outside ss.
 export function parseNetDev(lines) {
   let rx = 0;
   let tx = 0;
@@ -129,8 +129,8 @@ export function sections(text) {
   return out;
 }
 
-// Quanto le interfacce hanno visto più delle connessioni lette. I contatori di rete includono
-// le intestazioni dei pacchetti, che il margine evita di scambiare per traffico perso.
+// How much more the interfaces saw than the connections read. Network counters include
+// the packet headers, which the margin avoids mistaking for lost traffic.
 export function residual(device, attributed, margin = 0.94, floor = 4096) {
   const rest = (d, a) => { const r = d * margin - a; return r >= floor ? Math.round(r) : 0; };
   return { in: rest(device.in, attributed.in), out: rest(device.out, attributed.out) };
@@ -138,8 +138,8 @@ export function residual(device, attributed, margin = 0.94, floor = 4096) {
 
 const isLoopback = (r) => r.iface === 'lo0' || /^(127\.|::1$|localhost$)/.test(r.remote.host) || /^(127\.|::1)/.test(r.local);
 
-// Trasforma i contatori cumulativi in traffico del campione. Ogni connessione è
-// identificata dal suo capo locale, che resta uguale anche quando il nome del
+// Turns cumulative counters into the sample's traffic. Each connection is
+// identified by its local end, which stays the same even when the name of the
 // server remoto passa da IP a dominio.
 export class DeltaTracker {
   constructor() { this.seen = new Map(); this.primed = false; this.tick = 0; }
@@ -152,7 +152,7 @@ export class DeltaTracker {
       const key = `${r.pid}|${r.proto}|${r.local}|${r.remote.port}`;
       const before = this.seen.get(key);
       this.seen.set(key, { in: r.in, out: r.out, tick: this.tick });
-      if (!this.primed) continue; // primo campione: solo il punto di partenza
+      if (!this.primed) continue; // first sample: only the starting point
       const dIn = before && r.in >= before.in ? r.in - before.in : r.in;
       const dOut = before && r.out >= before.out ? r.out - before.out : r.out;
       if (dIn || dOut) out.push({ ...r, dIn, dOut });

@@ -1,9 +1,9 @@
-// Dal processo all'app, con le regole di ciascun sistema.
+// From process to app, with each system's rules.
 const title = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-export const SYSTEM = { Linux: 'Sistema Linux', Darwin: 'Sistema macOS', Windows: 'Sistema Windows' };
+export const SYSTEM = { Linux: 'Linux system', Darwin: 'macOS system', Windows: 'Windows system' };
 
 function linux(p, info) {
-  if (p.pid === 2 || p.ppid === 2) return { app: 'Kernel Linux', bundle: null };
+  if (p.pid === 2 || p.ppid === 2) return { app: 'Linux kernel', bundle: null };
   const path = info?.path;
   if (!path) return { app: SYSTEM.Linux, bundle: null };
   const m = /^\/(?:opt|snap)\/([^/]+)\//.exec(path) || /^\/usr\/lib(?:64)?\/([^/]+)\//.exec(path);

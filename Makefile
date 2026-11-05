@@ -1,76 +1,76 @@
-# Suite Bussola. Richiede node, npm, zip e, per pubblicare, git e gh. Da usare su Linux o macOS.
+# Bussola suite. Requires node, npm, zip and, to publish, git and gh. Use on Linux or macOS.
 APPS  := anelli correnti battiti scorte sentinelle radici registro bussola
 REPO  := macchie/bussola
 NEU   := $(CURDIR)/node_modules/.bin/neu
 TAG   ?= suite-$(shell date +%Y.%-m.%-d)
 
 .DEFAULT_GOAL := help
-.PHONY: help setup sync test test-comune build catalog release versions check publish publish-manuale bootstrap pages landing clean
+.PHONY: help setup sync test test-shared build catalog release versions check publish publish-manual bootstrap pages landing clean
 
-help: ## Mostra i comandi disponibili
+help: ## Show the available commands
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-17s %s\n", $$1, $$2}'
 
 node_modules: package-lock.json
 	npm ci
 	@touch $@
 
-setup: node_modules $(APPS:%=setup-%) ## Scarica il runtime Neutralino per ogni app
+setup: node_modules $(APPS:%=setup-%) ## Download the Neutralino runtime for every app
 
 setup-%: node_modules
-	@if [ -x "$*/bin/neutralino-linux_x64" ]; then echo "$*: runtime presente"; else echo "$*: scarico il runtime"; cd $* && $(NEU) update >/dev/null; fi
+	@if [ -x "$*/bin/neutralino-linux_x64" ]; then echo "$*: runtime present"; else echo "$*: downloading the runtime"; cd $* && $(NEU) update >/dev/null; fi
 
-sync: ## Copia traduzioni e impostazioni condivise in tutte le app
-	@for a in $(APPS); do mkdir -p $$a/resources/comune; cp comune/*.js $$a/resources/comune/; done; echo "comune copiato in tutte le app"
+sync: ## Copy shared translations and settings into every app
+	@for a in $(APPS); do mkdir -p $$a/resources/shared; cp shared/*.js $$a/resources/shared/; done; echo "shared copied into every app"
 
-test: test-comune $(APPS:%=test-%) ## Esegue i test logici di tutte le app
+test: test-shared $(APPS:%=test-%) ## Run the logic tests of every app
 
-test-comune:
-	@echo "== comune"; cd comune && node --test
+test-shared:
+	@echo "== shared"; cd shared && node --test
 
 test-%:
 	@echo "== $*"; cd $* && node --test
 
-build: sync setup $(APPS:%=build-%) ## Crea i pacchetti di tutte le app
+build: sync setup $(APPS:%=build-%) ## Build the packages of every app
 
 build-%: setup-%
 	@echo "== $*"; cd $* && $(NEU) build >/dev/null && node scripts/package.mjs
 
-catalog: ## Prepara bussola/dist/release con pacchetti e catalogo (TAG=...)
-	cd bussola && node scripts/pubblica.mjs $(TAG)
+catalog: ## Prepare bussola/dist/release with packages and catalog (TAG=...)
+	cd bussola && node scripts/publish.mjs $(TAG)
 
-release: test build catalog ## Test, build e catalogo, senza pubblicare
+release: test build catalog ## Test, build and catalog, without publishing
 
-versions: ## Mostra la versione di ogni app
+versions: ## Show the version of every app
 	@for a in $(APPS); do printf "%-11s %s\n" $$a $$(node -p "require('./$$a/neutralino.config.json').version"); done
 
-check: ## Controlla che si possa pubblicare
-	@[ "$$(git rev-parse --abbrev-ref HEAD)" = master ] || { echo "Pubblica dal ramo master"; exit 1; }
-	@[ -z "$$(git status --porcelain)" ] || { echo "Ci sono modifiche non salvate: fai prima il commit"; exit 1; }
-	@! git rev-parse -q --verify "refs/tags/$(TAG)" >/dev/null || { echo "Il tag $(TAG) esiste già: scegline un altro con TAG=..."; exit 1; }
-	@case "$(TAG)" in suite-*) ;; *) echo "Il tag deve iniziare con suite-"; exit 1;; esac
+check: ## Check that publishing is possible
+	@[ "$$(git rev-parse --abbrev-ref HEAD)" = master ] || { echo "Publish from the master branch"; exit 1; }
+	@[ -z "$$(git status --porcelain)" ] || { echo "There are unsaved changes: commit them first"; exit 1; }
+	@! git rev-parse -q --verify "refs/tags/$(TAG)" >/dev/null || { echo "Tag $(TAG) already exists: pick another with TAG=..."; exit 1; }
+	@case "$(TAG)" in suite-*) ;; *) echo "The tag must start with suite-"; exit 1;; esac
 
-publish: check test ## Crea il tag: GitHub compila e pubblica la release
+publish: check test ## Create the tag: GitHub builds and publishes the release
 	git tag -a $(TAG) -m "Suite $(TAG)"
 	git push origin master $(TAG)
-	@echo "Segui la pubblicazione con: gh run watch --repo $(REPO)"
+	@echo "Follow the publish run with: gh run watch --repo $(REPO)"
 
-publish-manuale: check release ## Pubblica da questo computer, senza GitHub Actions
+publish-manual: check release ## Publish from this computer, without GitHub Actions
 	git tag -a $(TAG) -m "Suite $(TAG)"
 	git push origin master $(TAG)
 	gh release create $(TAG) bussola/dist/release/* --repo $(REPO) --title "$(TAG)" --latest --verify-tag
 
-bootstrap: ## Solo la prima volta: crea il repository pubblico e attiva Pages
+bootstrap: ## First time only: create the public repository and enable Pages
 	git init -b master 2>/dev/null || true
 	git add -A
-	git diff --cached --quiet || git commit -m "Suite Bussola"
+	git diff --cached --quiet || git commit -m "Bussola suite"
 	gh repo create $(REPO) --public --source=. --remote=origin --push
 	$(MAKE) pages
 
-pages: ## Imposta GitHub Pages sulla pubblicazione da Actions
+pages: ## Set GitHub Pages to publish from Actions
 	gh api -X POST repos/$(REPO)/pages -f build_type=workflow || gh api -X PUT repos/$(REPO)/pages -f build_type=workflow
 
-landing: ## Apre un'anteprima della landing su http://127.0.0.1:8000
+landing: ## Open a preview of the landing at http://127.0.0.1:8000
 	cd landing && python3 -m http.server 8000 --bind 127.0.0.1
 
-clean: ## Toglie pacchetti e runtime scaricati
+clean: ## Remove packages and downloaded runtimes
 	rm -rf node_modules $(APPS:%=%/dist) $(APPS:%=%/bin)

@@ -1,16 +1,16 @@
-// Le app sono fissate qui: il catalogo può dire quale versione scaricare, mai cosa eseguire.
+// The apps are fixed here: the catalog may say which version to download, never what to run.
 export const REPO = 'macchie/bussola';
-export const CATALOG_URL = `https://github.com/${REPO}/releases/latest/download/catalogo.json`;
+export const CATALOG_URL = `https://github.com/${REPO}/releases/latest/download/catalog.json`;
 export const TRUSTED_PREFIX = `https://github.com/${REPO}/releases/download/`;
 
 export const APPS = [
-  { id: 'anelli', name: 'Anelli', tagline: 'Dove finisce lo spazio su disco', color: '#6a6ee0', keepData: 'Contiene il cestino: i file spostati lì non vanno persi' },
-  { id: 'correnti', name: 'Correnti', tagline: 'Quali app usano la rete, e verso dove', color: '#14a8b6' },
-  { id: 'battiti', name: 'Battiti', tagline: 'Cosa pesa su CPU e memoria', color: '#e0559a' },
-  { id: 'scorte', name: 'Scorte', tagline: 'Batteria ed energia per app', color: '#3fa865' },
-  { id: 'sentinelle', name: 'Sentinelle', tagline: 'Porte aperte e connessioni', color: '#cd7f0a' },
-  { id: 'radici', name: 'Radici', tagline: 'Cosa parte da solo all\'avvio', color: '#a35f00', keepData: 'Serve per riattivare ciò che hai disattivato' },
-  { id: 'registro', name: 'Registro', tagline: 'Errori, arresti e riavvii', color: '#de5a55' },
+  { id: 'anelli', name: 'Anelli', tagline: 'Where your disk space goes', color: '#6a6ee0', keepData: 'It holds the Trash: files moved there aren\'t lost' },
+  { id: 'correnti', name: 'Correnti', tagline: 'Which apps use the network, and where to', color: '#14a8b6' },
+  { id: 'battiti', name: 'Battiti', tagline: 'What weighs on CPU and memory', color: '#e0559a' },
+  { id: 'scorte', name: 'Scorte', tagline: 'Battery and energy by app', color: '#3fa865' },
+  { id: 'sentinelle', name: 'Sentinelle', tagline: 'Open ports and connections', color: '#cd7f0a' },
+  { id: 'radici', name: 'Radici', tagline: 'What starts by itself at boot', color: '#a35f00', keepData: 'It\'s needed to turn back on what you disabled' },
+  { id: 'registro', name: 'Registro', tagline: 'Errors, shutdowns and restarts', color: '#de5a55' },
 ];
 
 export function platformKey(os, arch) {
@@ -30,21 +30,21 @@ export function validPackage(p, prefix = TRUSTED_PREFIX) {
   return /^\w[\w.+-]*\/\w[\w.+-]*\.zip$/.test(p.url.slice(prefix.length));
 }
 
-// Tiene solo le voci corrette delle app note, e rifiuta il resto senza fidarsi di nulla.
+// Keeps only the valid entries of the known apps, and rejects the rest, trusting nothing.
 export function parseCatalog(text, prefix = TRUSTED_PREFIX) {
   let raw;
-  try { raw = JSON.parse(text); } catch { throw new Error('Il catalogo non è leggibile'); }
-  if (raw?.formato !== 1 || typeof raw.app !== 'object' || raw.app === null) throw new Error('Formato del catalogo non supportato');
+  try { raw = JSON.parse(text); } catch { throw new Error('The catalog can\'t be read'); }
+  if (raw?.format !== 1 || typeof raw.app !== 'object' || raw.app === null) throw new Error('Catalog format not supported');
   const apps = {};
   for (const { id } of APPS) {
     const a = raw.app[id];
-    if (!a || !VERSION.test(a.versione || '')) continue;
-    const pacchetti = {};
-    for (const [k, p] of Object.entries(a.pacchetti || {})) if (validPackage(p, prefix)) pacchetti[k] = p;
-    apps[id] = { version: a.versione, packages: pacchetti };
+    if (!a || !VERSION.test(a.version || '')) continue;
+    const packages = {};
+    for (const [k, p] of Object.entries(a.packages || {})) if (validPackage(p, prefix)) packages[k] = p;
+    apps[id] = { version: a.version, packages };
   }
   const b = raw.bussola;
-  return { apps, bussola: b && VERSION.test(b.versione || '') ? { version: b.versione, page: b.pagina } : null, tag: raw.tag };
+  return { apps, bussola: b && VERSION.test(b.version || '') ? { version: b.version, page: b.page } : null, tag: raw.tag };
 }
 
 export function compareVersions(a, b) {
@@ -54,7 +54,7 @@ export function compareVersions(a, b) {
   return 0;
 }
 
-// installed: versione, '' se presente ma sconosciuta, undefined se assente.
+// installed: version, '' if present but unknown, undefined if absent.
 export function statusOf(entry, installed, key) {
   const pkg = entry?.packages[key];
   if (installed === undefined) return pkg ? 'available' : entry ? 'unsupported' : 'unknown';

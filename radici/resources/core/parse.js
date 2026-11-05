@@ -1,4 +1,4 @@
-// Dagli elenchi di ciascun sistema a una sola forma:
+// From each system's lists to a single shape:
 // { id, kind: login|service|task, name, program, source, state: on|off, editable, why, mech }
 const sections = (text) => {
   const out = {};
@@ -9,7 +9,7 @@ const sections = (text) => {
   }
   return out;
 };
-// Senza questi una sessione grafica Linux può non funzionare più.
+// Without these a Linux graphical session may stop working.
 const ESSENTIAL = /^(dbus|pipewire|wireplumber|pulseaudio|gvfs|xdg-|at-spi|gnome-|org\.gnome\.|plasma|kde|polkit|ssh-agent|gpg-agent|gcr-|evolution-)/i;
 const SAFE_UNIT = /^[\w@.:-]+\.service$/;
 export const SAFE_LABEL = /^[\w.-]+$/;
@@ -40,13 +40,13 @@ function parseDesktop(lines, configDir) {
   const out = [];
   for (const i of items) {
     const own = i.path.startsWith(userDir);
-    if (!own && overrides.has(i.base)) continue; // la copia dell'utente prevale, come da specifica XDG
+    if (!own && overrides.has(i.base)) continue; // the user's copy takes precedence, per the XDG spec
     const off = i.v.Hidden === 'true' || i.v['X-GNOME-Autostart-enabled'] === 'false';
     const name = i.v.Name || i.base.replace(/\.desktop$/, '');
     const essential = ESSENTIAL.test(i.base);
     out.push({
       id: `autostart:${i.base}`, kind: 'login', name, program: i.v.Exec || '', source: i.path, state: off ? 'off' : 'on',
-      editable: !essential, why: essential ? 'Necessario alla sessione grafica' : '',
+      editable: !essential, why: essential ? 'Needed by the graphical session' : '',
       mech: { type: 'autostart', base: i.base, name },
     });
   }
@@ -63,9 +63,9 @@ function parseUnits(lines, scope) {
     if (m[2] === 'disabled' && !user) continue;
     const safe = user && !timer && SAFE_UNIT.test(m[1]) && !ESSENTIAL.test(m[1]);
     out.push({
-      id: `${scope}:${m[1]}`, kind: timer ? 'task' : 'service', name: m[1].replace(/\.(service|timer)$/, ''), program: '', source: user ? 'systemd utente' : 'systemd di sistema',
+      id: `${scope}:${m[1]}`, kind: timer ? 'task' : 'service', name: m[1].replace(/\.(service|timer)$/, ''), program: '', source: user ? 'user systemd' : 'system systemd',
       state: m[2] === 'enabled' ? 'on' : 'off', editable: safe,
-      why: safe ? '' : user ? 'Necessario alla sessione o non modificabile' : 'Servizio di sistema: richiede l\'amministratore',
+      why: safe ? '' : user ? 'Needed by the session or not editable' : 'System service: requires an administrator',
       mech: { type: 'systemd', unit: m[1] },
     });
   }
@@ -75,7 +75,7 @@ function parseUnits(lines, scope) {
 function parseCron(lines) {
   return (lines || []).map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !/^\w+=/.test(l)).map((line) => {
     const cmd = line.replace(/^(@\w+|(\S+\s+){5})/, '').trim();
-    return { id: `cron:${line}`, kind: 'task', name: cmd.slice(0, 60), program: cmd, source: 'crontab', state: 'on', editable: false, why: 'Si modifica con crontab -e', mech: null };
+    return { id: `cron:${line}`, kind: 'task', name: cmd.slice(0, 60), program: cmd, source: 'crontab', state: 'on', editable: false, why: 'Edit it with crontab -e', mech: null };
   });
 }
 
@@ -102,7 +102,7 @@ export function parseMac(text, home) {
   const flush = () => {
     if (!path) return;
     let p = {};
-    try { p = JSON.parse(json); } catch { /* plist non convertibile: resta il nome del file */ }
+    try { p = JSON.parse(json); } catch { /* plist can't be converted: the file name remains */ }
     const file = path.slice(path.lastIndexOf('/') + 1).replace(/\.plist$/, '');
     const label = p.Label || file;
     const daemon = path.startsWith('/Library/LaunchDaemons/');
@@ -112,7 +112,7 @@ export function parseMac(text, home) {
     out.push({
       id: `launchd:${path}`, kind: daemon ? 'service' : interval && !p.RunAtLoad ? 'task' : 'login', name: label,
       program: p.Program || (p.ProgramArguments || []).join(' '), source: path, state: off.has(label) || p.Disabled === true ? 'off' : 'on', editable: safe,
-      why: safe ? '' : daemon ? 'Servizio di sistema: richiede l\'amministratore' : 'Componente di macOS',
+      why: safe ? '' : daemon ? 'System service: requires an administrator' : 'macOS component',
       mech: { type: 'launchd', label },
     });
     path = null;
@@ -125,7 +125,7 @@ export function parseMac(text, home) {
   return [...out, ...parseCron(s.CRON)];
 }
 
-const KEY_LABEL = { HKCU: 'Registro, utente', HKLM: 'Registro, tutti gli utenti' };
+const KEY_LABEL = { HKCU: 'Registry, user', HKLM: 'Registry, all users' };
 const isOff = (hex) => !!hex && hex.slice(0, 2) !== '02' && hex.slice(0, 2) !== '06';
 export function parseWindows(text) {
   const start = text.indexOf('{');
@@ -136,11 +136,11 @@ export function parseWindows(text) {
     const user = r.hive === 'HKCU';
     out.push({
       id: `run:${r.hive}:${r.name}`, kind: 'login', name: r.name, program: r.value, source: KEY_LABEL[r.hive] || r.hive, state: isOff(r.approved) ? 'off' : 'on',
-      editable: user, why: user ? '' : 'Vale per tutti gli utenti: richiede l\'amministratore', mech: user ? { type: 'run', name: r.name, approved: r.approved || null } : null,
+      editable: user, why: user ? '' : 'Applies to all users: requires an administrator', mech: user ? { type: 'run', name: r.name, approved: r.approved || null } : null,
     });
   }
-  for (const f of list(d.folder)) out.push({ id: `folder:${f.path}`, kind: 'login', name: f.name, program: f.path, source: 'Cartella Esecuzione automatica', state: 'on', editable: false, why: 'Si gestisce dalla cartella', mech: null });
-  for (const v of list(d.services)) out.push({ id: `svc:${v.name}`, kind: 'service', name: v.display || v.name, program: v.path || '', source: 'Servizi di Windows', state: 'on', editable: false, why: 'Servizio di sistema: richiede l\'amministratore', mech: null });
-  for (const t of list(d.tasks)) out.push({ id: `task:${t.path}${t.name}`, kind: 'task', name: t.name, program: t.exec || '', source: t.path, state: 'on', editable: false, why: 'Si gestisce da Utilità di pianificazione', mech: null });
+  for (const f of list(d.folder)) out.push({ id: `folder:${f.path}`, kind: 'login', name: f.name, program: f.path, source: 'Startup folder', state: 'on', editable: false, why: 'Managed from the folder', mech: null });
+  for (const v of list(d.services)) out.push({ id: `svc:${v.name}`, kind: 'service', name: v.display || v.name, program: v.path || '', source: 'Windows services', state: 'on', editable: false, why: 'System service: requires an administrator', mech: null });
+  for (const t of list(d.tasks)) out.push({ id: `task:${t.path}${t.name}`, kind: 'task', name: t.name, program: t.exec || '', source: t.path, state: 'on', editable: false, why: 'Managed from Task Scheduler', mech: null });
   return out;
 }

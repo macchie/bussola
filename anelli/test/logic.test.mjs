@@ -1,5 +1,5 @@
-// Solo per lo sviluppo: l'app non usa Node. Provano la logica pura, compreso il
-// formato Windows, che qui si può simulare.
+// Development only: the app doesn't use Node. They test the pure logic, including the
+// Windows format, which can be simulated here.
 import test from 'node:test';
 import assert from 'node:assert';
 import { refuse } from '../resources/backend/safety.js';
@@ -31,14 +31,14 @@ test('POSIX: albero, ordinamento e byte da kB', () => {
   assert.equal(t.c[1].fc, 2);
 });
 
-test('POSIX: un carattere UTF-8 spezzato tra due blocchi resta integro', () => {
-  const text = '4\t/d/perché.txt\n8\t/d\n';
+test('POSIX: a UTF-8 character split across two chunks stays intact', () => {
+  const text = '4\t/d/café.txt\n8\t/d\n';
   const at = new TextEncoder().encode(text).indexOf(0xc3) + 1;
   const { ask } = build(posix, text, at);
-  assert.equal(ask('tree', { target: '/d', depth: 1 }).c[0].n, 'perché.txt');
+  assert.equal(ask('tree', { target: '/d', depth: 1 }).c[0].n, 'café.txt');
 });
 
-test('il cestino accanto ai file non compare e non pesa nei totali', () => {
+test('the trash next to the files doesn\'t appear and doesn\'t weigh in the totals', () => {
   const { ask } = build(posix, '50\t/d/.anelli-trash-0/id/f\n54\t/d/.anelli-trash-0/id\n58\t/d/.anelli-trash-0\n4\t/d/s/.anelli-trash-0/z\n8\t/d/s/.anelli-trash-0\n2\t/d/s/k\n14\t/d/s\n10\t/d/z\n90\t/d\n');
   const t = ask('tree', { target: '/d', depth: 3 });
   assert.deepEqual(t.c.map((c) => c.n).sort(), ['s', 'z']);
@@ -46,7 +46,7 @@ test('il cestino accanto ai file non compare e non pesa nei totali', () => {
   assert.equal(t.c.find((c) => c.n === 's').s, 6 * 1024);
 });
 
-test('Windows: tipi espliciti, cartelle vuote, radice di unità', () => {
+test('Windows: explicit types, empty folders, drive root', () => {
   const cfg = { root: 'C:\\', sep: '\\', windows: true, trashHome: 'C:\\Users\\a\\AppData\\Roaming\\Anelli\\trash' };
   const { ask } = build(cfg, '10\tF\tC:\\Dati\\a.bin\r\n0\tD\tC:\\Vuota\n10\tD\tC:\\Dati\n10\tD\tC:\\\n');
   const t = ask('tree', { target: 'C:\\', depth: 3 });
@@ -56,12 +56,12 @@ test('Windows: tipi espliciti, cartelle vuote, radice di unità', () => {
   assert.equal(ask('node', { target: 'C:\\Dati\\a.bin' }).size, 10);
 });
 
-test('elenco senza radice: errore, non albero vuoto', () => {
+test('list without a root: error, not an empty tree', () => {
   const { out } = build(posix, '');
   assert.equal(out.at(-1).type, 'failed');
 });
 
-test('i file oltre il limite restano nel totale come gruppo', () => {
+test('files beyond the limit stay in the total as a group', () => {
   let text = '';
   for (let i = 0; i < 250; i++) text += `4\t/d/f${i}\n`;
   const { ask } = build(posix, `${text}1000\t/d\n`);
@@ -91,7 +91,7 @@ test('protezioni Linux e macOS', () => {
   assert.ok(refuse('/System/Volumes/Data/Users/a/Library/Application Support/Anelli/trash', { ...mac, protectedDirs: ['/Users/a/Library/Application Support/Anelli'] }));
 });
 
-test('protezioni Windows, senza distinzione di maiuscole', () => {
+test('Windows protections, case-insensitive', () => {
   const w = ctx('Windows', { mounts: ['D:\\'] });
   for (const p of ['C:\\', 'D:\\', 'C:\\Windows\\System32', 'c:\\windows', 'C:\\Program Files\\App', 'C:\\pagefile.sys', 'C:\\Users', 'c:\\users\\A', 'C:\\ProgramData\\x']) {
     assert.ok(refuse(p, w), p);

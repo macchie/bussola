@@ -1,5 +1,5 @@
-import { t as tt, tx, locale } from './comune/i18n.js';
-import { salvaTema, primaDiRicaricare } from './comune/impostazioni.js';
+import { t as tt, tx, locale } from './shared/i18n.js';
+import { saveTheme, beforeReload } from './shared/settings.js';
 import { RadialMap } from './map.js';
 import { Sampler, PERIODS } from './core/sampler.js';
 import { buildTree, SEP, ROOT } from './core/store.js';
@@ -25,8 +25,8 @@ function h(tag, attrs, ...kids) {
 const dec = new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 });
 const num = new Intl.NumberFormat(locale());
 function size(b) {
-  if (!b) return tt('0 byte');
-  const units = [tt('byte'), tt('kB'), tt('MB'), tt('GB'), tt('TB')];
+  if (!b) return tt('0 bytes');
+  const units = [tt('bytes'), tt('kB'), tt('MB'), tt('GB'), tt('TB')];
   const i = Math.min(units.length - 1, Math.floor(Math.log(b) / Math.log(1000)));
   return `${i === 0 ? Math.round(b) : dec.format(b / 1000 ** i)} ${units[i]}`;
 }
@@ -38,7 +38,7 @@ const watts = (w) => `${dec.format(w)} W`;
 const onBattery = () => { const b = state.sampler?.latest.battery; return b && !b.plugged; };
 const shareOf = (n) => (state.tree?.cpu ? n.cpu / state.tree.cpu : 0);
 const value = (n) => (state.metric === 'mem' ? watts(n.s) : pct(shareOf(n)));
-const other = (n) => (state.metric === 'mem' ? tt("Impatto {0}", pct(shareOf(n))) : `CPU ${pct(n.cpu)}`);
+const other = (n) => (state.metric === 'mem' ? tt("Impact {0}", pct(shareOf(n))) : `CPU ${pct(n.cpu)}`);
 const duration = (m) => { const h = Math.floor(m / 60); return h ? tt("{0} h {1} min", h, Math.round(m % 60)) : tt("{0} min", Math.round(m)); };
 function toast(text) {
   const el = h('div', { class: 'toast' }, text);
@@ -47,7 +47,7 @@ function toast(text) {
 }
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-/* Tema */
+/* Theme */
 const theme = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 const paintThemeIcon = () => {
   const t = document.createElement('template');
@@ -60,7 +60,7 @@ paintThemeIcon();
 $('theme').onclick = () => {
   const next = theme() === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
-  salvaTema(next);
+  saveTheme(next);
   window.dispatchEvent(new Event('tema'));
 };
 window.addEventListener('tema', () => {
@@ -100,11 +100,11 @@ function refresh(navigated = false) {
   renderActions();
   const empty = !state.tree.c.length;
   $('stageEmpty').hidden = !empty;
-  $('stageEmpty').textContent = tx(state.sampler.paused ? tt('Rilevamento in pausa.')
-    : state.sampler.diag.samples < 2 ? tt('Lettura dei processi in corso…') : tt('Nessun dato in questo periodo.'));
+  $('stageEmpty').textContent = tx(state.sampler.paused ? tt('Monitoring paused.')
+    : state.sampler.diag.samples < 2 ? tt('Reading processes…') : tt('No data in this period.'));
   const d = state.sampler.diag;
   const needsBattery = state.metric === 'mem' && !state.tree.mem;
-  $('notice').textContent = tx(needsBattery ? tt('La potenza per app si misura solo quando il computer va a batteria.') : state.metric === 'mem' ? tt('Valori stimati in proporzione al tempo di CPU.') : '');
+  $('notice').textContent = tx(needsBattery ? tt('Power per app can only be measured on battery.') : state.metric === 'mem' ? tt('Values estimated in proportion to CPU time.') : '');
   $('alert').hidden = !(d.samples >= 2 && !d.processes) && !(d.samples === 0 && d.exitCode !== null && d.exitCode !== 0);
 }
 function go(names) {
@@ -113,21 +113,21 @@ function go(names) {
   refresh(true);
 }
 function renderCrumbs() {
-  const parts = [h('button', { onclick: () => go([]) }, tt('Tutto il sistema'))];
+  const parts = [h('button', { onclick: () => go([]) }, tt('Whole system'))];
   state.path.forEach((name, i) => parts.push(h('i', null, '/'), h('button', { onclick: () => go(state.path.slice(0, i + 1)) }, name)));
   $('crumbs').replaceChildren(...parts);
 }
 function renderCenter(arc) {
-  const node = arc ? (arc.kind === 'other' ? { n: tt('Elementi minori'), s: arc.node.s } : arc.node) : current();
+  const node = arc ? (arc.kind === 'other' ? { n: tt('Smaller items'), s: arc.node.s } : arc.node) : current();
   const atRoot = !arc && !state.path.length;
   $('cName').textContent = tx(node.n);
   $('cSize').textContent = tx(atRoot ? (state.sampler?.latest.draw ? watts(state.sampler.latest.draw) : pct(state.sampler?.latest.load || 0)) : node.mem !== undefined ? value(node) : '');
-  $('cSplit').textContent = tx(atRoot ? (state.sampler?.latest.draw ? tt('consumo attuale') : tt('carico CPU')) : node.mem !== undefined ? other(node) : '');
+  $('cSplit').textContent = tx(atRoot ? (state.sampler?.latest.draw ? tt('current draw') : tt('CPU load')) : node.mem !== undefined ? other(node) : '');
   $('center').classList.toggle('up', state.path.length > 0);
 }
 const metaOf = (n) => {
   const c = Math.round(n.count);
-  return c > 0 ? (c === 1 ? tt('1 processo') : tt("{0} processi", num.format(c))) : '';
+  return c > 0 ? (c === 1 ? tt('1 process') : tt("{0} processes", num.format(c))) : '';
 };
 function renderRows(node) {
   const list = (node.c || []).filter((c) => !state.filter || tx(c.n).toLowerCase().includes(state.filter));
@@ -151,10 +151,10 @@ function renderRows(node) {
   });
   const box = $('rows');
   const top = box.scrollTop;
-  box.replaceChildren(...(rows.length ? rows : [h('div', { class: 'empty' }, state.filter ? tt('Nessun elemento con questo nome.') : tt('Qui troverai le app, dalla più pesante alla più leggera.'))]));
+  box.replaceChildren(...(rows.length ? rows : [h('div', { class: 'empty' }, state.filter ? tt('No items with this name.') : tt('You\'ll find apps here, from heaviest to lightest.'))]));
   box.scrollTop = top;
   const phrase = tx(PERIODS[state.period].phrase);
-  $('paneTitle').textContent = tx(state.metric === 'mem' ? `${watts(node.s)} ${phrase}` : tt("Carico {0} {1}", pct(node.cpu), phrase));
+  $('paneTitle').textContent = tx(state.metric === 'mem' ? `${watts(node.s)} ${phrase}` : tt("Load {0} {1}", pct(node.cpu), phrase));
 }
 function selectedNode() {
   if (!state.sel) return null;
@@ -167,47 +167,47 @@ function renderActions() {
   if (!n) { box.replaceChildren(); return; }
   const target = n.kind === 'app' && state.sampler.bundles.get(n.n);
   box.replaceChildren(
-    n.d ? h('button', { class: 'quiet', onclick: () => go([...state.path, n.n]) }, tt('Apri')) : '',
-    target ? h('button', { class: 'quiet', onclick: async () => { if (!await reveal(target).catch(() => false)) toast(tt('Nessun gestore file disponibile')); } }, tt('Mostra nella cartella')) : '',
-    h('button', { class: 'quiet', onclick: async () => { await Neutralino.clipboard.writeText(n.n); toast(tt('Nome copiato')); } }, tt('Copia nome')),
+    n.d ? h('button', { class: 'quiet', onclick: () => go([...state.path, n.n]) }, tt('Open')) : '',
+    target ? h('button', { class: 'quiet', onclick: async () => { if (!await reveal(target).catch(() => false)) toast(tt('No file manager available')); } }, tt('Show in folder')) : '',
+    h('button', { class: 'quiet', onclick: async () => { await Neutralino.clipboard.writeText(n.n); toast(tt('Name copied')); } }, tt('Copy name')),
   );
 }
 function renderRates() {
   const { battery, load, draw } = state.sampler.latest;
-  $('cpuNow').textContent = tx(battery?.level !== undefined ? pct(battery.level) : tt('Nessuna'));
-  $('cpuSub').textContent = tx(!battery ? tt('Batteria non rilevata')
-    : battery.charging ? tt('Batteria, in carica') : battery.plugged ? tt('Batteria, alimentata')
-      : battery.minutes ? tt("Batteria, {0} rimasti", duration(battery.minutes)) : tt('Batteria, in uso'));
+  $('cpuNow').textContent = tx(battery?.level !== undefined ? pct(battery.level) : tt('None'));
+  $('cpuSub').textContent = tx(!battery ? tt('Battery not detected')
+    : battery.charging ? tt('Battery, charging') : battery.plugged ? tt('Battery, on power')
+      : battery.minutes ? tt("Battery, {0} left", duration(battery.minutes)) : tt('Battery, in use'));
   $('memNow').textContent = tx(draw ? watts(draw) : pct(load));
-  $('memSub').textContent = tx(draw ? tt('Consumo attuale') : tt('Carico CPU'));
+  $('memSub').textContent = tx(draw ? tt('Current draw') : tt('CPU load'));
 }
 
 const FACTS = [
-  [tt('Stato'), (b) => (b.charging ? tt('In carica') : b.plugged ? tt('Alimentata') : tt('A batteria'))],
-  [tt('Autonomia stimata'), (b) => (b.minutes ? duration(b.minutes) : null)],
-  [tt('Salute'), (b) => (b.health ? pct(Math.min(b.health, 1.5)) : null)],
-  [tt('Cicli di carica'), (b) => (b.cycles ? num.format(b.cycles) : null)],
-  [tt('Capacità attuale'), (b) => (b.full ? `${dec.format(b.full)} ${b.unit}` : null)],
-  [tt('Capacità originale'), (b) => (b.design ? `${dec.format(b.design)} ${b.unit}` : null)],
-  [tt('Temperatura'), (b) => (b.temperature ? `${dec.format(b.temperature)} °C` : null)],
+  [tt('Status'), (b) => (b.charging ? tt('Charging') : b.plugged ? tt('On power') : tt('On battery'))],
+  [tt('Estimated time left'), (b) => (b.minutes ? duration(b.minutes) : null)],
+  [tt('Health'), (b) => (b.health ? pct(Math.min(b.health, 1.5)) : null)],
+  [tt('Charge cycles'), (b) => (b.cycles ? num.format(b.cycles) : null)],
+  [tt('Current capacity'), (b) => (b.full ? `${dec.format(b.full)} ${b.unit}` : null)],
+  [tt('Original capacity'), (b) => (b.design ? `${dec.format(b.design)} ${b.unit}` : null)],
+  [tt('Temperature'), (b) => (b.temperature ? `${dec.format(b.temperature)} °C` : null)],
 ];
 function renderBattery() {
   const b = state.sampler.latest.battery;
   const { thermal } = state.sampler.latest;
   const box = $('rows');
-  $('paneTitle').textContent = tx(tt('Salute della batteria'));
+  $('paneTitle').textContent = tx(tt('Battery health'));
   $('search').hidden = true;
   if (!b) {
-    box.replaceChildren(h('div', { class: 'empty' }, tt('Nessuna batteria rilevata su questo computer. Impatto continua a mostrare quali app lavorano di più.')));
+    box.replaceChildren(h('div', { class: 'empty' }, tt('No battery detected on this computer. Impact still shows which apps work hardest.')));
     return;
   }
   const rows = FACTS.flatMap(([label, read]) => { const v = read(b); return v ? [h('dt', null, label), h('dd', null, v)] : []; });
-  if (thermal && !b.temperature) rows.push(h('dt', null, tt('Temperatura del sistema')), h('dd', null, `${dec.format(thermal)} °C`));
-  const missing = !b.health ? h('p', { class: 'empty' }, tt('Il sistema non espone salute e capacità: su Windows possono richiedere l\'avvio come amministratore.')) : null;
+  if (thermal && !b.temperature) rows.push(h('dt', null, tt('System temperature')), h('dd', null, `${dec.format(thermal)} °C`));
+  const missing = !b.health ? h('p', { class: 'empty' }, tt('The system doesn\'t expose health and capacity: on Windows they may require running as administrator.')) : null;
   box.replaceChildren(h('dl', { class: 'facts' }, rows), missing || '');
 }
 
-/* Grafico: batteria sopra, carico CPU sotto, entrambi da 0 a 100% */
+/* Chart: battery on top, CPU load below, both from 0 to 100% */
 function drawChart() {
   const canvas = $('chart');
   if (!canvas) return;
@@ -261,7 +261,7 @@ function drawChart() {
   }
   state.chartGeom = { leftW, step };
   const last = [...bins].reverse().find((b) => b.w);
-  canvas.setAttribute('aria-label', tx(last ? tt("Andamento: batteria {0}, carico CPU {1}", pct(last.cpu), pct(last.mem)) : tt('Andamento di batteria e carico CPU')));
+  canvas.setAttribute('aria-label', tx(last ? tt("Trend: battery {0}, CPU load {1}", pct(last.cpu), pct(last.mem)) : tt('Battery and CPU load trend')));
 }
 const binLabel = (t) => new Intl.DateTimeFormat(locale(), state.period === 'week' ? { weekday: 'short', hour: '2-digit', minute: '2-digit' }
   : state.period === 'live' ? { hour: '2-digit', minute: '2-digit', second: '2-digit' } : { hour: '2-digit', minute: '2-digit' }).format(t);
@@ -277,7 +277,7 @@ function chartHover(e) {
   state.hoverBin = i;
   drawChart();
   tip.hidden = false;
-  tip.replaceChildren(h('b', null, binLabel(b.t)), b.w ? tt("Batteria {0}   Carico CPU {1}", pct(b.cpu), pct(b.mem)) : tt('Nessun dato'));
+  tip.replaceChildren(h('b', null, binLabel(b.t)), b.w ? tt("Battery {0}   CPU load {1}", pct(b.cpu), pct(b.mem)) : tt('No data'));
   const w = tip.offsetWidth;
   tip.style.left = `${Math.max(0, Math.min(canvas.clientWidth - w, x + 12))}px`;
 }
@@ -293,7 +293,7 @@ function build() {
       refresh();
     },
   }, p.label)));
-  const metric = h('div', { class: 'seg', role: 'group', 'aria-label': tt('Misura') }, [['cpu', tt('Impatto')], ['mem', tt('Potenza')], ['bat', tt('Batteria')]].map(([id, label]) => h('button', {
+  const metric = h('div', { class: 'seg', role: 'group', 'aria-label': tt('Measure') }, [['cpu', tt('Impact')], ['mem', tt('Power')], ['bat', tt('Battery')]].map(([id, label]) => h('button', {
     'aria-pressed': id === 'cpu' ? 'true' : 'false',
     onclick: (e) => {
       state.metric = id;
@@ -301,22 +301,22 @@ function build() {
       refresh();
     },
   }, label)));
-  const canvas = h('canvas', { role: 'img', 'aria-label': tt('Mappa dell\'impatto energetico per app. Lo stesso contenuto è nell\'elenco.') });
+  const canvas = h('canvas', { role: 'img', 'aria-label': tt('Energy impact map by app. The same content is in the list.') });
   const center = h('button', { class: 'center', id: 'center', onclick: () => { if (state.path.length) go(state.path.slice(0, -1)); } },
     h('span', { class: 'c-name', id: 'cName' }), h('span', { class: 'c-size', id: 'cSize' }), h('span', { class: 'c-split', id: 'cSplit' }));
   view.replaceChildren(h('div', { class: 'app' },
-    h('div', { class: 'alert', id: 'alert', hidden: true }, h('span', null, tt('Il sistema ha risposto in un formato inatteso: i processi non si possono leggere.')),
-      h('button', { class: 'quiet', onclick: openDiag }, tt('Apri diagnostica'))),
+    h('div', { class: 'alert', id: 'alert', hidden: true }, h('span', null, tt('The system answered in an unexpected format: processes can\'t be read.')),
+      h('button', { class: 'quiet', onclick: openDiag }, tt('Open diagnostics'))),
     h('aside', { class: 'pane' },
       h('div', { class: 'pane-head' }, h('strong', { id: 'paneTitle' }), metric),
-      h('input', { class: 'search', id: 'search', type: 'search', placeholder: tt('Filtra per nome'), 'aria-label': tt('Filtra per nome'), oninput: (e) => { state.filter = e.target.value.toLowerCase(); renderRows(current()); } }),
+      h('input', { class: 'search', id: 'search', type: 'search', placeholder: tt('Filter by name'), 'aria-label': tt('Filter by name'), oninput: (e) => { state.filter = e.target.value.toLowerCase(); renderRows(current()); } }),
       h('div', { class: 'rows', id: 'rows' }),
       h('div', { class: 'actions', id: 'actions', hidden: true })),
     h('div', { class: 'stage' }, canvas, center, h('div', { class: 'empty', id: 'stageEmpty', hidden: true }), h('div', { class: 'notice', id: 'notice' })),
-    h('section', { class: 'flow', 'aria-label': tt('Andamento') },
+    h('section', { class: 'flow', 'aria-label': tt('Trend') },
       h('div', { class: 'rates' },
-        h('div', { class: 'rate' }, h('i', { style: 'background:var(--cpu)' }), h('strong', { id: 'cpuNow' }, '—'), h('span', { id: 'cpuSub' }, tt('Batteria'))),
-        h('div', { class: 'rate' }, h('i', { style: 'background:var(--ram)' }), h('strong', { id: 'memNow' }, '—'), h('span', { id: 'memSub' }, tt('Carico CPU')))),
+        h('div', { class: 'rate' }, h('i', { style: 'background:var(--cpu)' }), h('strong', { id: 'cpuNow' }, '—'), h('span', { id: 'cpuSub' }, tt('Battery'))),
+        h('div', { class: 'rate' }, h('i', { style: 'background:var(--ram)' }), h('strong', { id: 'memNow' }, '—'), h('span', { id: 'memSub' }, tt('CPU load')))),
       h('div', { class: 'chart', onmousemove: chartHover, onmouseleave: () => { $('tip').hidden = true; state.hoverBin = undefined; drawChart(); } },
         h('canvas', { id: 'chart', role: 'img' }), h('div', { class: 'tip', id: 'tip', hidden: true })))));
   state.map = new RadialMap(canvas, {
@@ -343,34 +343,34 @@ function openDiag() {
   const { machine } = state.sampler;
   const report = JSON.stringify({ ...d, raw: undefined, machine, os: NL_OS, version: NL_APPVERSION }, null, 1) + '\n\n' + d.raw;
   dialog.replaceChildren(h('div', { class: 'dlg' },
-    h('header', null, h('h2', null, tt('Diagnostica')), h('p', null, tt('Quello che il sistema ha restituito nell\'ultimo campione. Lo storico resta su questo computer e non viene inviato a nessuno.'))),
+    h('header', null, h('h2', null, tt('Diagnostics')), h('p', null, tt('What the system returned in the latest sample. The history stays on this computer and is never sent to anyone.'))),
     h('div', { class: 'body' },
       h('dl', null,
-        h('dt', null, tt('Processore')), h('dd', null, tt("{0}, {1} thread", machine.model || tt('Sconosciuto'), machine.cores)),
-        h('dt', null, tt('Campioni letti')), h('dd', null, num.format(d.samples)),
-        h('dt', null, tt('Processi')), h('dd', null, num.format(d.processes)),
-        h('dt', null, tt('Codice di uscita')), h('dd', null, String(d.exitCode)),
-        d.error ? h('dt', null, tt('Messaggio')) : '', d.error ? h('dd', null, d.error) : ''),
-      h('pre', null, d.raw || tt('Nessun dato ancora.'))),
+        h('dt', null, tt('Processor')), h('dd', null, tt("{0}, {1} threads", machine.model || tt('Unknown'), machine.cores)),
+        h('dt', null, tt('Samples read')), h('dd', null, num.format(d.samples)),
+        h('dt', null, tt('Processes')), h('dd', null, num.format(d.processes)),
+        h('dt', null, tt('Exit code')), h('dd', null, String(d.exitCode)),
+        d.error ? h('dt', null, tt('Message')) : '', d.error ? h('dd', null, d.error) : ''),
+      h('pre', null, d.raw || tt('No data yet.'))),
     h('footer', null,
-      h('button', { class: 'danger', onclick: confirmClear }, tt('Cancella storico')),
+      h('button', { class: 'danger', onclick: confirmClear }, tt('Clear history')),
       h('div', null,
-        h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(report); toast(tt('Dati copiati')); } }, tt('Copia dati')),
-        h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Chiudi'))))));
+        h('button', { class: 'ghost', onclick: async () => { await Neutralino.clipboard.writeText(report); toast(tt('Data copied')); } }, tt('Copy data')),
+        h('button', { class: 'primary', onclick: () => dialog.close() }, tt('Close'))))));
   if (!dialog.open) dialog.showModal();
 }
 function confirmClear() {
   dialog.replaceChildren(h('div', { class: 'dlg' },
-    h('header', null, h('h2', null, tt('Cancellare lo storico?')), h('p', null, tt('Elimina i dati raccolti finora su questo computer. L\'azione non si può annullare.'))),
+    h('header', null, h('h2', null, tt('Clear the history?')), h('p', null, tt('Deletes the data collected so far on this computer. This can\'t be undone.'))),
     h('footer', null, h('span'), h('div', null,
-      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Annulla')),
-      h('button', { class: 'danger', onclick: async () => { await state.sampler.clearHistory(); dialog.close(); toast(tt('Storico cancellato')); } }, tt('Cancella storico'))))));
+      h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Cancel')),
+      h('button', { class: 'danger', onclick: async () => { await state.sampler.clearHistory(); dialog.close(); toast(tt('History cleared')); } }, tt('Clear history'))))));
 }
 
 (async () => {
   build();
   state.sampler = new Sampler(refresh);
-  primaDiRicaricare(() => state.sampler.stop());
+  beforeReload(() => state.sampler.stop());
   Neutralino.events.on('windowClose', async () => {
     await state.sampler.stop().catch(() => {});
     Neutralino.app.exit();
@@ -379,7 +379,7 @@ function confirmClear() {
   $('pause').onclick = () => {
     const next = !state.sampler.paused;
     state.sampler.setPaused(next);
-    $('pause').textContent = tx(next ? tt('Riprendi') : tt('Pausa'));
+    $('pause').textContent = tx(next ? tt('Resume') : tt('Pause'));
     $('pause').setAttribute('aria-pressed', next ? 'true' : 'false');
     refresh();
   };

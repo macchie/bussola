@@ -1,60 +1,60 @@
 # Bussola
 
-Installa, apre, aggiorna e disinstalla le app della suite: Anelli, Correnti, Battiti, Scorte, Sentinelle,
-Radici e Registro. App desktop per macOS, Windows e Linux costruita con Neutralinojs.
+Installs, opens, updates and removes the suite apps: Anelli, Correnti, Battiti, Scorte, Sentinelle,
+Radici and Registro. A desktop app for macOS, Windows and Linux built with Neutralinojs.
 
-## Installazione
+## Install
 
-| Sistema | Pacchetto | Note |
+| System | Package | Notes |
 | --- | --- | --- |
-| macOS 10.15+ | `Bussola-macos.zip` | Estrai in Download, poi `bash ~/Downloads/Bussola-macos/Installa\ Bussola.command` |
-| Windows 10/11 x64 | `Bussola-windows-x64.zip` | Serve WebView2, già presente su Windows 11 |
-| Linux x64 / arm64 | `Bussola-linux-*.zip` | Serve WebKitGTK: `sudo apt install libwebkit2gtk-4.1-0` |
+| macOS 10.15+ | `Bussola-macos.zip` | Unzip in Downloads, then `bash ~/Downloads/Bussola-macos/Install\ Bussola.command` |
+| Windows 10/11 x64 | `Bussola-windows-x64.zip` | WebView2 required, already present on Windows 11 |
+| Linux x64 / arm64 | `Bussola-linux-*.zip` | WebKitGTK required: `sudo apt install libwebkit2gtk-4.1-0` |
 
-Bussola non si aggiorna da sola: quando esce una versione nuova mostra il link alla release.
+Bussola doesn't update itself: when a new version ships, it shows the link to the release.
 
-## Dove installa
+## Where it installs
 
-| Sistema | Cartella |
+| System | Folder |
 | --- | --- |
-| macOS | `/Applications`, oppure `~/Applications` se non è scrivibile |
-| Windows | `%LOCALAPPDATA%\Programs\Bussola`, con collegamento nel menu Start |
-| Linux | `~/.local/share/bussola/apps`, con voce di menu |
+| macOS | `/Applications`, or `~/Applications` if that's not writable |
+| Windows | `%LOCALAPPDATA%\Programs\Bussola`, with a Start menu shortcut |
+| Linux | `~/.local/share/bussola/apps`, with a menu entry |
 
-Non servono privilegi di amministratore. Su macOS ogni app viene firmata localmente con `codesign`, quindi
-Anelli va riautorizzata in Accesso completo al disco a ogni aggiornamento.
+No administrator privileges needed. On macOS each app is signed locally with `codesign`, so
+Anelli must be re-authorized in Full Disk Access after every update.
 
-## Pubblicare una versione
+## Publishing a version
 
-Il repository `macchie/bussola` deve essere **pubblico**: Bussola scarica senza autenticazione.
+The `macchie/bussola` repository must be **public**: Bussola downloads without authentication.
 
 ```bash
-# la prima volta
+# the first time
 gh repo create macchie/bussola --public
 
-# in ogni app modificata
+# in every changed app
 npm run build
 
 # in bussola
 npm run build
-node scripts/pubblica.mjs suite-2026.11.4
+node scripts/publish.mjs suite-2026.11.4
 gh release create suite-2026.11.4 dist/release/* --repo macchie/bussola --title "Suite 2026.11.4" --latest
 ```
 
-Lo script raccoglie i pacchetti dalle cartelle accanto a questa e scrive `catalogo.json` con versioni, indirizzi e
-impronte. Bussola legge sempre il catalogo dell'ultima release.
+The script gathers the packages from the folders next to this one and writes `catalog.json` with versions,
+addresses and checksums. Bussola always reads the catalog of the latest release.
 
-## Sicurezza
+## Security
 
-- L'elenco delle app è fissato nel codice: il catalogo indica solo versioni e pacchetti.
-- Sono accettati solo download HTTPS dalle release di `macchie/bussola`.
-- Ogni pacchetto è verificato con SHA-256 prima dell'estrazione, e ne viene copiato solo il contenuto previsto.
-- Disinstallare tocca solo percorsi noti. I dati di Anelli e Radici restano sempre: contengono cestino e modifiche.
+- The app list is fixed in the code: the catalog only states versions and packages.
+- Only HTTPS downloads from `macchie/bussola` releases are accepted.
+- Each package is verified with SHA-256 before extraction, and only the expected content is copied.
+- Uninstalling touches only known paths. Anelli's and Radici's data always stays: it holds the Trash and changes.
 
-Catalogo e pacchetti vengono dalla stessa release, quindi l'impronta protegge da file corrotti o sostituiti lungo
-la strada, non da chi controlla il tuo account GitHub: proteggilo con l'autenticazione a due fattori.
+The catalog and packages come from the same release, so the checksum protects against corrupted or swapped files
+along the way, not against whoever controls your GitHub account: protect it with two-factor authentication.
 
-## Sviluppo
+## Develop
 
 ```bash
 npm install

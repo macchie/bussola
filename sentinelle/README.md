@@ -1,49 +1,49 @@
 # Sentinelle
 
-Mostra cosa è in ascolto sul tuo computer e con chi sta parlando, con la mappa ad anelli della suite
-(Anelli, Correnti, Battiti, Scorte). App desktop per macOS, Windows e Linux costruita con Neutralinojs.
+Shows what's listening on your computer and who it's talking to, with the suite's ring map
+(Anelli, Correnti, Battiti, Scorte). A desktop app for macOS, Windows and Linux built with Neutralinojs.
 
-Sentinelle osserva solo questo computer: non analizza altri dispositivi e non modifica il firewall.
+Sentinelle watches only this computer: it doesn't scan other devices and doesn't modify the firewall.
 
-## Installazione
+## Install
 
-| Sistema | Pacchetto | Note |
+| System | Package | Notes |
 | --- | --- | --- |
-| macOS 10.15+ | `Sentinelle-macos.zip` | Estrai in Download, poi `bash ~/Downloads/Sentinelle-macos/Installa\ Sentinelle.command` |
-| Windows 10/11 x64 | `Sentinelle-windows-x64.zip` | Serve WebView2, già presente su Windows 11 |
-| Linux x64 / arm64 | `Sentinelle-linux-*.zip` | Serve WebKitGTK: `sudo apt install libwebkit2gtk-4.1-0` |
+| macOS 10.15+ | `Sentinelle-macos.zip` | Unzip in Downloads, then `bash ~/Downloads/Sentinelle-macos/Install\ Sentinelle.command` |
+| Windows 10/11 x64 | `Sentinelle-windows-x64.zip` | WebView2 required, already present on Windows 11 |
+| Linux x64 / arm64 | `Sentinelle-linux-*.zip` | WebKitGTK required: `sudo apt install libwebkit2gtk-4.1-0` |
 
-Tieni `resources.neu` accanto all'eseguibile.
+Keep `resources.neu` next to the executable.
 
-## Come si usa
+## How to use
 
-- **Esposte:** porte in ascolto su un indirizzo raggiungibile dalla rete.
-- **Locali:** porte raggiungibili solo da questo computer.
-- **Connessioni:** collegamenti attivi verso altri server.
+- **Exposed:** ports listening on an address reachable from the network.
+- **Local:** ports reachable only from this computer.
+- **Connections:** active links to other servers.
 
-Il badge **Nuova** segna ciò che è comparso nelle ultime 24 ore. La prima esecuzione vale come punto di
-partenza, quindi non segnala nulla. **Accesso remoto** segna SSH, Telnet, Desktop remoto e VNC esposti.
+The **New** badge flags what appeared in the last 24 hours. The first run counts as a starting
+point, so it flags nothing. **Remote access** flags exposed SSH, Telnet, Remote Desktop and VNC.
 
-Esposta non vuol dire raggiungibile da Internet: il firewall del computer o il router possono bloccarla.
-Serve come elenco di cose da controllare, non come diagnosi di un problema.
+Exposed doesn't mean reachable from the internet: the computer's firewall or the router may block it.
+It serves as a list of things to check, not as a diagnosis of a problem.
 
-## Come funziona
+## How it works
 
-Ogni 5 secondi l'app legge `/proc/net` su Linux, `nettop` su macOS e `Get-NetTCPConnection` con
-`Get-NetUDPEndpoint` su Windows. Ciò che ha già visto resta in `visti.json`, per sette giorni.
+Every 5 seconds the app reads `/proc/net` on Linux, `nettop` on macOS and `Get-NetTCPConnection` with
+`Get-NetUDPEndpoint` on Windows. What it has already seen stays in `seen.json`, for seven days.
 
-## Limiti
+## Limits
 
-- Una connessione breve, aperta e chiusa tra due letture, può sfuggire.
-- Senza privilegi i processi di altri utenti possono comparire come "Processi non identificati".
-- Su Linux e Windows le destinazioni restano indirizzi IP. Su macOS `nettop` fornisce spesso il nome.
-- Gli stessi nomi di porta sono convenzioni: un programma può usare la porta di un altro servizio.
+- A short connection, opened and closed between two reads, may slip through.
+- Without privileges, other users' processes may appear as "Unidentified processes".
+- On Linux and Windows, destinations stay as IP addresses. On macOS `nettop` often provides the name.
+- Port names themselves are conventions: a program may use another service's port.
 
-## Sviluppo
+## Develop
 
 ```bash
 npm install
 npm run setup
 npm test
-npm run build    # crea i pacchetti in dist/pacchetti
+npm run build    # builds the packages into dist/packages
 ```

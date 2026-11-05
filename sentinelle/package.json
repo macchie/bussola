@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte aperte e connessioni per app. App desktop Neutralinojs per macOS, Windows e Linux.",
+  "description": "Open ports and connections by app. Neutralinojs desktop app for macOS, Windows and Linux.",
   "scripts": {
     "setup": "neu update",
     "dev": "neu run",

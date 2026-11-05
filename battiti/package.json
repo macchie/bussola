@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "Mappa visuale di CPU e memoria per app e processo. App desktop Neutralinojs per macOS, Windows e Linux.",
+  "description": "Visual map of CPU and memory by app and process. Neutralinojs desktop app for macOS, Windows and Linux.",
   "scripts": {
     "setup": "neu update",
     "dev": "neu run",

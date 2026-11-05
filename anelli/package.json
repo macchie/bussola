@@ -3,7 +3,7 @@
   "version": "2.1.0",
   "private": true,
   "type": "module",
-  "description": "Analizzatore visuale dello spazio su disco. App desktop Neutralinojs per macOS, Linux e Windows.",
+  "description": "Visual disk space analyzer. Neutralinojs desktop app for macOS, Linux and Windows.",
   "scripts": {
     "setup": "neu update",
     "dev": "neu run",

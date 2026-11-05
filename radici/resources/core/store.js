@@ -1,12 +1,12 @@
-// Dettaglio dei campioni recenti e storico a minuti. I minuti conservano integrali nel
-// tempo, così le medie restano corrette anche se l'app è rimasta chiusa per un po'.
+// Detail of recent samples and a per-minute history. The minutes keep integrals over
+// time, so the averages stay correct even if the app stayed closed for a while.
 export const SEP = '\u001f';
 export const ROOT = 'computer';
 export const PERIODS = {
-  live: { label: 'Adesso', phrase: 'adesso', span: 1800000, bin: 60000 },
-  hour: { label: 'Ultima ora', phrase: 'nell\'ultima ora', span: 3600000, bin: 60000 },
-  day: { label: 'Oggi', phrase: 'oggi', bin: 900000 },
-  week: { label: '7 giorni', phrase: 'in 7 giorni', span: 604800000, bin: 10800000 },
+  live: { label: 'Now', phrase: 'now', span: 1800000, bin: 60000 },
+  hour: { label: 'Last hour', phrase: 'in the last hour', span: 3600000, bin: 60000 },
+  day: { label: 'Today', phrase: 'today', bin: 900000 },
+  week: { label: '7 days', phrase: 'in 7 days', span: 604800000, bin: 10800000 },
 };
 const MINUTE = 60000;
 const FINE_KEEP = 40;
@@ -22,7 +22,7 @@ function add(map, key, v, k = 1) {
 export class Store {
   constructor() { this.minutes = new Map(); this.fine = []; this.closed = new Set(); }
 
-  // entries: [{ app, process, cpu (0-1 della macchina), mem (byte), count }]; machine: { cpu, mem } in 0-1
+  // entries: [{ app, process, cpu (0-1 of the machine), mem (bytes), count }]; machine: { cpu, mem } in 0-1
   record(t, seconds, entries, machine) {
     const minute = Math.floor(t / MINUTE);
     if (!this.minutes.has(minute)) this.minutes.set(minute, { dt: 0, cpu: 0, mem: 0, e: new Map() });
@@ -78,7 +78,7 @@ export class Store {
     return { from: period === 'day' ? startOfDay(now) : now - p.span, bin: p.bin };
   }
 
-  // Valori medi per app e processo. Adesso è semplicemente l'ultimo campione.
+  // Average values per app and process. Now is simply the latest sample.
   averages(period, now) {
     if (period === 'live') return this.fine.at(-1)?.map || new Map();
     const first = Math.floor(this.rangeOf(period, now).from / MINUTE);
@@ -109,8 +109,8 @@ export class Store {
 }
 
 
-// Tutto ciò che è stato visto, con prima e ultima osservazione. Serve a distinguere
-// ciò che è normale su questo computer da ciò che è appena comparso.
+// Everything that has been seen, with first and last observation. Used to tell apart
+// what is normal on this computer from what has just appeared.
 export class Ledger {
   constructor(data) {
     this.since = data?.since || null;
@@ -130,7 +130,7 @@ export class Ledger {
 
   prune(now) { for (const [k, v] of this.items) if (now - v[1] > WEEK) this.items.delete(k); }
 
-  // La prima scansione è il punto di partenza, non una novità.
+  // The first scan is the starting point, not something new.
   isNew(key, now) {
     const v = this.items.get(key);
     return !!v && v[0] > this.since + 60000 && now - v[0] < DAY;
@@ -141,9 +141,9 @@ export class Ledger {
   toJSON() { return { since: this.since, items: Object.fromEntries(this.items) }; }
 }
 
-// kind > app > porta o destinazione. Le chiavi sono kind, app, processo, elemento.
+// kind > app > port or destination. The keys are kind, app, process, item.
 export function buildTree(entries, kind, describe) {
-  const root = { n: 'Questo computer', d: 1, c: [], s: 0 };
+  const root = { n: 'This computer', d: 1, c: [], s: 0 };
   const apps = new Map();
   for (const [key, count] of entries) {
     const [k, app, process, item] = key.split(SEP);

@@ -1,8 +1,8 @@
-// Costruisce l'albero dall'elenco prodotto dallo strumento nativo. L'elenco è in
-// post-ordine: ogni cartella compare dopo il proprio contenuto, quindi basta
+// Builds the tree from the list produced by the native tool. The list is in
+// post-order: each folder appears after its own content, so it's enough
 // tenere in memoria le cartelle ancora aperte.
-//   POSIX    "<kB>\t<percorso>"          (du -ak)
-//   Windows  "<byte>\t<D|F>\t<percorso>"
+//   POSIX    "<kB>\t<path>"          (du -ak)
+//   Windows  "<byte>\t<D|F>\t<path>"
 const FILE_CAP = 200;
 const LARGEST_KEEP = 300;
 const VIEW_LIST_CAP = 1000;
@@ -79,7 +79,7 @@ class Builder {
     const atTop = path === this.top;
     const parent = atTop ? null : dirname(path, sep);
 
-    // Il cestino non è nella mappa, ma il totale dello strumento lo include.
+    // The trash isn't in the map, but the tool's total includes it.
     if (path.includes(sep + TRASH_MARK) || (cfg.trashHome && isUnder(path, cfg.trashHome))) {
       const here = name.startsWith(TRASH_MARK) || (cfg.trashHome && fold(path) === fold(cfg.trashHome));
       if (here && parent) this.slot(parent).excl += size;
@@ -195,7 +195,7 @@ const commands = {
     dropLargest(target);
     return true;
   },
-  // Cartella più vicina a target ancora presente nell'albero.
+  // Closest folder to target still present in the tree.
   nearest({ target }) {
     let at = target;
     for (;;) {
@@ -210,9 +210,9 @@ const commands = {
     const builder = refreshing;
     refreshing = null;
     builder.feed(new Uint8Array(), true);
-    if (!builder.result) throw new Error('Cartella non più leggibile');
+    if (!builder.result) throw new Error('Folder no longer readable');
     const chain = chainTo(target);
-    if (!chain) throw new Error('Elemento non più presente');
+    if (!chain) throw new Error('Item no longer exists');
     const old = chain.pop();
     builder.result.n = old.n;
     if (chain.length) {
@@ -246,7 +246,7 @@ export function handle(msg, post) {
     main.feed(new Uint8Array(), true);
     root = main.result;
     if (root) post({ type: 'done', files: main.count.files, dirs: main.count.dirs, size: root.s, fc: root.fc });
-    else post({ type: 'failed', error: 'Non è stato possibile leggere la cartella' });
+    else post({ type: 'failed', error: 'The folder couldn\'t be read' });
     main = null;
   } else {
     try {

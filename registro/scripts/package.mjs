@@ -1,10 +1,10 @@
-// Strumento di sviluppo: dal risultato di `neu build` ai pacchetti di ogni sistema.
+// Dev tool: from the result of `neu build` to the packages for every system.
 import { execFileSync } from 'node:child_process';
 import { chmodSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIST = 'dist/registro';
-const OUT = 'dist/pacchetti';
+const OUT = 'dist/packages';
 const { version } = JSON.parse(readFileSync('neutralino.config.json', 'utf8'));
 rmSync(OUT, { recursive: true, force: true });
 const root = join(OUT, 'Registro-macos');
@@ -27,9 +27,9 @@ writeFileSync(join(contents, 'Info.plist'), `<?xml version="1.0" encoding="UTF-8
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 `);
-const installer = join(root, 'Installa Registro.command');
+const installer = join(root, 'Install Registro.command');
 writeFileSync(installer, `#!/bin/bash
-# Firma Registro con lo strumento di Apple e la installa in Applicazioni.
+# Sign Registro with Apple's tool and install it in Applications.
 set -e
 cd "$(dirname "$0")"
 pkill -x registro 2>/dev/null || true
@@ -39,7 +39,7 @@ codesign --verify --deep --strict Registro.app
 rm -rf /Applications/Registro.app
 ditto Registro.app /Applications/Registro.app
 echo
-echo "Registro è installata in Applicazioni."
+echo "Registro is installed in Applications."
 open /Applications/Registro.app
 `);
 chmodSync(installer, 0o755);
@@ -57,7 +57,7 @@ function plain(id, binary, target) {
 const folders = [root, plain('windows-x64', 'registro-win_x64.exe', 'Registro.exe'), plain('linux-x64', 'registro-linux_x64', 'registro'), plain('linux-arm64', 'registro-linux_arm64', 'registro')];
 for (const dir of folders) {
   const name = dir.split(/[\\/]/).pop();
-  for (const legal of ['LICENSE', 'LICENZA.md', 'TERZE-PARTI.md']) cpSync(join('..', legal), join(dir, legal));
+  for (const legal of ['LICENSE', 'LICENSING.md', 'THIRD-PARTY.md']) cpSync(join('..', legal), join(dir, legal));
   execFileSync('zip', ['-qry', `${name}.zip`, name], { cwd: OUT });
   rmSync(dir, { recursive: true, force: true });
   console.log(`${OUT}/${name}.zip`);

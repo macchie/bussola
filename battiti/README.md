@@ -1,53 +1,53 @@
 # Battiti
 
-Mostra cosa pesa su CPU e memoria, con la mappa ad anelli di Anelli e Correnti: dal centro app e processi,
-i più pesanti per primi. App desktop per macOS, Windows e Linux costruita con Neutralinojs.
+Shows what weighs on CPU and memory, with the ring map of Anelli and Correnti: from the center apps and processes,
+the heaviest first. A desktop app for macOS, Windows and Linux built with Neutralinojs.
 
-## Installazione
+## Install
 
-| Sistema | Pacchetto | Note |
+| System | Package | Notes |
 | --- | --- | --- |
-| macOS 10.15+ | `Battiti-macos.zip` | Estrai in Download, poi `bash ~/Downloads/Battiti-macos/Installa\ Battiti.command` |
-| Windows 10/11 x64 | `Battiti-windows-x64.zip` | Serve WebView2, già presente su Windows 11. SmartScreen può chiedere conferma |
-| Linux x64 / arm64 | `Battiti-linux-*.zip` | Serve WebKitGTK: `sudo apt install libwebkit2gtk-4.1-0` |
+| macOS 10.15+ | `Battiti-macos.zip` | Unzip in Downloads, then `bash ~/Downloads/Battiti-macos/Install\ Battiti.command` |
+| Windows 10/11 x64 | `Battiti-windows-x64.zip` | WebView2 required, already present on Windows 11. SmartScreen may ask for confirmation |
+| Linux x64 / arm64 | `Battiti-linux-*.zip` | WebKitGTK required: `sudo apt install libwebkit2gtk-4.1-0` |
 
-Tieni `resources.neu` accanto all'eseguibile.
+Keep `resources.neu` next to the executable.
 
-## Come si usa
+## How to use
 
-- Scegli la misura, CPU o Memoria, e il periodo: Adesso, Ultima ora, Oggi, 7 giorni.
-- Clic su un'app con più processi per entrare, clic al centro per risalire.
-- Il grafico in basso mostra la CPU sopra e la memoria sotto, entrambe da 0 a 100 %.
-- Diagnostica mostra cosa ha restituito il sistema e cancella lo storico.
+- Pick the measure, CPU or Memory, and the period: Now, Last hour, Today, 7 days.
+- Click an app with several processes to enter, click the center to go back up.
+- The chart at the bottom shows CPU on top and memory below, both from 0 to 100%.
+- Diagnostics shows what the system returned and clears the history.
 
-Il 100 % della CPU è l'intera macchina: un processo che occupa un core su 8 vale il 12,5 %.
+100% CPU is the whole machine: a process using one core out of 8 is worth 12.5%.
 
-## Come funziona
+## How it works
 
-Ogni 2 secondi l'app legge i contatori dei processi e ricava l'uso di CPU dalla differenza col campione
-precedente.
+Every 2 seconds the app reads the process counters and derives CPU usage from the delta against the previous
+sample.
 
 - **Linux:** `/proc`.
-- **macOS:** `ps`, `vm_stat` e `sysctl`. La memoria in uso segue il calcolo di Monitoraggio Attività
-  (attiva, wired e compressa).
-- **Windows:** un solo processo PowerShell resta aperto, perché avviarlo a ogni campione costerebbe
-  troppo. Si chiude da solo quando Battiti non è più in esecuzione.
+- **macOS:** `ps`, `vm_stat` and `sysctl`. Memory in use follows Activity Monitor's calculation
+  (active, wired and compressed).
+- **Windows:** a single PowerShell process stays open, because starting it for each sample would cost
+  too much. It exits on its own when Battiti is no longer running.
 
-Lo storico resta sul computer, sette giorni, nella cartella dati dell'utente.
+The history stays on the computer, seven days, in the user data folder.
 
-## Limiti
+## Limits
 
-- I dati si registrano solo mentre l'app è aperta.
-- La memoria dei processi è quella residente: la parte condivisa conta più volte, quindi la somma può
-  superare la memoria in uso. La memoria non attribuita a un processo appare come "Memoria del sistema".
-- Su macOS i valori per processo possono differire da Monitoraggio Attività, che usa la "memory footprint".
-- Non si possono terminare processi, e non c'è il dettaglio per singolo core.
+- Data is recorded only while the app is open.
+- Process memory is the resident one: the shared part is counted more than once, so the sum may
+  exceed memory in use. Memory not attributed to a process appears as "System memory".
+- On macOS, per-process values may differ from Activity Monitor, which uses the "memory footprint".
+- Processes can't be terminated, and there's no per-core detail.
 
-## Sviluppo
+## Develop
 
 ```bash
 npm install
 npm run setup
 npm test
-npm run build    # crea i pacchetti in dist/pacchetti
+npm run build    # builds the packages into dist/packages
 ```

@@ -1,5 +1,5 @@
-// Windows non ha du: PowerShell compila al volo questo enumeratore, molto più
-// veloce di Get-ChildItem. Compatibile col C# 5 di Windows PowerShell 5.1.
+// Windows has no du: PowerShell compiles this enumerator on the fly, much
+// faster than Get-ChildItem. Compatible with the C# 5 of Windows PowerShell 5.1.
 export const WINDOWS_SCANNER = String.raw`
 using System; using System.IO; using System.Text;
 public static class AnelliScan {

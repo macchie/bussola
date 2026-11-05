@@ -1,287 +1,275 @@
-# Bussola e la suite
+<div align="center">
 
-Sette app desktop che rispondono a sette domande sul tuo computer, più **Bussola**, il launcher che le installa
-e le tiene aggiornate. Tutte usano la stessa mappa ad anelli, gli stessi periodi e la stessa struttura, e girano
-senza account e senza server.
+# 🧭 Bussola Suite
 
-| App | La domanda | Versione | macOS | Windows | Linux |
-| --- | --- | --- | --- | --- | --- |
-| **Bussola** | Cosa ho installato, e cosa va aggiornato? | 1.1.0 | Sì | Sì | Sì |
-| **Anelli** | Dove è finito lo spazio su disco? | 2.1.0 | Sì | Sì | Sì |
-| **Correnti** | Quali app usano la rete, e verso dove? | 1.2.0 | Sì | No | Sì |
-| **Battiti** | Cosa pesa su CPU e memoria? | 1.1.0 | Sì | Sì | Sì |
-| **Scorte** | Quanta batteria resta, e chi la consuma? | 1.1.0 | Sì | Sì | Sì |
-| **Sentinelle** | Cosa è in ascolto, e con chi parla il computer? | 1.1.0 | Sì | Sì | Sì |
-| **Radici** | Cosa parte da solo all'avvio? | 1.1.0 | Sì | Sì | Sì |
-| **Registro** | Quali errori, arresti e riavvii ci sono stati? | 1.1.0 | Sì | Sì | Sì |
+**Seven tiny desktop apps that answer seven questions about your computer — plus Bussola, the launcher that installs and updates them.**
 
-Pacchetti per macOS (universale Intel e Apple Silicon), Windows 10/11 x64, Linux x64 e arm64. Ogni pacchetto pesa
-da 1,2 a 2,1 MB. Interfaccia in italiano.
+Every app shares the same ring map, the same time periods and the same structure, and runs with no account and no server.
 
-> **Stato del progetto: prime versioni.** Tutte le app sono state provate su Linux. Su macOS e Windows il lavoro di
-> verifica è ancora da fare: vedi [Stato delle verifiche](#stato-delle-verifiche).
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg)](#-install)
+[![Built with Neutralinojs](https://img.shields.io/badge/built%20with-Neutralinojs-00c58e.svg)](https://neutralino.js.org)
+[![CI](https://github.com/macchie/bussola/actions/workflows/ci.yml/badge.svg)](https://github.com/macchie/bussola/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/macchie/bussola?sort=semver)](https://github.com/macchie/bussola/releases/latest)
+[![No tracking](https://img.shields.io/badge/telemetry-none-success.svg)](#-privacy--security)
 
-## Indice
+[Download](#-install) · [The apps](#-the-apps) · [How they work](#-how-they-work) · [Privacy](#-privacy--security) · [Develop](#-develop--publish)
 
-- [Installazione](#installazione)
-- [Le app](#le-app)
-- [Come sono fatte](#come-sono-fatte)
-- [Privacy e sicurezza](#privacy-e-sicurezza)
-- [Stato delle verifiche](#stato-delle-verifiche)
-- [Sviluppo e pubblicazione](#sviluppo-e-pubblicazione)
+</div>
 
-## Installazione
+---
 
-### Con Bussola (consigliata)
+> [!NOTE]
+> **Early days.** Every app has been tried on Linux. On macOS and Windows verification is still in progress — see [Verification status](#-verification-status).
 
-Scarica il pacchetto di Bussola dall'[ultima release](https://github.com/macchie/bussola/releases/latest).
+## 📦 The suite at a glance
 
-| Sistema | Passaggi |
-| --- | --- |
-| macOS | Estrai `Bussola-macos.zip` in Download, poi `bash ~/Downloads/Bussola-macos/Installa\ Bussola.command` |
-| Windows | Estrai `Bussola-windows-x64.zip` e apri `Bussola.exe`. SmartScreen può chiedere conferma |
-| Linux | `sudo apt install libwebkit2gtk-4.1-0`, estrai `Bussola-linux-x64.zip` e avvia `bussola` |
+| App | The question | Version | 🍎 macOS | 🪟 Windows | 🐧 Linux |
+| --- | --- | :---: | :---: | :---: | :---: |
+| 🧭 **Bussola** | What's installed, and what needs updating? | 1.1.0 | ✅ | ✅ | ✅ |
+| 💿 **Anelli** | Where did my disk space go? | 2.1.0 | ✅ | ✅ | ✅ |
+| 🌐 **Correnti** | Which apps use the network, and where to? | 1.2.0 | ✅ | ❌ | ✅ |
+| ⚡ **Battiti** | What's weighing on CPU and memory? | 1.1.0 | ✅ | ✅ | ✅ |
+| 🔋 **Scorte** | How much battery is left, and who's draining it? | 1.1.0 | ✅ | ✅ | ✅ |
+| 🛡️ **Sentinelle** | What's listening, and who does the computer talk to? | 1.1.0 | ✅ | ✅ | ✅ |
+| 🌱 **Radici** | What launches on its own at startup? | 1.1.0 | ✅ | ✅ | ✅ |
+| 📓 **Registro** | What errors, shutdowns and restarts happened? | 1.1.0 | ✅ | ✅ | ✅ |
 
-Da Bussola puoi installare, aprire, aggiornare e disinstallare ogni app, anche tutte insieme. Le app finiscono in:
+Packages for macOS (universal Intel + Apple Silicon), Windows 10/11 x64, Linux x64 and arm64. Each package weighs **1.2–2.1 MB**. Available in English, Italian, French, Spanish and German.
 
-| Sistema | Cartella |
-| --- | --- |
-| macOS | `/Applications`, oppure `~/Applications` se non è scrivibile |
-| Windows | `%LOCALAPPDATA%\Programs\Bussola`, con collegamento nel menu Start |
-| Linux | `~/.local/share/bussola/apps`, con voce nel menu delle applicazioni |
+## 🚀 Install
 
-Bussola non si aggiorna da sola: quando esce una versione nuova mostra il link alla release.
+### With Bussola (recommended)
 
-### Una singola app
+Download Bussola, then install, open, update and remove every app from one place — all together if you like.
 
-Ogni app ha il proprio pacchetto nella stessa release.
-
-- **macOS:** estrai lo zip in Download e lancia `bash ~/Downloads/Nome-macos/Installa\ Nome.command`. L'app viene
-  firmata localmente con lo strumento di Apple e copiata in Applicazioni.
-- **Windows:** estrai lo zip e apri l'eseguibile. Serve WebView2, già presente su Windows 11.
-- **Linux:** estrai lo zip e avvia il programma. Serve `libwebkit2gtk-4.1-0`.
-
-Tieni `resources.neu` accanto all'eseguibile.
-
-### App non firmate
-
-Le app non hanno certificati Apple o Microsoft. Su macOS la firma è locale e cambia a ogni versione: Anelli va
-riautorizzata in Accesso completo al disco dopo ogni aggiornamento, e se in Impostazioni resta una vecchia voce
-va tolta con il tasto meno. Su Windows SmartScreen può mostrare un avviso.
-
-## Le app
-
-Tutte offrono tema chiaro e scuro, un filtro per nome e, tranne Anelli e Bussola, i periodi Adesso, Ultima ora,
-Oggi e 7 giorni, più Diagnostica con l'output grezzo del sistema.
-
-### Anelli
-
-Mappa radiale del disco ispirata a DaisyDisk. Mostra dischi e cartelle con i più pesanti per primi, con la classifica
-dei file più grandi e l'anteprima di immagini, video, audio e testo.
-
-Il percorso per liberare spazio ha due passaggi. La **Raccolta** non tocca il disco, il **Cestino** sposta davvero i
-file ma resta reversibile, e l'eliminazione definitiva parte dopo un conto alla rovescia di 5 secondi. Radici, home,
-punti di montaggio e cartelle di sistema non si possono spostare, e il ripristino non sovrascrive mai.
-
-- **Fonti:** `du` su Linux e macOS, un enumeratore .NET su Windows.
-- **Limiti:** ogni cartella conserva i 200 file più grandi, gli altri restano nel totale come gruppo. Su Windows le
-  dimensioni sono logiche. Su macOS alcune aree restano escluse anche con l'Accesso completo al disco.
-
-### Correnti
-
-Mappa del traffico per app, processo e destinazione, con ricevuti e inviati, velocità attuale e andamento.
-
-- **Fonti:** `nettop` su macOS. `ss` e `/proc/net/dev` su Linux, senza root.
-- **Limiti:** su Linux UDP e QUIC non si attribuiscono alle app senza root e compaiono come Traffico non attribuito.
-  Una connessione aperta e chiusa tra due letture può sfuggire. Il traffico si registra solo a app aperta. Non c'è
-  una versione per Windows.
-
-### Battiti
-
-CPU e memoria per app e processo, con i processi dello stesso programma raggruppati. Il 100 % della CPU è
-l'intera macchina.
-
-- **Fonti:** `/proc` su Linux, `ps`, `vm_stat` e `sysctl` su macOS, .NET via PowerShell su Windows.
-- **Limiti:** la memoria condivisa conta più volte, e l'app lo segnala quando la somma supera la memoria in uso. Non
-  c'è il dettaglio per singolo core e non si possono terminare i processi.
-
-### Scorte
-
-Livello e autonomia della batteria, salute, cicli, capacità e temperatura, con l'impatto energetico di ogni app.
-Senza batteria continua a mostrare quali app lavorano di più.
-
-- **Fonti:** `/sys` e `/proc` su Linux, `pmset`, `ioreg` e `ps` su macOS, WMI su Windows.
-- **Limiti:** i watt per app sono **stime** proporzionali al tempo di CPU e non distinguono schermo, rete o GPU. Si
-  misurano solo a batteria. Su Windows capacità e cicli possono richiedere l'amministratore.
-
-### Sentinelle
-
-Porte esposte, porte locali e connessioni attive per app. Segna ciò che è comparso nelle ultime 24 ore e l'accesso
-remoto esposto, come SSH o Desktop remoto. Guarda solo questo computer: non analizza altri dispositivi e non
-tocca il firewall.
-
-- **Fonti:** `/proc/net` su Linux, `nettop` su macOS, `Get-NetTCPConnection` e `Get-NetUDPEndpoint` su Windows.
-- **Limiti:** "esposta" non vuol dire raggiungibile da Internet, perché firewall e router possono bloccarla. Senza
-  privilegi i processi di altri utenti compaiono come non identificati.
-
-### Radici
-
-Elementi all'accesso, servizi e attività pianificate, con la segnalazione di ciò che è nuovo. Può disattivare gli
-elementi a livello utente: non cancella nulla, chiede conferma, ricontrolla lo stato e ripristina il valore
-precedente. Servizi di sistema e componenti del sistema operativo restano in sola lettura.
-
-| Sistema | Modificabile | Meccanismo |
+| Platform | Direct download | Then |
 | --- | --- | --- |
-| macOS | Agenti in `~/Library/LaunchAgents` e `/Library/LaunchAgents` | `launchctl disable` |
-| Linux | Autostart e unità systemd utente | `Hidden=true`, `systemctl --user disable` |
-| Windows | Valori `Run` dell'utente | `StartupApproved` |
+| 🍎 **macOS** (universal) | [**Bussola-macos.zip**](https://github.com/macchie/bussola/releases/latest/download/Bussola-macos.zip) | Unzip in Downloads, then run `bash ~/Downloads/Bussola-macos/Install\ Bussola.command` |
+| 🪟 **Windows** (x64) | [**Bussola-windows-x64.zip**](https://github.com/macchie/bussola/releases/latest/download/Bussola-windows-x64.zip) | Unzip and open `Bussola.exe`. SmartScreen may ask for confirmation |
+| 🐧 **Linux** (x64) | [**Bussola-linux-x64.zip**](https://github.com/macchie/bussola/releases/latest/download/Bussola-linux-x64.zip) | `sudo apt install libwebkit2gtk-4.1-0`, unzip and run `bussola` |
+| 🐧 **Linux** (arm64) | [**Bussola-linux-arm64.zip**](https://github.com/macchie/bussola/releases/latest/download/Bussola-linux-arm64.zip) | `sudo apt install libwebkit2gtk-4.1-0`, unzip and run `bussola` |
 
-- **Limiti:** l'effetto parte dal prossimo accesso. Alcune app ricreano da sole i propri elementi. Su macOS gli
-  Elementi login delle Impostazioni non sono elencati.
+Or grab everything from the [latest release](https://github.com/macchie/bussola/releases/latest). Bussola doesn't update itself: when a new version ships, it shows the link to the release.
 
-### Registro
+Apps land in:
 
-Errori, avvisi, arresti e riavvii per app, con i messaggi ripetuti uniti in una sola riga. Recupera anche ciò che è
-successo mentre era chiusa, perché i log li conserva il sistema.
+| Platform | Folder |
+| --- | --- |
+| macOS | `/Applications`, or `~/Applications` if that's not writable |
+| Windows | `%LOCALAPPDATA%\Programs\Bussola`, with a Start menu shortcut |
+| Linux | `~/.local/share/bussola/apps`, with an entry in the applications menu |
 
-- **Fonti:** `journalctl` su Linux, `log show`, `DiagnosticReports` e `kern.boottime` su macOS, `Get-WinEvent` su Windows.
-- **Limiti:** macOS distingue solo errori e guasti, quindi Avvisi resta vuota. Molti errori di macOS sono innocui. Una
-  lettura è limitata a 20.000 eventi.
+### A single app
 
-### Bussola
+Each app has its own package in the same release.
 
-Launcher della suite. Legge il catalogo dalla release più recente, scarica con `curl` e verifica l'impronta SHA-256
-prima di estrarre. Disinstallando puoi cancellare anche i dati, tranne quelli di Anelli e Radici, che contengono il
-cestino e le modifiche da ripristinare.
+- **macOS:** unzip in Downloads and run `bash ~/Downloads/<Name>-macos/Install\ <Name>.command`. The app is signed locally with Apple's tool and copied to Applications.
+- **Windows:** unzip and open the executable. WebView2 is required (already present on Windows 11).
+- **Linux:** unzip and run the program. `libwebkit2gtk-4.1-0` is required.
 
-## Lingue e impostazioni
+Keep `resources.neu` next to the executable.
 
-Le app e la landing sono in italiano, inglese, francese, spagnolo e tedesco. Al primo avvio usano la lingua del sistema; se non è tra queste cinque, l'inglese. Il pulsante Impostazioni, in alto in ogni app, permette di scegliere lingua e tema. La scelta vale per tutta la suite ed è salvata in `Bussola Suite/impostazioni.json`, nella cartella dati dell'utente.
+> [!WARNING]
+> **Unsigned apps.** The apps carry no Apple or Microsoft certificates. On macOS the signature is local and changes with every version: Anelli must be re-authorized in Full Disk Access after each update. On Windows, SmartScreen may show a warning.
 
-I messaggi che arrivano dal sistema operativo, come i log o le descrizioni dei servizi, restano nella lingua del sistema.
+## 🧩 The apps
 
-## Come sono fatte
+All offer a light and dark theme, a name filter and — except Anelli and Bussola — the periods **Now, Last hour, Today and 7 days**, plus **Diagnostics** with the raw system output.
 
-Ogni app è un progetto [Neutralinojs](https://neutralino.js.org) indipendente: un eseguibile di pochi MB che usa la
-webview del sistema. Non ci sono Node, Electron, server o build dell'interfaccia a runtime.
+<details>
+<summary>💿 <b>Anelli</b> — where your disk space goes</summary>
 
-Tutte seguono le stesse regole:
+Radial disk map inspired by DaisyDisk. Shows disks and folders heaviest-first, with a ranking of the largest files and previews of images, video, audio and text.
 
-- **Strumenti di sistema:** i dati arrivano da comandi nativi e file di sistema, per evitare chiamate per singolo file.
-- **Differenze tra campioni:** i contatori cumulativi diventano uso reale per differenza.
-- **Niente percorsi in riga di comando:** i valori finiscono quotati in script temporanei.
-- **Dati locali:** storico di sette giorni nella cartella dati dell'utente, leggibile come JSON a righe.
-- **Interfaccia comune:** mappa su canvas, elenco ordinato, grafico con una sola scala, IBM Plex Sans incorporato.
+Freeing space takes two steps. The **Collection** doesn't touch the disk, the **Trash** actually moves files but stays reversible, and permanent deletion starts after a 5-second countdown. Roots, home, mount points and system folders can't be moved, and restore never overwrites.
 
-| Sistema | Cartella dati |
+- **Sources:** `du` on Linux and macOS, a .NET enumerator on Windows.
+- **Limits:** each folder keeps its 200 largest files; the rest stay in the total as a group. On Windows sizes are logical. On macOS some areas remain excluded even with Full Disk Access.
+</details>
+
+<details>
+<summary>🌐 <b>Correnti</b> — which apps use the network, and where to</summary>
+
+Traffic map by app, process and destination, with received and sent, current speed and trend.
+
+- **Sources:** `nettop` on macOS; `ss` and `/proc/net/dev` on Linux, without root.
+- **Limits:** on Linux UDP and QUIC aren't attributed to apps without root and appear as Unattributed traffic. Traffic is recorded only while the app is open. There's no Windows version.
+</details>
+
+<details>
+<summary>⚡ <b>Battiti</b> — what weighs on CPU and memory</summary>
+
+CPU and memory by app and process, with processes of the same program grouped. 100% CPU is the whole machine.
+
+- **Sources:** `/proc` on Linux; `ps`, `vm_stat` and `sysctl` on macOS; .NET via PowerShell on Windows.
+- **Limits:** shared memory is counted more than once, and the app flags it when the sum exceeds memory in use. No per-core detail, and processes can't be terminated.
+</details>
+
+<details>
+<summary>🔋 <b>Scorte</b> — battery and energy by app</summary>
+
+Battery level and runtime, health, cycles, capacity and temperature, with each app's energy impact. Without a battery it still shows which apps work hardest.
+
+- **Sources:** `/sys` and `/proc` on Linux; `pmset`, `ioreg` and `ps` on macOS; WMI on Windows.
+- **Limits:** per-app watts are **estimates** proportional to CPU time and don't separate screen, network or GPU. Measured only on battery.
+</details>
+
+<details>
+<summary>🛡️ <b>Sentinelle</b> — open ports and connections</summary>
+
+Exposed ports, local ports and active connections per app. Flags what appeared in the last 24 hours and exposed remote access, like SSH or Remote Desktop. It looks only at this computer: it doesn't scan other devices and doesn't touch the firewall.
+
+- **Sources:** `/proc/net` on Linux, `nettop` on macOS, `Get-NetTCPConnection` and `Get-NetUDPEndpoint` on Windows.
+- **Limits:** "exposed" doesn't mean reachable from the internet, since firewalls and routers can block it.
+</details>
+
+<details>
+<summary>🌱 <b>Radici</b> — what starts by itself at boot</summary>
+
+Login items, services and scheduled tasks, flagging what's new. It can disable user-level items: it deletes nothing, asks for confirmation, re-checks the state and restores the previous value. System services and OS components stay read-only.
+
+| Platform | Editable | Mechanism |
+| --- | --- | --- |
+| macOS | Agents in `~/Library/LaunchAgents` and `/Library/LaunchAgents` | `launchctl disable` |
+| Linux | Autostart and systemd user units | `Hidden=true`, `systemctl --user disable` |
+| Windows | User `Run` values | `StartupApproved` |
+</details>
+
+<details>
+<summary>📓 <b>Registro</b> — errors, shutdowns and restarts</summary>
+
+Errors, warnings, shutdowns and restarts per app, with repeated messages merged into a single line. It also recovers what happened while it was closed, because the system keeps the logs.
+
+- **Sources:** `journalctl` on Linux; `log show`, `DiagnosticReports` and `kern.boottime` on macOS; `Get-WinEvent` on Windows.
+- **Limits:** macOS distinguishes only errors and faults, so Warnings stays empty. A single read is capped at 20,000 events.
+</details>
+
+<details>
+<summary>🧭 <b>Bussola</b> — the launcher</summary>
+
+Reads the catalog from the most recent release, downloads with `curl` and verifies the SHA-256 checksum before extracting. When uninstalling you can also wipe the data, except for Anelli and Radici, whose data holds the Trash and the changes to restore.
+</details>
+
+## 🌍 Languages & settings
+
+The apps and the landing page are available in English, Italian, French, Spanish and German. On first launch they follow the system language; if it isn't one of those five, English. The **Settings** button, top-right in every app, lets you pick language and theme. The choice applies across the whole suite and is saved in `Bussola Suite/settings.json`, in the user data folder.
+
+Messages coming from the operating system, such as logs or service descriptions, stay in the system language.
+
+## 🔧 How they work
+
+Each app is an independent [Neutralinojs](https://neutralino.js.org) project: a few-MB executable that uses the system webview. No Node, no Electron, no server, no UI build at runtime.
+
+They all follow the same rules:
+
+- **System tools:** data comes from native commands and system files, to avoid per-file calls.
+- **Deltas between samples:** cumulative counters become real usage by difference.
+- **No command-line paths:** values end up quoted in temporary scripts.
+- **Local data:** a seven-day history in the user data folder, readable as line-based JSON.
+- **Shared interface:** a canvas map, a sorted list, a single-scale chart, IBM Plex Sans embedded.
+
+| Platform | Data folder |
 | --- | --- |
 | macOS | `~/Library/Application Support/<App>` |
 | Windows | `%APPDATA%\<App>` |
 | Linux | `~/.local/share/<App>` |
 
-## Privacy e sicurezza
+## 🔒 Privacy & security
 
-- Nessun account, nessuna telemetria, nessun server della suite.
-- Le uniche app che usano la rete da sole sono Bussola, per catalogo e pacchetti da GitHub, e Correnti su Linux, che
-  chiede al DNS configurato i nomi delle destinazioni.
-- Registro conserva un esempio per messaggio: i log possono contenere nomi di file e account. Restano sul computer.
-- Ogni app può usare solo le API native elencate nel proprio `nativeAllowList`.
-- Bussola installa solo le sette app scritte nel suo codice e accetta solo download HTTPS da `macchie/bussola`.
+- No account, no telemetry, no suite server.
+- The only apps that use the network on their own are Bussola, for the catalog and packages from GitHub, and Correnti on Linux, which asks the configured DNS for destination names.
+- Registro keeps one sample per message: logs may contain file and account names. They stay on the computer.
+- Each app can use only the native APIs listed in its own `nativeAllowList`.
+- Bussola installs only the seven apps written in its code, and accepts only HTTPS downloads from `macchie/bussola`.
 
-Catalogo e pacchetti stanno nella stessa release: l'impronta protegge da file corrotti o sostituiti lungo la strada,
-non da chi controlla l'account GitHub. Proteggilo con l'autenticazione a due fattori.
+The catalog and packages live in the same release: the checksum protects against corrupted or swapped files along the way, not against whoever controls the GitHub account. Protect it with two-factor authentication.
 
-## Stato delle verifiche
+## ✅ Verification status
 
 | App | Linux x64 | macOS | Windows |
 | --- | --- | --- | --- |
-| Anelli | Provata con scansioni e operazioni reali | Usata su un Mac; firma 2.0.1 da confermare | Mai eseguita |
-| Correnti | Provata con traffico reale di dimensione nota | Mai eseguita, formato verificato su fonti pubbliche | Non disponibile |
-| Battiti | Provata con carico noto | Mai eseguita | Mai eseguita |
-| Scorte | Provata con batteria simulata e senza batteria | Mai eseguita | Mai eseguita |
-| Sentinelle | Provata con porte aperte di proposito | Mai eseguita | Mai eseguita |
-| Radici | Modifiche su file veri, `systemctl` simulato | Mai eseguita | Mai eseguita |
-| Registro | Eventi simulati con conteggi noti | Mai eseguita | Mai eseguita |
-| Bussola | Installazioni reali da server locale | Script provato con simulatori | Mai eseguita |
+| Anelli | Tried with real scans and operations | Used on a Mac; 2.0.1 signature to confirm | Never run |
+| Correnti | Tried with real traffic of known size | Never run, format checked against public sources | Not available |
+| Battiti | Tried with a known load | Never run | Never run |
+| Scorte | Tried with a simulated battery and without one | Never run | Never run |
+| Sentinelle | Tried with deliberately opened ports | Never run | Never run |
+| Radici | Changes on real files, `systemctl` simulated | Never run | Never run |
+| Registro | Simulated events with known counts | Never run | Never run |
+| Bussola | Real installs from a local server | Script tried with simulators | Never run |
 
-Linux arm64 è compilato ma non è stato avviato. Se qualcosa non torna, in Diagnostica c'è **Copia dati** con l'output
-grezzo del sistema. Anelli non ha questa funzione.
+Linux arm64 is compiled but hasn't been launched. If something looks off, Diagnostics has **Copy data** with the raw system output (Anelli excepted).
 
-## Sviluppo e pubblicazione
+## 🛠️ Develop & publish
 
-Tutte le app stanno in questo repository, una per cartella. Node serve solo come strumento di sviluppo. Servono
-`node`, `npm`, `zip`, `make`, e per pubblicare `git` e [`gh`](https://cli.github.com). `make help` elenca i comandi.
+All apps live in this repository, one per folder. Node is only a development tool. You need `node`, `npm`, `zip`, `make`, and to publish `git` and [`gh`](https://cli.github.com). Run `make help` for the commands.
 
 ```
 anelli/ correnti/ battiti/ scorte/ sentinelle/ radici/ registro/ bussola/
-  neutralino.config.json   configurazione e API consentite
-  resources/               interfaccia e logica
-  scripts/package.mjs      pacchetti per ogni sistema
-  test/                    test logici
-landing/index.html         sito pubblicato su GitHub Pages
-scripts/                   controlli della release
-.github/workflows/         controlli, release e landing
+  neutralino.config.json   configuration and allowed APIs
+  resources/               interface and logic
+  scripts/package.mjs      packages for each system
+  test/                    logic tests
+shared/                    translations.js, settings.js, i18n.js, startup.js
+landing/index.html         site published on GitHub Pages
+scripts/                   release checks
+.github/workflows/         checks, release and landing
 Makefile
-LICENSE  LICENZA.md  TERZE-PARTI.md  CONTRIBUTING.md
+LICENSE  LICENSING.md  THIRD-PARTY.md  CONTRIBUTING.md
 ```
 
-| Comando | Cosa fa |
+| Command | What it does |
 | --- | --- |
-| `make setup` | Installa gli strumenti e scarica il runtime di ogni app |
-| `make test` | Esegue tutti i test logici |
-| `make build` | Crea i pacchetti in `<app>/dist/pacchetti` |
-| `make build-correnti` | Crea i pacchetti di una sola app |
-| `make release` | Test, pacchetti e catalogo in `bussola/dist/release`, senza pubblicare |
-| `make versions` | Mostra la versione di ogni app |
-| `make landing` | Anteprima locale della landing |
+| `make setup` | Installs the tools and downloads each app's runtime |
+| `make test` | Runs all the logic tests |
+| `make build` | Builds the packages into `<app>/dist/packages` |
+| `make build-correnti` | Builds the packages for a single app |
+| `make release` | Test, packages and catalog into `bussola/dist/release`, without publishing |
+| `make versions` | Shows each app's version |
+| `make landing` | Local preview of the landing page |
 
-### Traduzioni e impostazioni condivise
+### Shared translations & settings
 
-Il codice comune sta in `comune/`: `traduzioni.js` ha una voce per ogni testo, con l'italiano come chiave, e `impostazioni.js` il pannello delle preferenze. Dopo una modifica esegui `make sync`, che lo copia in `resources/comune/` di ogni app: `make test` fallisce se le copie non coincidono, se un testo non ha la traduzione o se i segnaposto `{0}` non corrispondono. Una nuova preferenza si aggiunge con `aggiungiSezione()`.
+The shared code lives in `shared/`: `translations.js` has one entry per text, with English as the key, and `settings.js` is the preferences panel. After a change run `make sync`, which copies it into each app's `resources/shared/`: `make test` fails if the copies don't match, if a text lacks a translation, or if the `{0}` placeholders don't line up. A new preference is added with `addSection()`.
 
-### Prima pubblicazione
+### First publish
 
-Con `gh auth login` già fatto:
+With `gh auth login` already done:
 
 ```bash
-make bootstrap    # crea macchie/bussola pubblico, carica il codice e attiva Pages
-make publish      # crea il tag: GitHub compila e pubblica la release
+make bootstrap    # creates the public macchie/bussola repo, uploads the code and enables Pages
+make publish      # creates the tag: GitHub builds and publishes the release
 ```
 
-Il repository deve essere pubblico, perché Bussola scarica senza autenticazione.
+The repository must be public, because Bussola downloads without authentication.
 
-### Nuova versione
+### New version
 
-1. Cambia `version` in `neutralino.config.json` della app, e in `package.json`.
-2. Fai il commit su `main`.
-3. Lancia `make publish`, oppure `make publish TAG=suite-2026.11.5.1` per una seconda release nello stesso giorno.
+1. Change `version` in the app's `neutralino.config.json`, and in `package.json`.
+2. Commit on `master`.
+3. Run `make publish`, or `make publish TAG=suite-2026.11.5.1` for a second release on the same day.
 
-`make publish` rifiuta di partire se ci sono modifiche non salvate, se non sei su `main`, se il tag esiste già o se un
-test fallisce. Bussola legge il catalogo della release più recente, quindi gli aggiornamenti arrivano da soli.
+`make publish` refuses to start if there are unsaved changes, if you're not on `master`, if the tag already exists, or if a test fails.
 
-### Automazioni GitHub
+### GitHub automation
 
-| Workflow | Quando parte | Cosa fa |
+| Workflow | When it runs | What it does |
 | --- | --- | --- |
-| `ci.yml` | Push su `main` e pull request | Test e build di tutte le app |
-| `release.yml` | Tag `suite-*` | Test, build, controllo del catalogo e release su GitHub |
-| `pages.yml` | Modifiche a `landing/` su `main` | Pubblica la landing su `https://macchie.github.io/bussola/` |
+| `ci.yml` | Push to `master` and pull requests | Tests and builds all apps |
+| `release.yml` | `suite-*` tag | Tests, builds, checks the catalog and releases on GitHub |
+| `pages.yml` | Changes to `landing/` on `master` | Publishes the landing to `https://macchie.github.io/bussola/` |
 
-Prima di pubblicare, `scripts/controlla-release.mjs` verifica che catalogo e file coincidano: tag, indirizzi, dimensioni e
-impronte. Tutti i pacchetti si compilano su Linux, per ogni sistema. Le firme macOS avvengono sul computer di chi
-installa.
+Before publishing, `scripts/check-release.mjs` verifies that the catalog and files line up: tag, addresses, sizes and checksums. All packages are built on Linux, for every system. macOS signing happens on the installer's own computer.
 
-## Licenza
+## 📄 License
 
-Doppia licenza, spiegata in [LICENZA.md](LICENZA.md):
+Dual license, explained in [LICENSING.md](LICENSING.md):
 
-- **[AGPL-3.0](LICENSE):** gratuita. Puoi usare, modificare e ridistribuire il progetto purché resti open source con la
-  stessa licenza.
-- **Commerciale, a pagamento:** per usarlo in prodotti proprietari o senza rispettare l'AGPL.
+- **[AGPL-3.0](LICENSE):** free. Use, modify and redistribute the project as long as it stays open source under the same license.
+- **Commercial, paid:** to use it in proprietary products or without complying with the AGPL.
 
-Per contribuire vedi [CONTRIBUTING.md](CONTRIBUTING.md).
+To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Crediti
+## 🙏 Credits
 
-Costruita con [Neutralinojs](https://neutralino.js.org) (MIT) e IBM Plex Sans (SIL Open Font License), come indicato
-in [TERZE-PARTI.md](TERZE-PARTI.md). Anelli si ispira a DaisyDisk, con cui non ha legami.
+Built with [Neutralinojs](https://neutralino.js.org) (MIT) and IBM Plex Sans (SIL Open Font License), as noted in [THIRD-PARTY.md](THIRD-PARTY.md). Anelli is inspired by DaisyDisk, with which it has no affiliation.

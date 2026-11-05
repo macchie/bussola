@@ -5,7 +5,7 @@ import { digest } from '../resources/core/sampler.js';
 import { Ledger, buildTree, SEP } from '../resources/core/store.js';
 import { destinationOf, UNKNOWN_APP } from '../resources/core/attribute.js';
 
-test('indirizzi di /proc/net', () => {
+test('addresses from /proc/net', () => {
   assert.equal(hexAddress('0100007F'), '127.0.0.1');
   assert.equal(hexAddress('00000000'), '0.0.0.0');
   assert.equal(hexAddress('00000000000000000000000000000000'), '::');
@@ -33,7 +33,7 @@ lrwx------ 1 me me 64 Nov 4 21:00 3 -> socket:[888]
 ===EXE
 lrwxrwxrwx 1 me me 0 Nov  4 21:00 /proc/20/exe -> /usr/lib/firefox/firefox-bin
 `;
-test('Linux: stati, porte e proprietari dei socket', () => {
+test('Linux: states, ports and socket owners', () => {
   const s = parseLinux(LINUX);
   assert.equal(s.sockets.length, 4, 'TIME_WAIT ignorato');
   const ssh = s.sockets.find((k) => k.port === 22);
@@ -44,7 +44,7 @@ test('Linux: stati, porte e proprietari dei socket', () => {
   assert.equal(parseProcNet(['rubbish'], 'tcp').length, 0);
 });
 
-test('macOS: righe nettop, porte in ascolto e IPv6', () => {
+test('macOS: nettop rows, listening ports and IPv6', () => {
   const { sockets, header } = parseNettop(`time,,interface,state,bytes_in,bytes_out,
 12:49:53.1,rapportd.500,,,1,1,
 12:49:53.1,tcp4 *:49152<->*:*,en0,Listen,0,0,
@@ -72,7 +72,7 @@ test('Windows: TCP, UDP, processi, blocchi', () => {
   assert.equal(splitBlocks('Q\t1\tEND\nEND\n').blocks.length, 1);
 });
 
-test('classificazione e nomi delle porte', () => {
+test('classification and port names', () => {
   assert.equal(classify({ state: 'listen', local: '127.0.0.1' }), 'local');
   assert.equal(classify({ state: 'listen', local: '::1' }), 'local');
   assert.equal(classify({ state: 'listen', local: '*' }), 'exposed');
@@ -83,7 +83,7 @@ test('classificazione e nomi delle porte', () => {
   assert.equal(portInfo(61000, 'udp').label, '61000 UDP');
 });
 
-test('dalla lettura alle voci, con socket senza proprietario noto', () => {
+test('from read to entries, with sockets without a known owner', () => {
   const r = digest({ procs: [{ pid: 20, ppid: 1, name: 'firefox-bin' }], sockets: [
     { proto: 'tcp', local: '0.0.0.0', port: 22, remote: '0.0.0.0', rport: 0, state: 'listen', pid: null },
     { proto: 'tcp', local: '10.0.0.2', port: 5, remote: '8.8.8.8', rport: 443, state: 'open', pid: 20 },
@@ -93,17 +93,17 @@ test('dalla lettura alle voci, con socket senza proprietario noto', () => {
   assert.equal(r.conn, 2);
   assert.equal(r.entries.get(['conn', 'Firefox', 'firefox-bin', '8.8.8.8'].join(SEP)), 2);
   assert.ok(r.entries.has(['exposed', UNKNOWN_APP, '', '22 TCP, SSH'].join(SEP)));
-  assert.ok([...r.details.values()][0].remote, 'SSH esposto è segnalato');
-  assert.equal(destinationOf('192.168.1.1'), 'Rete locale');
+  assert.ok([...r.details.values()][0].remote, 'exposed SSH is flagged');
+  assert.equal(destinationOf('192.168.1.1'), 'Local network');
 });
 
-test('registro: la prima scansione non è una novità', () => {
+test('log: the first scan is not something new', () => {
   const l = new Ledger();
   l.observe(['a'], 1000);
   l.observe(['a', 'b'], 1000 + 120000);
   assert.equal(l.isNew('a', 200000), false);
   assert.equal(l.isNew('b', 200000), true);
-  assert.equal(l.isNew('b', 200000 + 2 * 86400000), false, 'dopo 24 ore non è più nuova');
+  assert.equal(l.isNew('b', 200000 + 2 * 86400000), false, 'after 24 hours it is no longer new');
   const copy = new Ledger(JSON.parse(JSON.stringify(l)));
   assert.equal(copy.isNew('b', 200000), true, 'sopravvive al salvataggio');
   assert.deepEqual(copy.seenSince(100000), ['a', 'b']);
@@ -111,7 +111,7 @@ test('registro: la prima scansione non è una novità', () => {
   assert.equal(copy.items.size, 0);
 });
 
-test('albero per tipo, ordine e novità', () => {
+test('tree by type, order and newness', () => {
   const k = (...p) => p.join(SEP);
   const t = buildTree(new Map([[k('exposed', 'A', 'a', '22 TCP'), 1], [k('exposed', 'B', 'b', '80 TCP'), 1], [k('exposed', 'B', 'b', '443 TCP'), 1], [k('conn', 'C', 'c', 'x.com'), 5]]), 'exposed', (key, item) => ({ isNew: item === '80 TCP' }));
   assert.equal(t.s, 3);

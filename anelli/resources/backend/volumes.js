@@ -27,18 +27,18 @@ export function filterLinux(rows, mountsText) {
     const known = best.get(r.dev);
     if (!known || r.mount.length < known.mount.length) best.set(r.dev, r);
   }
-  return [...best.values()].map((r) => ({ ...r, name: r.mount === '/' ? 'Sistema' : r.mount.slice(r.mount.lastIndexOf('/') + 1) }));
+  return [...best.values()].map((r) => ({ ...r, name: r.mount === '/' ? 'System' : r.mount.slice(r.mount.lastIndexOf('/') + 1) }));
 }
 export function filterMac(rows) {
   const list = rows.filter((r) => r.dev.startsWith('/dev/')
     && !(r.mount.startsWith('/System/Volumes/') && r.mount !== '/System/Volumes/Data'))
-    .map((r) => ({ ...r, name: r.mount === '/System/Volumes/Data' ? 'Macintosh HD' : r.mount.slice(r.mount.lastIndexOf('/') + 1) || 'Sistema' }));
-  // "/" è il volume di sistema sigillato: i dati reali stanno nel volume Data.
+    .map((r) => ({ ...r, name: r.mount === '/System/Volumes/Data' ? 'Macintosh HD' : r.mount.slice(r.mount.lastIndexOf('/') + 1) || 'System' }));
+  // "/" is the sealed system volume: the real data lives in the Data volume.
   return list.some((r) => r.mount === '/System/Volumes/Data') ? list.filter((r) => r.mount !== '/') : list;
 }
 export function parseWindows(json) {
   return [].concat(JSON.parse(json)).filter((d) => d && d.Size).map((d) => ({
-    mount: `${d.DeviceID}\\`, name: d.VolumeName || `Disco ${d.DeviceID}`,
+    mount: `${d.DeviceID}\\`, name: d.VolumeName || `Disk ${d.DeviceID}`,
     total: d.Size, free: d.FreeSpace, used: d.Size - d.FreeSpace,
   }));
 }
@@ -46,7 +46,7 @@ export function parseWindows(json) {
 export async function listVolumes() {
   if (windows) {
     const res = await run("Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' | Select-Object DeviceID,VolumeName,Size,FreeSpace | ConvertTo-Json -Compress\n");
-    if (res.code !== 0) throw new Error('Impossibile leggere i dischi');
+    if (res.code !== 0) throw new Error('Can\'t read the disks');
     return parseWindows(res.out).sort((a, b) => b.total - a.total);
   }
   const res = await run(OS === 'Linux' ? 'df -kP\necho ===MOUNTS===\ncat /proc/self/mounts\n' : 'df -kP\n');

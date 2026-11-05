@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,14 +11,14 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="#/" aria-label="Anelli, torna ai dischi">
+  <a class="brand" href="#/" aria-label="Anelli, back to disks">
     <img src="/icon.svg" alt="" width="24" height="24"><span>Anelli</span>
   </a>
-  <nav class="crumbs" id="crumbs" aria-label="Percorso"></nav>
+  <nav class="crumbs" id="crumbs" aria-label="Path"></nav>
   <div class="top-actions">
-    <button class="ghost" id="rescan" hidden>Riscansiona</button>
-    <a class="ghost trash-link" href="#/cestino" id="trashLink">Cestino<span id="trashCount" class="count" hidden></span></a>
-    <button class="ghost icon" id="theme" aria-label="Cambia tema" title="Cambia tema"></button>
+    <button class="ghost" id="rescan" hidden>Rescan</button>
+    <a class="ghost trash-link" href="#/cestino" id="trashLink">Trash<span id="trashCount" class="count" hidden></span></a>
+    <button class="ghost icon" id="theme" aria-label="Change theme" title="Change theme"></button>
   </div>
 </header>
 <main id="view"></main>
@@ -26,6 +26,6 @@
 <dialog id="dialog"></dialog>
 <div id="menu" role="menu" hidden></div>
 <script src="/js/neutralino.js"></script>
-<script type="module" src="/comune/avvio.js"></script>
+<script type="module" src="/shared/startup.js"></script>
 </body>
 </html>

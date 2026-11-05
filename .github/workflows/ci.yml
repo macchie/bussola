@@ -1,4 +1,4 @@
-name: Controlli
+name: Checks
 
 on:
   push:
