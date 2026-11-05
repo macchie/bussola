@@ -2,7 +2,7 @@ name: Landing
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths: ["landing/**", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
