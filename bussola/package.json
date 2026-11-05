@@ -1,0 +1,18 @@
+{
+  "name": "bussola",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Installa e aggiorna le app della suite. App desktop Neutralinojs per macOS, Windows e Linux.",
+  "scripts": {
+    "setup": "neu update",
+    "dev": "neu run",
+    "build": "neu build && node scripts/package.mjs",
+    "test": "node --test",
+    "pubblica": "node scripts/pubblica.mjs"
+  },
+  "devDependencies": {
+    "@neutralinojs/neu": "^11.8.0"
+  },
+  "license": "AGPL-3.0-only"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "bussola-suite",
+  "private": true,
+  "description": "Strumenti di sviluppo della suite. Le app finali non usano Node.",
+  "devDependencies": {
+    "@neutralinojs/neu": "11.8.0"
+  },
+  "license": "AGPL-3.0-only"
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anelli</title>
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' ws://127.0.0.1:* ws://localhost:*; worker-src 'self'">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/" aria-label="Anelli, torna ai dischi">
+    <img src="/icon.svg" alt="" width="24" height="24"><span>Anelli</span>
+  </a>
+  <nav class="crumbs" id="crumbs" aria-label="Percorso"></nav>
+  <div class="top-actions">
+    <button class="ghost" id="rescan" hidden>Riscansiona</button>
+    <a class="ghost trash-link" href="#/cestino" id="trashLink">Cestino<span id="trashCount" class="count" hidden></span></a>
+    <button class="ghost icon" id="theme" aria-label="Cambia tema" title="Cambia tema"></button>
+  </div>
+</header>
+<main id="view"></main>
+<div id="toasts" role="status" aria-live="polite"></div>
+<dialog id="dialog"></dialog>
+<div id="menu" role="menu" hidden></div>
+<script src="/js/neutralino.js"></script>
+<script type="module" src="/comune/avvio.js"></script>
+</body>
+</html>

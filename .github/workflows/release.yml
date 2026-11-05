@@ -1,0 +1,38 @@
+name: Release
+
+# Parte quando arriva un tag suite-*, che crei con `make publish`.
+on:
+  push:
+    tags: ["suite-*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: "*/bin"
+          key: neutralino-${{ hashFiles('*/neutralino.config.json') }}
+      - name: Test, pacchetti e catalogo
+        run: make release TAG="$GITHUB_REF_NAME"
+      - name: Controlla il catalogo
+        run: node scripts/controlla-release.mjs bussola/dist/release "$GITHUB_REF_NAME"
+      - name: Pubblica la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "$GITHUB_REF_NAME" bussola/dist/release/*
+          --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME"
+          --generate-notes --latest --verify-tag

@@ -1,0 +1,17 @@
+{
+  "name": "anelli",
+  "version": "2.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Analizzatore visuale dello spazio su disco. App desktop Neutralinojs per macOS, Linux e Windows.",
+  "scripts": {
+    "setup": "neu update",
+    "dev": "neu run",
+    "build": "neu build && node scripts/package.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@neutralinojs/neu": "^11.8.0"
+  },
+  "license": "AGPL-3.0-only"
+}

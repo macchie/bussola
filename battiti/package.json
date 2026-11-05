@@ -1,0 +1,17 @@
+{
+  "name": "battiti",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mappa visuale di CPU e memoria per app e processo. App desktop Neutralinojs per macOS, Windows e Linux.",
+  "scripts": {
+    "setup": "neu update",
+    "dev": "neu run",
+    "build": "neu build && node scripts/package.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@neutralinojs/neu": "^11.8.0"
+  },
+  "license": "AGPL-3.0-only"
+}
