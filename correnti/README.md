@@ -65,9 +65,10 @@ names via `getent hosts`, in the background.
 
 ## Develop
 
+Dependencies live at the repo root. Run `make setup` there once, then in this folder:
+
 ```bash
-npm install
-npm run setup
-npm test
-npm run build    # builds dist/packages/Correnti-macos.zip
+make dev      # run the app in development
+make test     # run the logic tests
+make build    # build the packages into dist/packages
 ```

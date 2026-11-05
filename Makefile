@@ -1,7 +1,6 @@
 # Bussola suite. Requires node, npm, zip and, to publish, git and gh. Use on Linux or macOS.
 APPS  := anelli correnti battiti scorte sentinelle radici registro bussola
 REPO  := macchie/bussola
-NEU   := $(CURDIR)/node_modules/.bin/neu
 TAG   ?= suite-$(shell date +%Y.%-m.%-d)
 
 .DEFAULT_GOAL := help
@@ -9,15 +8,21 @@ TAG   ?= suite-$(shell date +%Y.%-m.%-d)
 
 help: ## Show the available commands
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-17s %s\n", $$1, $$2}'
+	@echo "  make <setup|dev|test|build>-<app>   one app only, e.g. make dev-anelli"
 
 node_modules: package-lock.json
 	npm ci
 	@touch $@
 
+# Per-app targets delegate to each app's own Makefile, so the commands are the
+# same whether you run them here or from inside the app folder.
 setup: node_modules $(APPS:%=setup-%) ## Download the Neutralino runtime for every app
 
 setup-%: node_modules
-	@if [ -x "$*/bin/neutralino-linux_x64" ]; then echo "$*: runtime present"; else echo "$*: downloading the runtime"; cd $* && $(NEU) update >/dev/null; fi
+	@echo "== $*"; $(MAKE) -C $* setup
+
+dev-%: node_modules ## Run one app in development (e.g. make dev-anelli)
+	@$(MAKE) -C $* dev
 
 sync: ## Copy shared translations and settings into every app
 	@for a in $(APPS); do mkdir -p $$a/resources/shared; cp shared/*.js $$a/resources/shared/; done; echo "shared copied into every app"
@@ -28,12 +33,12 @@ test-shared:
 	@echo "== shared"; cd shared && node --test
 
 test-%:
-	@echo "== $*"; cd $* && node --test
+	@echo "== $*"; $(MAKE) -C $* test
 
-build: sync setup $(APPS:%=build-%) ## Build the packages of every app
+build: node_modules $(APPS:%=build-%) ## Build the packages of every app
 
-build-%: setup-%
-	@echo "== $*"; cd $* && $(NEU) build >/dev/null && node scripts/package.mjs
+build-%: node_modules
+	@echo "== $*"; $(MAKE) -C $* build
 
 catalog: ## Prepare bussola/dist/release with packages and catalog (TAG=...)
 	cd bussola && node scripts/publish.mjs $(TAG)

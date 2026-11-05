@@ -32,11 +32,10 @@ The `macchie/bussola` repository must be **public**: Bussola downloads without a
 # the first time
 gh repo create macchie/bussola --public
 
-# in every changed app
-npm run build
+# build every app, then the launcher (from the repo root)
+make build
 
 # in bussola
-npm run build
 node scripts/publish.mjs suite-2026.11.4
 gh release create suite-2026.11.4 dist/release/* --repo macchie/bussola --title "Suite 2026.11.4" --latest
 ```
@@ -56,8 +55,10 @@ along the way, not against whoever controls your GitHub account: protect it with
 
 ## Develop
 
+Dependencies live at the repo root. Run `make setup` there once, then in this folder:
+
 ```bash
-npm install
-npm run setup
-npm test
+make dev      # run the launcher in development
+make test     # run the logic tests
+make build    # build the launcher packages into dist/packages
 ```

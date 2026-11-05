@@ -210,6 +210,7 @@ anelli/ correnti/ battiti/ scorte/ sentinelle/ radici/ registro/ bussola/
   resources/               interface and logic
   scripts/package.mjs      packages for each system
   test/                    logic tests
+  Makefile                 local dev: make dev / test / build
 shared/                    translations.js, settings.js, i18n.js, startup.js
 landing/index.html         site published on GitHub Pages
 scripts/                   release checks
@@ -223,10 +224,20 @@ LICENSE  LICENSING.md  THIRD-PARTY.md  CONTRIBUTING.md
 | `make setup` | Installs the tools and downloads each app's runtime |
 | `make test` | Runs all the logic tests |
 | `make build` | Builds the packages into `<app>/dist/packages` |
-| `make build-correnti` | Builds the packages for a single app |
 | `make release` | Test, packages and catalog into `bussola/dist/release`, without publishing |
 | `make versions` | Shows each app's version |
 | `make landing` | Local preview of the landing page |
+
+#### Working on a single app
+
+Every app has its own `Makefile` with the same targets — `setup`, `dev`, `test`, `build`, `clean` — so you can `cd correnti && make dev`. The same commands are available from the repo root as `<target>-<app>` aliases (they run the app's Makefile for you):
+
+| Command | What it does |
+| --- | --- |
+| `make dev-correnti` | Runs Correnti in development (`neu run`) |
+| `make build-anelli` | Builds just Anelli's packages |
+| `make test-registro` | Runs just Registro's tests |
+| `make setup-scorte` | Downloads just Scorte's runtime |
 
 ### Shared translations & settings
 

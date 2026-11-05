@@ -45,9 +45,10 @@ The history stays on the computer, seven days, in the user data folder.
 
 ## Develop
 
+Dependencies live at the repo root. Run `make setup` there once, then in this folder:
+
 ```bash
-npm install
-npm run setup
-npm test
-npm run build    # builds the packages into dist/packages
+make dev      # run the app in development
+make test     # run the logic tests
+make build    # build the packages into dist/packages
 ```

@@ -18,14 +18,12 @@ Keep `resources.neu` next to the executable.
 
 ## Develop
 
-Node is only used here, as a tool, never in the final app.
+Dependencies live at the repo root. Run `make setup` there once, then in this folder:
 
 ```bash
-npm install
-npm run setup    # downloads the runtime and client library
-npm run dev      # starts the app
-npm test         # pure logic, no runtime
-npm run build    # builds the packages into dist/packages for every system, from any system
+make dev      # run the app in development
+make test     # run the logic tests
+make build    # build the packages into dist/packages
 ```
 
 ## How to use
