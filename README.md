@@ -153,7 +153,7 @@ Reads the catalog from the most recent release, downloads with `curl` and verifi
 
 ## 🌍 Languages & settings
 
-The apps and the landing page are available in English, Italian, French, Spanish and German. On first launch they follow the system language; if it isn't one of those five, English. The **Settings** button, top-right in every app, lets you pick language and theme. The choice applies across the whole suite and is saved in `Bussola Suite/settings.json`, in the user data folder.
+The apps and the landing page are available in English, Italian, French, Spanish and German. On first launch they follow the system language; if it isn't one of those five, English. The **Settings** button, top-right in every app, lets you pick language and theme, and toggle the update check. The choice applies across the whole suite and is saved in `Bussola Suite/settings.json`, in the user data folder.
 
 Messages coming from the operating system, such as logs or service descriptions, stay in the system language.
 
@@ -179,6 +179,7 @@ They all follow the same rules:
 
 - No account, no telemetry, no suite server.
 - The only apps that use the network on their own are Bussola, for the catalog and packages from GitHub, and Correnti on Linux, which asks the configured DNS for destination names.
+- **Update check:** a standalone app (installed without Bussola) reads the same public GitHub catalog at most once a day to tell you when a newer version is out, with a link to download it. It sends nothing about you, and you can turn it off under **Settings → Check for updates**.
 - Registro keeps one sample per message: logs may contain file and account names. They stay on the computer.
 - Each app can use only the native APIs listed in its own `nativeAllowList`.
 - Bussola installs only the seven apps written in its code, and accepts only HTTPS downloads from `macchie/bussola`.

@@ -1,7 +1,7 @@
 /* Suite settings: one shared file and the panel behind the gear icon. */
 import { LANGUAGES, detect, setLanguage, language, t, translatePage } from './i18n.js';
 
-const DEFAULTS = { language: 'auto', theme: 'auto' };
+const DEFAULTS = { language: 'auto', theme: 'auto', updates: 'on' };
 const state = { values: { ...DEFAULTS }, file: null, system: 'en', before: [] };
 const sections = [];
 
@@ -33,6 +33,7 @@ export async function loadSettings() {
   } catch { /* first run or unreadable file: defaults */ }
   if (state.values.language !== 'auto' && !LANGUAGES.some((l) => l.id === state.values.language)) state.values.language = 'auto';
   if (!['auto', 'light', 'dark'].includes(state.values.theme)) state.values.theme = 'auto';
+  if (!['on', 'off'].includes(state.values.updates)) state.values.updates = 'on';
   setLanguage(state.values.language === 'auto' ? state.system : state.values.language);
   applyTheme();
   translatePage();
@@ -63,6 +64,7 @@ function open(dialog, notice) {
   const body = el('div', { className: 'body' },
     row(t('Language'), 'setLingua', [['auto', `${t('Automatic')} (${autoName})`], ...LANGUAGES.map((l) => [l.id, l.name])], state.values.language, changeLanguage),
     row(t('Theme'), 'setTema', [['auto', t('Automatic')], ['light', t('Light')], ['dark', t('Dark')]], state.values.theme, (v) => { state.values.theme = v; applyTheme(); save(); }),
+    row(t('Check for updates'), 'setUpdates', [['on', t('On')], ['off', t('Off')]], state.values.updates, (v) => set('updates', v)),
     ...sections.map((fn) => fn()),
     notice ? el('p', { className: 'set-nota', textContent: notice }) : null);
   const version = globalThis.NL_APPVERSION ? t('Version {0}', globalThis.NL_APPVERSION) : '';

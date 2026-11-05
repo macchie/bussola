@@ -16,6 +16,7 @@
   },
   "nativeAllowList": [
     "app.exit",
+    "os.open",
     "os.spawnProcess",
     "os.updateSpawnedProcess",
     "os.getPath",

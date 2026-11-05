@@ -23,6 +23,23 @@ export class Manager {
   async detect() {
     const res = await runScript(detectScript(OS, APPS));
     this.installed = parseDetected(res.out);
+    await this.recognizeManual();
+  }
+
+  // Apps installed by hand register their presence in the shared suite folder.
+  // The native probe only checks the standard locations, so read the registry
+  // here to recognize a hand-installed app wherever it lives.
+  async recognizeManual() {
+    let base;
+    try { base = (await N().os.getPath('data')).replace(/[\\/]$/, ''); } catch { return; }
+    const sep = OS === 'Windows' ? '\\' : '/';
+    for (const app of APPS) {
+      if (this.installed[app.id] !== undefined) continue;
+      try {
+        const info = JSON.parse(await N().filesystem.readFile(`${base}${sep}Bussola Suite${sep}apps${sep}${app.id}.json`));
+        if (info && typeof info.version === 'string') this.installed[app.id] = info.version;
+      } catch { /* not registered */ }
+    }
   }
 
   async refresh() {
