@@ -37,6 +37,7 @@ const ICON = {
   more: '<circle cx="5" cy="10" r="1.1" fill="currentColor"/><circle cx="10" cy="10" r="1.1" fill="currentColor"/><circle cx="15" cy="10" r="1.1" fill="currentColor"/>',
   hidden: '<circle cx="10" cy="10" r="7"/><path d="M5 15L15 5"/>',
   plus: '<path d="M10 4.5v11M4.5 10h11"/>',
+  minus: '<path d="M4.5 10h11"/>',
   sun: '<circle cx="10" cy="10" r="3.4"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/>',
 };
 
@@ -379,6 +380,16 @@ function visibleItems() {
 function glyph(item) {
   return svg(item.dir ? ICON.folder : item.link ? ICON.link : ICON.file);
 }
+/* Add to / remove from the collection: + while free, − once it's selected for trashing. */
+function collectButton(item) {
+  const on = isCollected(item.path);
+  return h('button', {
+    class: on ? 'add on' : 'add',
+    title: on ? tt('Remove from collection') : tt('Add to collection'),
+    'aria-label': on ? tt("Remove {0} from collection", item.name) : tt("Add {0} to collection", item.name),
+    onclick: (e) => { e.stopPropagation(); if (on) uncollect(collectedKey(item.path)); else collect(item); },
+  }, svg(on ? ICON.minus : ICON.plus));
+}
 function renderRows() {
   const box = $('rows');
   if (!box || !state.data) return;
@@ -404,10 +415,7 @@ function renderRows() {
     h('span', { style: `color:${item.dir ? color : 'var(--muted)'};display:flex` }, glyph(item)),
     h('div', { style: 'min-width:0' }, h('div', { class: 'name', title: item.path }, item.name), h('div', { class: 'meta' }, meta)),
     h('div', null, h('div', { class: 'size' }, size(item.size)), h('div', { class: 'pct' }, `${dec.format(item.size / total * 100)}%`)),
-    h('button', {
-      class: 'add', title: tt('Add to collection'), 'aria-label': tt("Add {0} to collection", item.name),
-      onclick: (e) => { e.stopPropagation(); collect(item); },
-    }, svg(ICON.plus)));
+    collectButton(item));
     return el;
   });
   if (state.tab === 'list' && !state.filter) {
@@ -535,11 +543,13 @@ async function reload() {
 }
 
 /* Collection */
-function isCollected(path) {
+/* The collection entry that covers this path (the path itself or a collected ancestor), or null. */
+function collectedKey(path) {
   const sep = state.data?.sep || '/';
-  for (const c of state.collection.keys()) if (path === c || path.startsWith(c + sep)) return true;
-  return false;
+  for (const c of state.collection.keys()) if (path === c || path.startsWith(c + sep)) return c;
+  return null;
 }
+const isCollected = (path) => collectedKey(path) !== null;
 function collect(item) {
   if (isCollected(item.path)) return;
   const sep = state.data.sep;
@@ -729,8 +739,20 @@ function countdown(list, btn) {
 
 dialog.addEventListener('close', () => { clearInterval(state.timer); state.timer = null; });
 
+function quit() { backend.closeAll(); Neutralino.app.exit(); }
+
+/* macOS gives this window no native menu, so wire the standard shortcuts by hand. */
+if (globalThis.NL_OS === 'Darwin') {
+  addEventListener('keydown', (e) => {
+    if (!e.metaKey || e.ctrlKey || e.altKey) return;
+    const key = e.key.toLowerCase();
+    if (key === 'q' || key === 'w') { e.preventDefault(); quit(); }
+    else if (key === 'm') { e.preventDefault(); Neutralino.window.minimize(); }
+  });
+}
+
 (async () => {
-  Neutralino.events.on('windowClose', () => { backend.closeAll(); Neutralino.app.exit(); });
+  Neutralino.events.on('windowClose', quit);
   state.info = await backend.init();
   route();
 })().catch(report);

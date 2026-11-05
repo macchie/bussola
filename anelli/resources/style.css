@@ -118,6 +118,8 @@ main { min-height: 0; overflow: auto; }
 .row .pct { color: var(--muted); font-size: 12.5px; font-weight: 400; text-align: right; }
 .row .add { width: 30px; height: 30px; border: 0; background: none; border-radius: 7px; display: grid; place-items: center; color: var(--muted); }
 .row .add:hover { background: var(--tint); color: var(--ink); }
+.row .add.on { color: var(--danger); }
+.row .add.on:hover { background: var(--danger); color: var(--on-danger); }
 .row.passive { color: var(--muted); }
 .actions { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 12px; border-top: 1px solid var(--line); }
 .actions .quiet { padding: 5px 10px; font-size: 13.5px; }

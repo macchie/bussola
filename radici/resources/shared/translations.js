@@ -146,6 +146,7 @@ export default {
 "Add to collection": ["Aggiungi alla raccolta", "Ajouter à la collecte", "Añadir a la colección", "Zur Sammlung hinzufügen"],
 "Add {0} to collection": ["Aggiungi {0} alla raccolta", "Ajouter {0} à la collecte", "Añadir {0} a la colección", "{0} zur Sammlung hinzufügen"],
 "Remove from collection": ["Togli dalla raccolta", "Retirer de la collecte", "Quitar de la colección", "Aus Sammlung entfernen"],
+"Remove {0} from collection": ["Togli {0} dalla raccolta", "Retirer {0} de la collecte", "Quitar {0} de la colección", "{0} aus Sammlung entfernen"],
 "Remove {0}": ["Togli {0}", "Retirer {0}", "Quitar {0}", "{0} entfernen"],
 "Used but unreadable": ["Occupato ma non leggibile", "Occupé mais illisible", "Ocupado pero no legible", "Belegt, aber nicht lesbar"],
 "No files over 1 MB in this scan.": ["Nessun file oltre 1 MB in questa analisi.", "Aucun fichier de plus de 1 Mo dans cette analyse.", "No hay archivos de más de 1 MB en este análisis.", "Keine Dateien über 1 MB in diesem Scan."],
