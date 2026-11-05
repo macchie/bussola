@@ -44,23 +44,23 @@ versions: ## Mostra la versione di ogni app
 	@for a in $(APPS); do printf "%-11s %s\n" $$a $$(node -p "require('./$$a/neutralino.config.json').version"); done
 
 check: ## Controlla che si possa pubblicare
-	@[ "$$(git rev-parse --abbrev-ref HEAD)" = main ] || { echo "Pubblica dal ramo main"; exit 1; }
+	@[ "$$(git rev-parse --abbrev-ref HEAD)" = master ] || { echo "Pubblica dal ramo master"; exit 1; }
 	@[ -z "$$(git status --porcelain)" ] || { echo "Ci sono modifiche non salvate: fai prima il commit"; exit 1; }
 	@! git rev-parse -q --verify "refs/tags/$(TAG)" >/dev/null || { echo "Il tag $(TAG) esiste già: scegline un altro con TAG=..."; exit 1; }
 	@case "$(TAG)" in suite-*) ;; *) echo "Il tag deve iniziare con suite-"; exit 1;; esac
 
 publish: check test ## Crea il tag: GitHub compila e pubblica la release
 	git tag -a $(TAG) -m "Suite $(TAG)"
-	git push origin main $(TAG)
+	git push origin master $(TAG)
 	@echo "Segui la pubblicazione con: gh run watch --repo $(REPO)"
 
 publish-manuale: check release ## Pubblica da questo computer, senza GitHub Actions
 	git tag -a $(TAG) -m "Suite $(TAG)"
-	git push origin main $(TAG)
+	git push origin master $(TAG)
 	gh release create $(TAG) bussola/dist/release/* --repo $(REPO) --title "$(TAG)" --latest --verify-tag
 
 bootstrap: ## Solo la prima volta: crea il repository pubblico e attiva Pages
-	git init -b main 2>/dev/null || true
+	git init -b master 2>/dev/null || true
 	git add -A
 	git diff --cached --quiet || git commit -m "Suite Bussola"
 	gh repo create $(REPO) --public --source=. --remote=origin --push
