@@ -1,6 +1,6 @@
 {
   "name": "stiva",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "type": "module",
   "description": "Visual disk space analyzer. Neutralinojs desktop app for macOS, Linux and Windows.",

@@ -27,7 +27,7 @@ Every app shares the same ring map, the same time periods and the same structure
 | App | The question | Version | 🍎 macOS | 🪟 Windows | 🐧 Linux |
 | --- | --- | :---: | :---: | :---: | :---: |
 | 🧭 **Bussola** | What's installed, and what needs updating? | 1.1.0 | ✅ | ✅ | ✅ |
-| 💿 **Stiva** | Where did my disk space go? | 2.1.0 | ✅ | ✅ | ✅ |
+| 💿 **Stiva** | Where did my disk space go? | 2.1.1 | ✅ | ✅ | ✅ |
 | 🌐 **Correnti** | Which apps use the network, and where to? | 1.2.0 | ✅ | ❌ | ✅ |
 | ⚡ **Battiti** | What's weighing on CPU and memory? | 1.1.0 | ✅ | ✅ | ✅ |
 | 🔋 **Scorte** | How much battery is left, and who's draining it? | 1.1.0 | ✅ | ✅ | ✅ |
