@@ -2,7 +2,7 @@
 
 # 🧭 Bussola Suite
 
-**Seven tiny desktop apps that answer seven questions about your computer — plus Bussola, the launcher that installs and updates them.**
+**Five tiny desktop apps that answer five questions about your computer — plus Bussola, the launcher that installs and updates them.**
 
 Every app shares the same ring map, the same time periods and the same structure, and runs with no account and no server.
 
@@ -28,10 +28,8 @@ Every app shares the same ring map, the same time periods and the same structure
 | --- | --- | :---: | :---: | :---: | :---: |
 | 🧭 **Bussola** | What's installed, and what needs updating? | 1.1.0 | ✅ | ✅ | ✅ |
 | 💿 **Stiva** | Where did my disk space go? | 2.1.1 | ✅ | ✅ | ✅ |
-| 🌐 **Correnti** | Which apps use the network, and where to? | 1.2.0 | ✅ | ❌ | ✅ |
-| ⚡ **Battiti** | What's weighing on CPU and memory? | 1.1.0 | ✅ | ✅ | ✅ |
-| 🔋 **Scorte** | How much battery is left, and who's draining it? | 1.1.0 | ✅ | ✅ | ✅ |
-| 🛡️ **Sentinelle** | What's listening, and who does the computer talk to? | 1.1.0 | ✅ | ✅ | ✅ |
+| 🌐 **Correnti** | What's on the network — traffic, ports and connections? | 2.0.0 | ✅ | ✅ | ✅ |
+| ⚡ **Battiti** | What's using CPU, memory and power? | 2.0.0 | ✅ | ✅ | ✅ |
 | 🌱 **Radici** | What launches on its own at startup? | 1.1.0 | ✅ | ✅ | ✅ |
 | 📓 **Registro** | What errors, shutdowns and restarts happened? | 1.1.0 | ✅ | ✅ | ✅ |
 
@@ -89,39 +87,23 @@ Freeing space takes two steps. The **Collection** doesn't touch the disk, the **
 </details>
 
 <details>
-<summary>🌐 <b>Correnti</b> — which apps use the network, and where to</summary>
+<summary>🌐 <b>Correnti</b> — network traffic, ports and connections</summary>
 
-Traffic map by app, process and destination, with received and sent, current speed and trend.
+Two views of your network in one app, switched from the header:
 
-- **Sources:** `nettop` on macOS; `ss` and `/proc/net/dev` on Linux, without root.
-- **Limits:** on Linux UDP and QUIC aren't attributed to apps without root and appear as Unattributed traffic. Traffic is recorded only while the app is open. There's no Windows version.
+- **Traffic** — a radial map by app, process and destination, with received/sent, current speed and trend. Sources: `nettop` on macOS; `ss` and `/proc/net/dev` on Linux, without root. This view runs on macOS and Linux only; on Linux UDP and QUIC aren't attributed without root (shown as Unattributed traffic).
+- **Ports** — exposed ports, local ports and active connections per app, flagging what appeared in the last 24 hours and exposed remote access (SSH, Remote Desktop). Sources: `/proc/net` on Linux, `nettop` on macOS, `Get-NetTCPConnection`/`Get-NetUDPEndpoint` on Windows. Works on all three systems.
+
+On Windows, where traffic has no native tooling, Correnti opens straight into Ports.
 </details>
 
 <details>
-<summary>⚡ <b>Battiti</b> — what weighs on CPU and memory</summary>
+<summary>⚡ <b>Battiti</b> — CPU, memory and energy</summary>
 
-CPU and memory by app and process, with processes of the same program grouped. 100% CPU is the whole machine.
+The machine's vitals in one app, switched from the header:
 
-- **Sources:** `/proc` on Linux; `ps`, `vm_stat` and `sysctl` on macOS; .NET via PowerShell on Windows.
-- **Limits:** shared memory is counted more than once, and the app flags it when the sum exceeds memory in use. No per-core detail, and processes can't be terminated.
-</details>
-
-<details>
-<summary>🔋 <b>Scorte</b> — battery and energy by app</summary>
-
-Battery level and runtime, health, cycles, capacity and temperature, with each app's energy impact. Without a battery it still shows which apps work hardest.
-
-- **Sources:** `/sys` and `/proc` on Linux; `pmset`, `ioreg` and `ps` on macOS; WMI on Windows.
-- **Limits:** per-app watts are **estimates** proportional to CPU time and don't separate screen, network or GPU. Measured only on battery.
-</details>
-
-<details>
-<summary>🛡️ <b>Sentinelle</b> — open ports and connections</summary>
-
-Exposed ports, local ports and active connections per app. Flags what appeared in the last 24 hours and exposed remote access, like SSH or Remote Desktop. It looks only at this computer: it doesn't scan other devices and doesn't touch the firewall.
-
-- **Sources:** `/proc/net` on Linux, `nettop` on macOS, `Get-NetTCPConnection` and `Get-NetUDPEndpoint` on Windows.
-- **Limits:** "exposed" doesn't mean reachable from the internet, since firewalls and routers can block it.
+- **Load** — CPU and memory by app and process, with processes of the same program grouped; 100% CPU is the whole machine. Sources: `/proc` on Linux; `ps`, `vm_stat`, `sysctl` on macOS; .NET via PowerShell on Windows. Shared memory can be counted more than once, and the app flags it.
+- **Energy** — battery level, health, cycles, capacity and temperature, plus each app's energy impact. Sources: `/sys` and `/proc` on Linux; `pmset`, `ioreg`, `ps` on macOS; WMI on Windows. Per-app watts are **estimates** proportional to CPU time. This view appears only on machines with a battery, so on desktops Battiti stays on Load.
 </details>
 
 <details>
@@ -182,7 +164,7 @@ They all follow the same rules:
 - **Update check:** a standalone app (installed without Bussola) reads the same public GitHub catalog at most once a day to tell you when a newer version is out, with a link to download it. It sends nothing about you, and you can turn it off under **Settings → Check for updates**.
 - Registro keeps one sample per message: logs may contain file and account names. They stay on the computer.
 - Each app can use only the native APIs listed in its own `nativeAllowList`.
-- Bussola installs only the seven apps written in its code, and accepts only HTTPS downloads from `macchie/bussola`.
+- Bussola installs only the five apps written in its code, and accepts only HTTPS downloads from `macchie/bussola`.
 
 The catalog and packages live in the same release: the checksum protects against corrupted or swapped files along the way, not against whoever controls the GitHub account. Protect it with two-factor authentication.
 
@@ -191,10 +173,8 @@ The catalog and packages live in the same release: the checksum protects against
 | App | Linux x64 | macOS | Windows |
 | --- | --- | --- | --- |
 | Stiva | Tried with real scans and operations | Used on a Mac; 2.0.1 signature to confirm | Never run |
-| Correnti | Tried with real traffic of known size | Never run, format checked against public sources | Not available |
-| Battiti | Tried with a known load | Never run | Never run |
-| Scorte | Tried with a simulated battery and without one | Never run | Never run |
-| Sentinelle | Tried with deliberately opened ports | Never run | Never run |
+| Correnti | Tried with real traffic and deliberately opened ports | Never run, formats checked against public sources | Ports view only |
+| Battiti | Tried with a known load, simulated and real battery | Never run | Never run (Load view) |
 | Radici | Changes on real files, `systemctl` simulated | Never run | Never run |
 | Registro | Simulated events with known counts | Never run | Never run |
 | Bussola | Real installs from a local server | Script tried with simulators | Never run |
@@ -206,7 +186,7 @@ Linux arm64 is compiled but hasn't been launched. If something looks off, Diagno
 All apps live in this repository, one per folder. Node is only a development tool. You need `node`, `npm`, `zip`, `make`, and to publish `git` and [`gh`](https://cli.github.com). Run `make help` for the commands.
 
 ```
-stiva/ correnti/ battiti/ scorte/ sentinelle/ radici/ registro/ bussola/
+stiva/ correnti/ battiti/ radici/ registro/ bussola/
   neutralino.config.json   configuration and allowed APIs
   resources/               interface and logic
   scripts/package.mjs      packages for each system
@@ -238,7 +218,7 @@ Every app has its own `Makefile` with the same targets — `setup`, `dev`, `test
 | `make dev-correnti` | Runs Correnti in development (`neu run`) |
 | `make build-stiva` | Builds just Stiva's packages |
 | `make test-registro` | Runs just Registro's tests |
-| `make setup-scorte` | Downloads just Scorte's runtime |
+| `make setup-registro` | Downloads just Registro's runtime |
 
 ### Shared translations & settings
 

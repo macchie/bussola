@@ -5,7 +5,7 @@ import TEXTS, { FORMS } from '../translations.js';
 import { detect, setLanguage, t, tx, LANGUAGES } from '../i18n.js';
 
 const ROOT = new URL('../../', import.meta.url).pathname;
-const APPS = ['stiva', 'correnti', 'battiti', 'scorte', 'sentinelle', 'radici', 'registro', 'bussola'];
+const APPS = ['stiva', 'correnti', 'battiti', 'radici', 'registro', 'bussola'];
 const placeholders = (s) => (s.match(/\{\d\}/g) || []).sort().join();
 
 test('every entry has four translations with the same placeholders', () => {

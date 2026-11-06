@@ -67,5 +67,5 @@ test('uninstalling touches only known paths', () => {
 
 test('detection', () => {
   assert.deepEqual(parseDetected('stiva\t2.0.1\nbattiti\t\r\nrumore\n'), { stiva: '2.0.1', battiti: '' });
-  assert.match(detectScript('Darwin', APPS), /Scorte\.app/);
+  assert.match(detectScript('Darwin', APPS), /Battiti\.app/);
 });

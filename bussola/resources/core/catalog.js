@@ -5,10 +5,8 @@ export const TRUSTED_PREFIX = `https://github.com/${REPO}/releases/download/`;
 
 export const APPS = [
   { id: 'stiva', name: 'Stiva', tagline: 'Where your disk space goes', color: '#6a6ee0', keepData: 'It holds the Trash: files moved there aren\'t lost' },
-  { id: 'correnti', name: 'Correnti', tagline: 'Which apps use the network, and where to', color: '#14a8b6' },
-  { id: 'battiti', name: 'Battiti', tagline: 'What weighs on CPU and memory', color: '#e0559a' },
-  { id: 'scorte', name: 'Scorte', tagline: 'Battery and energy by app', color: '#3fa865' },
-  { id: 'sentinelle', name: 'Sentinelle', tagline: 'Open ports and connections', color: '#cd7f0a' },
+  { id: 'correnti', name: 'Correnti', tagline: 'Network traffic, ports and connections', color: '#14a8b6' },
+  { id: 'battiti', name: 'Battiti', tagline: 'CPU, memory and energy', color: '#e0559a' },
   { id: 'radici', name: 'Radici', tagline: 'What starts by itself at boot', color: '#a35f00', keepData: 'It\'s needed to turn back on what you disabled' },
   { id: 'registro', name: 'Registro', tagline: 'Errors, shutdowns and restarts', color: '#de5a55' },
 ];

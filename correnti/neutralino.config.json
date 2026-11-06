@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
   "applicationId": "it.correnti.app",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "defaultMode": "window",
   "port": 0,
   "documentRoot": "/resources/",
@@ -27,7 +27,8 @@
     "filesystem.createDirectory",
     "filesystem.readDirectory",
     "filesystem.remove",
-    "clipboard.writeText"
+    "clipboard.writeText",
+    "filesystem.move"
   ],
   "modes": {
     "window": {

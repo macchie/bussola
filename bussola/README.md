@@ -1,6 +1,6 @@
 # Bussola
 
-Installs, opens, updates and removes the suite apps: Stiva, Correnti, Battiti, Scorte, Sentinelle,
+Installs, opens, updates and removes the suite apps: XX
 Radici and Registro. A desktop app for macOS, Windows and Linux built with Neutralinojs.
 
 ## Install
