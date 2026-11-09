@@ -1,11 +1,12 @@
 # Sedimenti
 
-Finds what settles on your disk and is easy to forget — caches, leftovers from uninstalled apps, old
-`node_modules`, and Docker's reclaimable space — and lays them on the suite's ring map, **coloured by how
-safe each item is to remove**. A desktop app for macOS and Linux built with Neutralinojs.
+Finds what settles on your disk and is easy to forget — caches, project dependency and build folders
+across many languages, and Docker's reclaimable space — and lays them on the suite's ring map, **coloured
+by how safe each item is to remove**. A desktop app for macOS and Linux built with Neutralinojs.
 
-- 🟢 **Safe** — caches, package-manager caches and the Trash: they regenerate.
-- 🟡 **Caution** — `node_modules` and Docker images: you need the project or the pull to rebuild them.
+- 🟢 **Safe** — caches, package-manager caches, build output and the Trash: they regenerate.
+- 🟡 **Caution** — dependency folders (`node_modules`, `vendor`, `.venv`, `Pods`…) and Docker images:
+  you need the project, a manifest or the network to rebuild them.
 - 🔴 **Careful** — Docker volumes and odd leftovers: they may hold data worth keeping.
 
 ## Install
@@ -30,14 +31,21 @@ No root needed.
 
 One pass over the known sediment locations:
 
-- `du -skx` of `~/.cache/*` (and `~/Library/Caches/*` on macOS), the package caches (`.npm`, pip, yarn, pnpm,
-  Go, Gradle, Maven, Cargo, Bun), and the Trash — `-x` keeps it on one filesystem.
-- `find "$HOME" -maxdepth 6 -type d -name node_modules -prune`, so it never descends into a `node_modules`
-  it has already measured.
+- `du -skx` of `~/.cache/*` (and `~/Library/Caches/*` on macOS) — which already sweeps most IDE and tool
+  caches — plus the package/module stores that live elsewhere (`.npm`, Gradle, Maven, Cargo, Bun, Go modules,
+  NuGet, RubyGems, Pub, Ivy, sbt, Stack, Cabal, Yarn Berry), the Trash, and on macOS Xcode's `DerivedData`
+  and the simulator caches. `-x` keeps it on one filesystem.
+- `find "$HOME" -maxdepth 6 -prune` for per-project dependency and build folders across languages:
+  `node_modules`, `.venv`, `Pods`, `bower_components`, `__pycache__`, `.dart_tool`, `_build`, `.next`,
+  `.nuxt`, `.svelte-kit`, `.angular`, `.turbo`, `.parcel-cache`, `.pytest_cache`, `.mypy_cache`,
+  `.ruff_cache`, `.terraform`. The generic names `target`, `build` and `vendor` are only counted when a
+  sibling manifest (`Cargo.toml`/`pom.xml`, `build.gradle`/`CMakeLists.txt`, `composer.json`/`go.mod`…)
+  confirms they belong to a project, so an unrelated folder named "build" is never flagged.
 - `docker image ls`, `docker ps -a -s` and `docker system df -v` when Docker is present, to list each image,
   container and volume (with its size and whether it's in use), plus the reclaimable Build Cache.
 
-Everything stays on this computer; nothing is sent anywhere. Removal always goes through the system Trash.
+Everything stays on this computer; nothing is sent anywhere. Files you remove go through the system Trash;
+only Docker items are deleted outright (see Limits).
 
 ## Limits
 

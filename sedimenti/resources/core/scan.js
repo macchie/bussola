@@ -31,7 +31,7 @@ export function parseVolumes(lines) {
   for (const raw of lines) {
     const line = raw.trim();
     if (/Local Volumes space usage:/i.test(line)) { inVol = true; continue; }
-    if (/usage:\s*$/i.test(line)) { inVol = false; continue; }
+    if (/(space|cache) usage:/i.test(line)) { inVol = false; continue; }
     if (!inVol || !line || /^VOLUME NAME\b/i.test(line)) continue;
     const m = /^(\S+)\s+(\d+)\s+([\d.]+\s*[kKmMgGtT]?i?B)\s*$/.exec(line);
     if (m) items.push({ path: `docker:volume:${m[1]}`, bytes: humanToBytes(m[3]), name: m[1], sub: 'volume', use: parseInt(m[2], 10) });

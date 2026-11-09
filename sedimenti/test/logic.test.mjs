@@ -10,12 +10,30 @@ test('classify sorts paths into category and safety', () => {
   assert.deepEqual(classify(`${H}/.cache/google-chrome`, H), { category: 'caches', safety: SAFE, name: 'google-chrome' });
   assert.deepEqual(classify(`${H}/Library/Caches/com.apple.Safari`, H), { category: 'caches', safety: SAFE, name: 'com.apple.Safari' });
   assert.deepEqual(classify(`${H}/.npm`, H), { category: 'packages', safety: SAFE, name: 'npm' });
-  assert.deepEqual(classify(`${H}/.m2/repository`, H), { category: 'packages', safety: SAFE, name: 'repository' });
-  assert.deepEqual(classify(`${H}/code/proj/node_modules`, H), { category: 'node_modules', safety: CAUTION, name: 'proj' });
+  assert.deepEqual(classify(`${H}/.m2/repository`, H), { category: 'packages', safety: SAFE, name: 'Maven' });
   assert.deepEqual(classify(`${H}/.local/share/Trash`, H), { category: 'trash', safety: SAFE, name: 'Trash' });
   assert.deepEqual(classify(`${H}/.Trash`, H), { category: 'trash', safety: SAFE, name: 'Trash' });
   assert.equal(classify(`${H}/.local/share/odd-leftover`, H).category, 'leftovers');
   assert.equal(classify(`${H}/.local/share/odd-leftover`, H).safety, CAUTION);
+});
+
+test('classify groups per-project dependency and build folders', () => {
+  assert.deepEqual(classify(`${H}/code/proj/node_modules`, H), { category: 'deps', safety: CAUTION, name: 'proj' });
+  assert.deepEqual(classify(`${H}/code/api/vendor`, H), { category: 'deps', safety: CAUTION, name: 'api' });
+  assert.deepEqual(classify(`${H}/code/py/.venv`, H), { category: 'deps', safety: CAUTION, name: 'py' });
+  assert.deepEqual(classify(`${H}/code/rust/target`, H), { category: 'builds', safety: SAFE, name: 'rust' });
+  assert.deepEqual(classify(`${H}/code/web/.next`, H), { category: 'builds', safety: SAFE, name: 'web' });
+  assert.equal(classify(`${H}/code/pkg/__pycache__`, H).category, 'builds');
+  // names that only mean "cache subfolder" must stay caches, not be read as a build folder
+  assert.equal(classify(`${H}/.cache/build`, H).category, 'caches');
+});
+
+test('classify names language package stores and macOS Xcode', () => {
+  assert.deepEqual(classify(`${H}/go/pkg/mod`, H), { category: 'packages', safety: SAFE, name: 'Go modules' });
+  assert.deepEqual(classify(`${H}/.nuget/packages`, H), { category: 'packages', safety: SAFE, name: 'NuGet' });
+  assert.equal(classify(`${H}/.pub-cache`, H).name, 'Pub');
+  assert.deepEqual(classify(`${H}/Library/Developer/Xcode/DerivedData`, H), { category: 'caches', safety: SAFE, name: 'Xcode DerivedData' });
+  assert.equal(classify(`${H}/Library/Developer/CoreSimulator/Caches`, H).name, 'Simulator caches');
 });
 
 test('docker items get a safety by type', () => {

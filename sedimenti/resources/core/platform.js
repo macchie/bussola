@@ -34,24 +34,45 @@ export async function run(command, timeoutMs = 120000) {
   });
 }
 
-// One pass over the known sediment locations. `du -skx` keeps it on one filesystem,
-// `find ... -prune` never descends into a node_modules it already found.
+// One pass over the known sediment locations. `du -skx` keeps it on one filesystem and
+// `find ... -prune` never descends into a dependency folder it has already measured. The
+// whole program is a single `sh -c` argument, so it must never contain a ' quote (that would
+// nest inside the outer quoting and break the command tokenizer) — hence "double quotes" only.
 function script(home) {
+  // ~/.cache/* and ~/Library/Caches/* already sweep most IDE and tool caches (JetBrains, pip,
+  // pnpm, yarn, deno, Playwright, ccache…), so the explicit list below is only what lives elsewhere.
   const caches = OS === 'Darwin'
     ? `du -skx "$H/Library/Caches"/*/ "$H/.cache"/*/ 2>/dev/null`
     : `du -skx "$H/.cache"/*/ 2>/dev/null`;
   const trash = OS === 'Darwin' ? `"$H/.Trash"` : `"$H/.local/share/Trash"`;
+  const xcode = OS === 'Darwin'
+    ? `du -skx "$H/Library/Developer/Xcode/DerivedData" "$H/Library/Developer/CoreSimulator/Caches" 2>/dev/null\n`
+    : '';
+  // Per-project dependency and build folders, by name — the same shape as node_modules.
+  const named = '-name node_modules -o -name bower_components -o -name .venv -o -name Pods'
+    + ' -o -name __pycache__ -o -name _build -o -name .dart_tool -o -name .next -o -name .nuxt'
+    + ' -o -name .svelte-kit -o -name .angular -o -name .turbo -o -name .parcel-cache'
+    + ' -o -name .pytest_cache -o -name .mypy_cache -o -name .ruff_cache -o -name .terraform';
   return `sh -c ${q(`set -u
 H="${home}"
 ${caches}
-du -skx "$H/.npm" "$H/.cache/pip" "$H/.cache/pnpm" "$H/.cache/yarn" "$H/.cache/go-build" "$H/.gradle/caches" "$H/.m2/repository" "$H/.cargo/registry" "$H/.bun/install/cache" 2>/dev/null
-du -skx ${trash} 2>/dev/null
-find "$H" -maxdepth 6 -type d -name node_modules -prune 2>/dev/null -exec du -skx {} + 2>/dev/null
+du -skx "$H/.npm" "$H/.gradle/caches" "$H/.m2/repository" "$H/.cargo/registry" "$H/.bun/install/cache" "$H/go/pkg/mod" "$H/.nuget/packages" "$H/.gem" "$H/.pub-cache" "$H/.ivy2" "$H/.sbt" "$H/.stack" "$H/.cabal" "$H/.yarn/berry/cache" 2>/dev/null
+${xcode}du -skx ${trash} 2>/dev/null
+find "$H" -maxdepth 6 -type d \\( ${named} \\) -prune 2>/dev/null -exec du -skx {} + 2>/dev/null
+find "$H" -maxdepth 6 -type d \\( -name target -o -name build -o -name vendor \\) -prune 2>/dev/null | while IFS= read -r d; do
+  p=\${d%/*}; b=\${d##*/}
+  case $b in
+  target) [ -e "$p/Cargo.toml" ] || [ -e "$p/pom.xml" ] || [ -e "$p/build.sbt" ] || continue ;;
+  build) [ -e "$p/build.gradle" ] || [ -e "$p/build.gradle.kts" ] || [ -e "$p/CMakeLists.txt" ] || [ -e "$p/pubspec.yaml" ] || continue ;;
+  vendor) [ -e "$p/composer.json" ] || [ -e "$p/go.mod" ] || [ -e "$p/Gemfile" ] || continue ;;
+  esac
+  du -skx "$d" 2>/dev/null
+done
 if command -v docker >/dev/null 2>&1; then
-  echo "===DOCKER==="; docker image ls --format '{{.ID}}|{{.Repository}}|{{.Tag}}|{{.Size}}|{{.Containers}}' 2>/dev/null
-  echo "===CONTAINERS==="; docker ps -a -s --format '{{.ID}}|{{.Names}}|{{.Image}}|{{.Size}}|{{.State}}' 2>/dev/null
+  echo "===DOCKER==="; docker image ls --format "{{.ID}}|{{.Repository}}|{{.Tag}}|{{.Size}}|{{.Containers}}" 2>/dev/null
+  echo "===CONTAINERS==="; docker ps -a -s --format "{{.ID}}|{{.Names}}|{{.Image}}|{{.Size}}|{{.State}}" 2>/dev/null
   echo "===VOLUMES==="; docker system df -v 2>/dev/null
-  echo "===BUILD==="; docker system df --format '{{.Type}}|{{.Reclaimable}}' 2>/dev/null
+  echo "===BUILD==="; docker system df --format "{{.Type}}|{{.Reclaimable}}" 2>/dev/null
 fi
 exit 0`)}`;
 }
