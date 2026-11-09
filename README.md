@@ -2,7 +2,7 @@
 
 # 🧭 Bussola Suite
 
-**Five tiny desktop apps that answer five questions about your computer — plus Bussola, the launcher that installs and updates them.**
+**Six tiny desktop apps that answer six questions about your computer — plus Bussola, the launcher that installs and updates them.**
 
 Every app shares the same ring map, the same time periods and the same structure, and runs with no account and no server.
 
@@ -32,6 +32,7 @@ Every app shares the same ring map, the same time periods and the same structure
 | ⚡ **Battiti** | What's using CPU, memory and power? | 2.0.0 | ✅ | ✅ | ✅ |
 | 🌱 **Radici** | What launches on its own at startup? | 1.1.0 | ✅ | ✅ | ✅ |
 | 📓 **Registro** | What errors, shutdowns and restarts happened? | 1.1.0 | ✅ | ✅ | ✅ |
+| 🪨 **Sedimenti** | What's left behind? | 1.0.0 | ✅ | ❌ | ✅ |
 
 Packages for macOS (universal Intel + Apple Silicon), Windows 10/11 x64, Linux x64 and arm64. Each package weighs **1.2–2.1 MB**. Available in English, Italian, French, Spanish and German.
 
@@ -128,6 +129,15 @@ Errors, warnings, shutdowns and restarts per app, with repeated messages merged 
 </details>
 
 <details>
+<summary>🪨 <b>Sedimenti</b> — what's left behind</summary>
+
+Finds what settles on your disk — caches, package-manager caches, the Trash, leftovers, old `node_modules`, and Docker's reclaimable space — and lays them on the ring map **coloured by how safe each item is to remove**: green (regenerates), amber (you need the source to rebuild it), red (may hold data). Select an item to reveal it, copy its path, or move it to the system Trash (reversible); Docker items copy the matching `docker … prune` command.
+
+- **Sources:** `du -skx` over known cache/leftover locations, `find … -name node_modules -prune`, and `docker system df`, in a single pass. Runs on **macOS and Linux**.
+- **Limits:** removal goes through the Trash, never a direct delete. "Leftovers" detection is a heuristic. Docker space is reclaimed by the suggested command, not automatically.
+</details>
+
+<details>
 <summary>🧭 <b>Bussola</b> — the launcher</summary>
 
 Reads the catalog from the most recent release, downloads with `curl` and verifies the SHA-256 checksum before extracting. When uninstalling you can also wipe the data, except for Stiva and Radici, whose data holds the Trash and the changes to restore.
@@ -164,7 +174,7 @@ They all follow the same rules:
 - **Update check:** a standalone app (installed without Bussola) reads the same public GitHub catalog at most once a day to tell you when a newer version is out, with a link to download it. It sends nothing about you, and you can turn it off under **Settings → Check for updates**.
 - Registro keeps one sample per message: logs may contain file and account names. They stay on the computer.
 - Each app can use only the native APIs listed in its own `nativeAllowList`.
-- Bussola installs only the five apps written in its code, and accepts only HTTPS downloads from `macchie/bussola`.
+- Bussola installs only the six apps written in its code, and accepts only HTTPS downloads from `macchie/bussola`.
 
 The catalog and packages live in the same release: the checksum protects against corrupted or swapped files along the way, not against whoever controls the GitHub account. Protect it with two-factor authentication.
 
@@ -177,6 +187,7 @@ The catalog and packages live in the same release: the checksum protects against
 | Battiti | Tried with a known load, simulated and real battery | Never run | Never run (Load view) |
 | Radici | Changes on real files, `systemctl` simulated | Never run | Never run |
 | Registro | Simulated events with known counts | Never run | Never run |
+| Sedimenti | Tried with real caches, node_modules and Docker | Logic only, not run | Not available |
 | Bussola | Real installs from a local server | Script tried with simulators | Never run |
 
 Linux arm64 is compiled but hasn't been launched. If something looks off, Diagnostics has **Copy data** with the raw system output (Stiva excepted).
@@ -186,7 +197,7 @@ Linux arm64 is compiled but hasn't been launched. If something looks off, Diagno
 All apps live in this repository, one per folder. Node is only a development tool. You need `node`, `npm`, `zip`, `make`, and to publish `git` and [`gh`](https://cli.github.com). Run `make help` for the commands.
 
 ```
-stiva/ correnti/ battiti/ radici/ registro/ bussola/
+stiva/ correnti/ battiti/ radici/ registro/ sedimenti/ bussola/
   neutralino.config.json   configuration and allowed APIs
   resources/               interface and logic
   scripts/package.mjs      packages for each system

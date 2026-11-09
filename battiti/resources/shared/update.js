@@ -31,11 +31,16 @@ function platformKey(os, arch) {
 
 /* Minimal native command runner (the webview CSP blocks fetching GitHub directly). */
 const handlers = new Map();
+const early = new Map();
 let listening = false;
 function listen() {
   if (listening) return;
   listening = true;
-  N().events.on('spawnedProcess', ({ detail }) => { const h = handlers.get(detail.id); if (h) h(detail); });
+  N().events.on('spawnedProcess', ({ detail }) => {
+    const h = handlers.get(detail.id);
+    if (h) h(detail);
+    else { if (!early.has(detail.id)) early.set(detail.id, []); early.get(detail.id).push(detail); }
+  });
 }
 async function run(command, timeoutMs = 20000) {
   listen();
@@ -43,11 +48,14 @@ async function run(command, timeoutMs = 20000) {
   return new Promise((resolve) => {
     let out = ''; let err = '';
     const timer = setTimeout(() => N().os.updateSpawnedProcess(id, 'exit').catch(() => {}), timeoutMs);
-    handlers.set(id, (d) => {
+    const onEvent = (d) => {
       if (d.action === 'stdOut') out += d.data;
       else if (d.action === 'stdErr') err += d.data;
       else if (d.action === 'exit') { clearTimeout(timer); handlers.delete(id); resolve({ code: d.data, out, err }); }
-    });
+    };
+    handlers.set(id, onEvent);
+    for (const d of early.get(id) || []) onEvent(d);
+    early.delete(id);
   });
 }
 const qs = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;

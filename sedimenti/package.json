@@ -1,0 +1,17 @@
+{
+  "name": "sedimenti",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Finds caches, uninstall leftovers, old node_modules and Docker layers. Neutralinojs desktop app for macOS and Linux.",
+  "scripts": {
+    "setup": "neu update",
+    "dev": "neu run",
+    "build": "neu build && node scripts/package.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@neutralinojs/neu": "^11.8.0"
+  },
+  "license": "AGPL-3.0-only"
+}

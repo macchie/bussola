@@ -9,7 +9,7 @@ const d = new Date();
 const tag = process.argv[2] || `suite-${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
 const OUT = 'dist/release';
 const BASE = `https://github.com/${REPO}/releases/download/${tag}/`;
-const APPS = ['stiva', 'correnti', 'battiti', 'radici', 'registro'];
+const APPS = ['stiva', 'correnti', 'battiti', 'radici', 'registro', 'sedimenti'];
 const version = (dir) => JSON.parse(readFileSync(join(dir, 'neutralino.config.json'), 'utf8')).version;
 const sha = (f) => createHash('sha256').update(readFileSync(f)).digest('hex');
 const keyOf = (file) => /-(macos|windows-x64|linux-x64|linux-arm64)\.zip$/.exec(file)?.[1];

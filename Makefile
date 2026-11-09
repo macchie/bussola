@@ -1,5 +1,5 @@
 # Bussola suite. Requires node, npm, zip and, to publish, git and gh. Use on Linux or macOS.
-APPS  := stiva correnti battiti radici registro bussola
+APPS  := stiva correnti battiti radici registro sedimenti bussola
 REPO  := macchie/bussola
 TAG   ?= suite-$(shell date +%Y.%-m.%-d)
 

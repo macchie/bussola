@@ -9,6 +9,7 @@ export const APPS = [
   { id: 'battiti', name: 'Battiti', tagline: 'CPU, memory and energy', color: '#e0559a' },
   { id: 'radici', name: 'Radici', tagline: 'What starts by itself at boot', color: '#a35f00', keepData: 'It\'s needed to turn back on what you disabled' },
   { id: 'registro', name: 'Registro', tagline: 'Errors, shutdowns and restarts', color: '#de5a55' },
+  { id: 'sedimenti', name: 'Sedimenti', tagline: 'What is left behind', color: '#5a6b8c' },
 ];
 
 export function platformKey(os, arch) {
