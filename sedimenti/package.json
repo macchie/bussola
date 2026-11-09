@@ -1,6 +1,6 @@
 {
   "name": "sedimenti",
-  "version": "1.0.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "description": "Finds caches, uninstall leftovers, old node_modules and Docker layers. Neutralinojs desktop app for macOS and Linux.",

@@ -26,13 +26,13 @@ Every app shares the same ring map, the same time periods and the same structure
 
 | App | The question | Version | 🍎 macOS | 🪟 Windows | 🐧 Linux |
 | --- | --- | :---: | :---: | :---: | :---: |
-| 🧭 **Bussola** | What's installed, and what needs updating? | 1.1.0 | ✅ | ✅ | ✅ |
-| 💿 **Stiva** | Where did my disk space go? | 2.1.1 | ✅ | ✅ | ✅ |
-| 🌐 **Correnti** | What's on the network — traffic, ports and connections? | 2.0.0 | ✅ | ✅ | ✅ |
-| ⚡ **Battiti** | What's using CPU, memory and power? | 2.0.0 | ✅ | ✅ | ✅ |
-| 🌱 **Radici** | What launches on its own at startup? | 1.1.0 | ✅ | ✅ | ✅ |
-| 📓 **Registro** | What errors, shutdowns and restarts happened? | 1.1.0 | ✅ | ✅ | ✅ |
-| 🪨 **Sedimenti** | What's left behind? | 1.0.0 | ✅ | ❌ | ✅ |
+| 🧭 **Bussola** | What's installed, and what needs updating? | 2.2.0 | ✅ | ✅ | ✅ |
+| 💿 **Stiva** | Where did my disk space go? | 2.2.0 | ✅ | ✅ | ✅ |
+| 🌐 **Correnti** | What's on the network — traffic, ports and connections? | 2.2.0 | ✅ | ✅ | ✅ |
+| ⚡ **Battiti** | What's using CPU, memory and power? | 2.2.0 | ✅ | ✅ | ✅ |
+| 🌱 **Radici** | What launches on its own at startup? | 2.2.0 | ✅ | ✅ | ✅ |
+| 📓 **Registro** | What errors, shutdowns and restarts happened? | 2.2.0 | ✅ | ✅ | ✅ |
+| 🪨 **Sedimenti** | What's left behind? | 2.2.0 | ✅ | ❌ | ✅ |
 
 Packages for macOS (universal Intel + Apple Silicon), Windows 10/11 x64, Linux x64 and arm64. Each package weighs **1.2–2.1 MB**. Available in English, Italian, French, Spanish and German.
 

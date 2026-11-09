@@ -1,6 +1,6 @@
 {
   "name": "battiti",
-  "version": "1.1.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "description": "Visual map of CPU and memory by app and process. Neutralinojs desktop app for macOS, Windows and Linux.",

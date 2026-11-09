@@ -1,6 +1,6 @@
 {
   "name": "bussola",
-  "version": "1.1.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "description": "Installs and updates the suite apps. Neutralinojs desktop app for macOS, Windows and Linux.",

@@ -1,6 +1,6 @@
 {
   "name": "correnti",
-  "version": "1.2.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "description": "Visual map of network traffic by app and destination. Neutralinojs desktop app for macOS and Linux.",

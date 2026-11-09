@@ -1,6 +1,6 @@
 {
   "name": "radici",
-  "version": "1.1.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "description": "Startup items and background tasks by app. Neutralinojs desktop app for macOS, Windows and Linux.",
