@@ -41,11 +41,15 @@ export function classify(path, home = '') {
     return { category: 'docker', safety, name: rest };
   }
   // Per-project dependency/build folders — but never reclassify something that lives inside a cache dir.
+  // The name leads with the folder (node_modules, target…) so the list can never be mistaken for a list
+  // of projects; the project follows only to tell two folders apart.
   const leaf = base(path);
   if (!/^(\.cache|Library\/Caches)\//.test(rel) && (DEPS.has(leaf) || BUILDS.has(leaf))) {
+    const project = parentName(path);
+    const name = project && project !== leaf ? `${leaf} · ${project}` : leaf;
     return DEPS.has(leaf)
-      ? { category: 'deps', safety: CAUTION, name: parentName(path) }
-      : { category: 'builds', safety: SAFE, name: parentName(path) };
+      ? { category: 'deps', safety: CAUTION, name }
+      : { category: 'builds', safety: SAFE, name };
   }
   if (/\/Library\/Developer\/Xcode\/DerivedData$/.test(path)) return { category: 'caches', safety: SAFE, name: 'Xcode DerivedData' };
   if (/\/Library\/Developer\/CoreSimulator\/Caches$/.test(path)) return { category: 'caches', safety: SAFE, name: 'Simulator caches' };

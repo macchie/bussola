@@ -17,13 +17,15 @@ test('classify sorts paths into category and safety', () => {
   assert.equal(classify(`${H}/.local/share/odd-leftover`, H).safety, CAUTION);
 });
 
-test('classify groups per-project dependency and build folders', () => {
-  assert.deepEqual(classify(`${H}/code/proj/node_modules`, H), { category: 'deps', safety: CAUTION, name: 'proj' });
-  assert.deepEqual(classify(`${H}/code/api/vendor`, H), { category: 'deps', safety: CAUTION, name: 'api' });
-  assert.deepEqual(classify(`${H}/code/py/.venv`, H), { category: 'deps', safety: CAUTION, name: 'py' });
-  assert.deepEqual(classify(`${H}/code/rust/target`, H), { category: 'builds', safety: SAFE, name: 'rust' });
-  assert.deepEqual(classify(`${H}/code/web/.next`, H), { category: 'builds', safety: SAFE, name: 'web' });
+test('classify groups per-project dependency and build folders, named folder-first', () => {
+  assert.deepEqual(classify(`${H}/code/proj/node_modules`, H), { category: 'deps', safety: CAUTION, name: 'node_modules · proj' });
+  assert.deepEqual(classify(`${H}/code/api/vendor`, H), { category: 'deps', safety: CAUTION, name: 'vendor · api' });
+  assert.deepEqual(classify(`${H}/code/py/.venv`, H), { category: 'deps', safety: CAUTION, name: '.venv · py' });
+  assert.deepEqual(classify(`${H}/code/rust/target`, H), { category: 'builds', safety: SAFE, name: 'target · rust' });
+  assert.deepEqual(classify(`${H}/code/web/.next`, H), { category: 'builds', safety: SAFE, name: '.next · web' });
   assert.equal(classify(`${H}/code/pkg/__pycache__`, H).category, 'builds');
+  // the folder, not the project, leads the label — so the list is never mistaken for a list of projects
+  assert.ok(classify(`${H}/code/proj/node_modules`, H).name.startsWith('node_modules'));
   // names that only mean "cache subfolder" must stay caches, not be read as a build folder
   assert.equal(classify(`${H}/.cache/build`, H).category, 'caches');
 });

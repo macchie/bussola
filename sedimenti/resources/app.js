@@ -202,9 +202,12 @@ function build() {
   state.map.measure();
 }
 
+const prettyPath = (p) => (state.home && String(p).startsWith(state.home) ? '~' + String(p).slice(state.home.length) : String(p));
 function confirmTrash(node) {
   dialog.replaceChildren(h('div', { class: 'dlg' },
-    h('header', null, h('h2', null, tt("Move {0} to Trash?", node.n)), h('p', null, tt('It goes to the system Trash, where you can put it back.'))),
+    h('header', null, h('h2', null, tt("Move {0} to Trash?", node.n)),
+      h('p', { style: 'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--muted);word-break:break-all;margin:2px 0 0' }, prettyPath(node.real)),
+      h('p', null, tt('It goes to the system Trash, where you can put it back.'))),
     h('footer', null, h('span'), h('div', null,
       h('button', { class: 'ghost', onclick: () => dialog.close() }, tt('Cancel')),
       h('button', { class: 'danger', onclick: async () => {
